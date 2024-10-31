@@ -1,0 +1,110 @@
+class Main
+{
+    function OnGameStart()
+    {
+        self.initRouter();
+    }
+
+    function OnNetworkMessage(sender, msg)
+    {
+        Router.Route(sender, msg);
+    }
+
+    function SendGetDamageMessage(p, dmg)
+    {
+        Broker.Send(p, GetDamageMessage.New(dmg));
+    }
+
+    function initRouter()
+    {
+        Router.RegisterHandler(GetDamageMessage.TOPIC, GetDamageMessageHandler());
+    }
+}
+
+#######################
+# Router
+#######################
+extension Router
+{
+    _handlers = Dict();
+
+    function RegisterHandler(topic, handler)
+    {
+        self._handlers.Set(topic, handler);
+    }
+
+    function Route(sender, msg)
+    {
+        msg = Json.LoadFromString(msg);
+        topic = msg.Get("topic");
+
+        h = self._handlers.Get(topic, null);
+        if (h == null)
+        {
+            return;
+        }
+
+        h.Handle(sender, msg);
+    }
+}
+
+#######################
+# Dispatcher
+#######################
+extension Dispatcher
+{
+    function Send(p, msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessage(p, raw);
+    }
+
+    function SendOthers(msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessageOthers(raw);
+    }
+
+    function SendAll(msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessageAll(raw);
+    }
+}
+
+#######################
+# Messages
+#######################
+extension BaseMessage
+{
+    KEY_TOPIC = "topic";
+}
+
+extension GetDamageMessage
+{
+    TOPIC = "get_damage";
+    
+    KEY_DAMAGE = "damage";
+
+    function New(dmg)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_DAMAGE, dmg);
+        return msg;
+    }
+}
+
+class GetDamageMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        dmg = msg.Get(GetDamageMessage.KEY_DAMAGE);
+
+        human = PlayerProxy.GetHuman();
+        if (human != null)
+        {
+            human.GetDamaged(sender.Name, dmg);
+        }
+    }
+}
