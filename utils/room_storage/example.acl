@@ -1,0 +1,128 @@
+class Main
+{
+    function OnPlayerJoin(player)
+    {
+        if (Network.IsMasterClient)
+        {
+            RoomDataSyncer.SyncRoomData(player);
+        }
+    } 
+
+    function EndGame(winner, t)
+    {
+        if (winner == TeamEnum.RED)
+        {
+            RoundManager.IncreaseRoundsWon(winner);
+        }
+
+        if (Network.IsMasterClient)
+        {
+            RoomDataSyncer.SyncRoomDataOthers();
+        }
+        Game.End(t);
+    }
+}
+
+extension RoomStorage
+{
+    function Get(k, d)
+    {
+        return RoomData.GetProperty(k, d);
+    }
+
+    function Set(k, v)
+    {
+        RoomData.SetProperty(k, v);
+        if (Network.IsMasterClient)
+        {
+            msg = SyncRoomDataMessage.New(k, v);
+            Dispatcher.SendOthers(msg);
+        }
+    }
+}
+
+extension RoomDataSyncer
+{
+    function GetRoomData()
+    {
+        data = Dict();
+        roundsRedKey = "rounds:" + TeamEnum.RED;
+        data.Set(roundsRedKey, RoomStorage.Get(roundsRedKey, 0));
+        roundsBlueKey = "rounds:" + TeamEnum.BLUE;
+        data.Set(roundsBlueKey, RoomStorage.Get(roundsBlueKey, 0));
+        return data;
+    }
+
+    function SyncRoomData(p)
+    {
+        msg = SyncAllRoomDataMessage.New(self.GetRoomData());
+        Dispatcher.Send(p, msg);
+    }
+
+    function SyncRoomDataOthers()
+    {
+        msg = SyncAllRoomDataMessage.New(self.GetRoomData());
+        Dispatcher.SendOthers(msg);
+    }
+}
+
+extension SyncRoomDataMessage
+{
+    TOPIC = "room_data:sync";
+
+    KEY_KEY = "key";
+    KEY_VALUE = "value";
+
+    function New(k, v)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_KEY, k);
+        msg.Set(self.KEY_VALUE, v);
+        return msg;
+    }
+}
+
+extension SyncAllRoomDataMessage
+{
+    TOPIC = "room_data:sync:all";
+
+    KEY_DATA = "data";
+
+    function New(data)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_DATA, data);
+        return msg;
+    }
+}
+
+extension RoundManager
+{
+    function GetRoundsWon(team)
+    {
+        return RoomStorage.Get("rounds:" + team, 0);
+    }
+
+    function SetRoundsWon(team, value)
+    {
+        RoomStorage.Set("rounds:" + team, value);
+    }
+
+    function GetRoundsCount()
+    {
+        return self.GetRoundsWon(TeamEnum.RED) + self.GetRoundsWon(TeamEnum.BLUE);
+    }
+
+    function IncreaseRoundsWon(team)
+    {
+        self.SetRoundsWon(team, self.GetRoundsWon(team) + 1);
+    }
+}
+
+extension TeamEnum
+{
+    RED = "Red";
+    BLUE = "Blue";
+}
