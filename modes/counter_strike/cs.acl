@@ -1,0 +1,6196 @@
+/*
+    Custom Logic made by Jagerente
+    https://jagerente.dev/
+
+    Version 1.0.0
+*/
+
+class Main
+{
+    # Gameplay Settings
+    Map = "de_dust";
+    MapDropbox = "de_dust,assault";
+    GameMode = "Bomb Plant";
+    GameModeDropbox = "Bomb Plant, Hostage, Team Deathmatch, Deathmatch";
+    MaxRounds = 16;
+    MaxHostages = 2;
+
+    DeathmatchRespawnTime = 5.0;
+    PreparationTime = 10.0;
+    PreparationTimeTooltip = "Time available before round start.";
+    ShoppingTime = 20.0;
+    PlantingDelay = 5.0;
+    PlantingDelayTooltip = "Time required to plant the bomb.";
+    ExplosionDelay = 45.0;
+    ExplosionDelayTooltip = "Time until the bomb explodes after being planted.";
+    DefuseDelay = 10.0;
+    DefuseDelayTooltip = "Time required to defuse the bomb.";
+    DefuseDelayWithKit = 5.0;
+    DefuseDelayWithKitTooltip = "Time required to defuse the bomb with defuse kit purchased.";
+    RoundTime = 120.0;
+    RoundTimeTooltip = "Total duration of the round before it ends.";
+    
+    MaxHealth = 1000;
+    HealthTooltip = "Player's default health.";
+    FPV = true;
+    FPVTooltip = "Force first person camera view.";
+    DisableGas = true;
+    DisableGasTooltip = "Disable gas.";
+    CustomSpeed = 115;
+    CustomDodgeSpeed = 75;
+    CustomSpeedTooltip = "Players' walking speed. Set 0 to disable.";
+
+    AirMovementPreset = "Default";
+    AirMovementPresetDropbox = "Default, Quake, Custom, None";
+    AirMovementForceMultiplier = 5000;
+    BunnyHop = true;
+    GravityMultiplier = 100;
+    MaxAirSpeed = 1500;
+    AirMovementForceType = "Force";
+    AirMovementForceTypeDropbox = "Force, Impulse";
+
+    AirDashForce = 1500;
+    AirDashCooldown = 3.0;
+
+    # Shop Settings
+    StartBalance = 400;
+    StartBalanceTooltip = "Player's starting balance.";
+    ArmorPrice = 1600;
+    ArmorValue = 1000;
+    DefuseKitPrice = 400;
+    ArmorValueTooltip = "Additional protection provided by armor.";
+    FragGrenadePrice = 350;
+    SawedOffPrice = 1300;
+    USPSPrice = 400; 
+    RPGPrice = 4750; 
+    DeadlyBladesPrice = 6750;
+    MagnumPrice = 3400;
+    SMGPrice = 2400;
+    MAG7Price = 2700;
+    AWPPrice = 4750;
+
+    # Financial
+    BombPlantTeamReward = 800;
+    BombPlantIndividualReward = 250;
+    BombDefuseTeamReward = 1200;
+    BombDefuseIndividualReward = 250;
+    RoundWonReward = 1200;
+    RoundLostReward = 1400;
+
+    # Specials Settings
+    SmokeDuration = 18.0;
+    SmokeCooldown = 60.0;
+
+    ThermalVisionRadius = 64;
+    ThermalVisionDuration = 15.0;
+    ThermalVisionStartCooldown = 30.0;
+    ThermalVisionCooldown = 75.0;
+
+    # Weapon Settings
+    FragGrenadeDamage = 2000;
+    FragGrenadeForce = 300000.0;
+    FragGrenadeDelay = 250;
+    FragGrenadePitchDegrees = 3000.0;
+    FragGrenadeForceMode = "Force";
+    FragGrenadeForceModeDropbox = "Force, Impulse";
+
+    BladesDamage = 350;
+    BladesKillReward = 1500;
+    BladesMaxDurability = 100;
+    BladesMaxBlades = 1;
+    BladesGravityDistance = 15;
+    BladesGravityTPDistance = 7;
+    BladesGravityForce = 100;
+    BladesGravityCooldown = 30;
+    BladesGravityUses = 3;
+
+    DeadlyBladesDamage = 8300;
+    DeadlyBladesKillReward = 300;
+    DeadlyBladesMaxDurability = 300;
+    DeadlyBladesMaxBlades = 1;
+    DeadlyBladesGravityDistance = 25;
+    DeadlyBladesGravityTPDistance = 15;
+    DeadlyBladesGravityForce = 13;
+    DeadlyBladesGravityUses = 2;
+    DeadlyBladesGravityCooldown = 30;
+
+    USPSDamage = 350;
+    USPSHeadShotMultiplier = 300;
+    USPSKillReward = 450;
+    USPSMaxRounds = 12;
+    USPSMaxAmmo = 24;
+    USPSDistance = 64;
+    
+    SawedOffDamage = 1250;
+    SawedOffKillReward = 300;
+    SawedOffMaxRounds = 1;
+    SawedOffMaxAmmo = 16;
+
+    RPGDamage = 1250;
+    RPGKillReward = 100;
+    RPGMaxRounds = 1;
+    RPGMaxAmmo = 8;
+
+    MagnumDamage = 1450;
+    MagnumHeadShotMultiplier = 250;
+    MagnumKillReward = 300;
+    MagnumMaxRounds = 6;
+    MagnumMaxAmmo = 16;
+    MagnumDistance = 128;
+
+    SMGDamage = 85;
+    SMGHeadShotMultiplier = 200;
+    SMGKillReward = 500;
+    SMGMaxRounds = 64;
+    SMGMaxAmmo = 256;
+    SMGDistance = 64;
+
+    MAG7Damage = 400;
+    MAG7KillReward = 500;
+    MAG7MaxRounds = 4;
+    MAG7MaxAmmo = 24;
+
+    AWPDamage = 4150;
+    AWPHeadShotMultiplier = 200.0;
+    AWPKillReward = 300;
+    AWPMaxRounds = 1;
+    AWPMaxAmmo = 12;
+    AWPDistance = 512;
+
+    # Game State Variables
+    _hasSpawned = false;
+    _roundTimeLeft = 0.0;
+    _preparationTimeLeft = 0.0;
+    _redTeamTotal = 0;
+    _redTeamDead = 0;
+    _redTeamAlive = 0;
+    _blueTeamTotal = 0;
+    _blueTeamDead = 0;
+    _blueTeamAlive = 0;
+    _watchingPlant = null;
+    _shoppingItems = List();
+    _logger = Logger(1, "[MAIN]");
+
+    _bombPlantRegions = List();
+    _shoppingRegions = List();
+    _shoppingZones = List();
+    _escortRegions = List();
+    _hostages = Dict();
+    _savedFOV = null;
+
+    _specials = Dict();
+    _weapons = Dict();
+    _highlights = Dict();
+    _hitboxes = Dict();
+    _hitboxHumans = Dict();
+
+    _blueHighlightRef = null;
+    _redHighlightRef = null;
+    _hitboxHeadRef = null;
+    _fragGrenadeRef = null;
+
+    _respawnTimer = Timer(0.0);
+    _shoppingTimer = Timer(0.0);
+
+    function Init()
+    {
+        self._roundTimeLeft = self.RoundTime;
+        self._preparationTimeLeft = self.PreparationTime;
+    }
+
+    function OnGameStart()
+	{
+        InputManager.InitKeybinds();
+        self.initRouter();
+
+        self._blueHighlightRef = Map.FindMapObjectByName("BlueHighlightReference");
+        self._redHighlightRef = Map.FindMapObjectByName("RedHighlightReference");
+        self._hitboxHeadRef = Map.FindMapObjectByName("Hitbox_HEAD");
+        self._fragGrenadeRef = Map.FindMapObjectByName("FragGrenade");
+        
+        if (RoundManager.GetRoundsCount() > self.MaxRounds)
+        {
+            RoundManager.SetRoundsWon(TeamEnum.BLUE, 0);
+            RoundManager.SetRoundsWon(TeamEnum.RED, 0);
+            PlayerProxy.ResetInited();
+        }
+        TipsProvider.InitList();
+        self.initSpecials();
+        self.initWeapons();
+        self.initPlants();
+        self.initHostageMode();
+		Game.SetPlaylist("Battle");
+
+        if (!PlayerProxy.HasWatchedGuide())
+        {
+            self.printGameInfo();
+            if (self.Map == MapEnum.ASSAULT)
+            {
+                if (self.GameMode == GameModeEnum.BOMB_PLANT)
+                {
+                    Cutscene.Start("Guide_BombPlant_Assault", true);
+                }
+                elif (self.GameMode == GameModeEnum.HOSTAGE)
+                {
+                    Cutscene.Start("Guide_Hostages_Assault", true);
+                }
+            }
+            PlayerProxy.SetWatchedGuide();
+        }
+    }
+
+    function OnGameEnd(reason, winner)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        self.SendRoundEndMessage(reason, winner);
+        text = self.buildRoundEndMessage(reason, winner);
+        if (text != "")
+        {
+            UI.SetLabelAll(UILabelTypeEnum.MIDDLECENTER, text);
+        }
+
+        RoomDataSyncer.SyncRoomDataOthers();
+        Game.End(10.0);
+    }
+
+    function OnCharacterSpawn(character)
+    {
+        if (character.IsMine && character.Type == ObjectTypeEnum.HUMAN)
+        {
+            PlayerProxy.OnSpawn(character);
+
+            self.initShops();
+
+            self._savedFOV = Camera.FOV;
+
+            if (self._preparationTimeLeft > 0)
+            {
+                Cutscene.Start("PreparationCutscene", false);
+            }
+
+            PositionLocker.SetPosition(character.Position);
+
+            self._shoppingTimer.Reset(self.ShoppingTime);
+        }
+    }
+
+    function OnCharacterDamaged(victim, killer, killerName, damage)
+    {
+        if (victim.IsMine)
+        {
+            PlayerProxy.OnDamaged(damage);
+        }
+    }
+
+    function OnCharacterDie(victim, killer, killerName)
+    {
+        highlight = self._highlights.Get(victim.Player.ID, null);
+        if (highlight != null)
+        {
+            Map.DestroyMapObject(highlight, false);
+            self._highlights.Remove(victim.Player.ID);
+        }
+
+        if (victim.IsMine && victim.Type == ObjectTypeEnum.HUMAN)
+        {
+            PlayerProxy.OnDie();
+            Camera.SetFOV(self._savedFOV);
+            self._respawnTimer.Reset(self.DeathmatchRespawnTime);
+        }
+        elif (
+            (killer != null && killer.IsMine && killer.Type == ObjectTypeEnum.HUMAN)
+            || killerName == Network.MyPlayer.Name
+        )
+        {
+            hitboxHead = self._hitboxes.Get(victim.Player.ID, null);
+            if (hitboxHead != null)
+            {
+                self._hitboxHumans.Remove(hitboxHead.ID);
+                Map.DestroyMapObject(hitboxHead, false);
+                self._hitboxes.Remove(victim.Player.ID);
+            }
+
+            if (self.GameMode != GameModeEnum.DEATHMATCH)
+            {
+                reward = PlayerProxy.GetSelectedWeapon().GetKillReward();
+                PlayerProxy.IncreaseBalance(reward);
+                reason = "Enemy eliminated.";
+                Game.Print(self.BuildRewardMessage(reward, reason));
+            }
+        }
+    }
+
+    function OnPlayerJoin(player)
+    {
+        if (Network.IsMasterClient)
+        {
+            RoomDataSyncer.SyncRoomData(player);
+        }
+    }
+
+    function OnPlayerLeave(player)
+    {
+        highlight = self._highlights.Get(player.ID, null);
+        if (highlight != null)
+        {
+            Map.DestroyMapObject(highlight, false);
+            self._highlights.Remove(player.ID);
+        }
+        
+        hitboxHead = self._hitboxes.Get(player.ID, null);
+        if (hitboxHead != null)
+        {
+            self._hitboxHumans.Remove(hitboxHead.ID);
+            Map.DestroyMapObject(hitboxHead, false);
+            self._hitboxes.Remove(player.ID);
+        }
+    }
+
+
+    function OnFrame()
+    {
+        self.updatePlayersHighlightning();
+        self.updatePlayersHitboxes();
+
+        if (self.GameMode != GameModeEnum.DEATHMATCH && self._preparationTimeLeft > 0 && self._preparationTimeLeft < self.PreparationTime - 0.5)
+        {
+            PositionLocker.UpdateLock();
+        }
+
+        self.handleGameModules();
+        PlayerProxy.OnFrame();
+    }
+
+	function OnTick()
+	{
+        self.updateGameState();
+        self.UpdateHUD();
+        PlayerProxy.OnTick();
+        # self.updatePlayersHighlightning();
+        # self.updatePlayersHitboxes();
+        for (h in self._hostages.Values)
+        {
+            h.OnTick();
+        }
+
+		if (Game.IsEnding)
+		{
+			return;
+		}
+
+        self.updateGameModes();
+	}
+
+    function OnNetworkMessage(sender, message)
+    {
+        self._logger.Trace(message);
+        self._logger.Debug("Received:" + String.Newline + message + String.Newline + "From " + sender.ID);
+        Router.Route(sender, message);
+    }
+
+    function UpdateHUD()
+    {
+        UI.SetLabelForTime(UILabelTypeEnum.TOPCENTER, HTML.Bold(HTML.Size(self.buildGameStatusLabel(), 26)), 0.1);
+        UI.SetLabel(UILabelTypeEnum.MIDDLELEFT, self.buildPlayerStatusLabel());
+    }
+
+    function UpdateRoundTimeMode()
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        if (self._roundTimeLeft <= 0.0)
+        {
+            self.OnGameEnd(RoundEndMessage.REASON_TIME_LEFT, RoundEndMessage.WINNER_BLUE);
+        }
+    }
+
+    function UpdateHostageMode()
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        escortedCount = 0;
+        for (h in self._hostages.Values)
+        {
+            if (h.IsEscorted())
+            {
+                escortedCount += 1;
+            }
+        }
+
+        if (escortedCount > 0 && escortedCount >= self._hostages.Count)
+        {
+            self.OnGameEnd(RoundEndMessage.REASON_HOSTAGES_ESCORTED, RoundEndMessage.WINNER_RED);
+        }
+    }
+
+	function UpdateLastTeamMode()
+	{
+		if (!Network.IsMasterClient)
+		{
+            return;
+		}
+
+        if (self._redTeamAlive >= 1 && self._blueTeamAlive >= 1)
+        {
+            self._hasSpawned = true;
+        }
+        elif (!self._hasSpawned)
+        {
+            return;
+        }
+
+        if (!self.hasAnyPlantedBomb() && self._redTeamAlive == 0 && self._blueTeamAlive > 0)
+        {
+            self.OnGameEnd(RoundEndMessage.REASON_TEAM_ELIMINATE, RoundEndMessage.WINNER_BLUE);
+        }
+        elif (self._blueTeamAlive == 0 && self._redTeamAlive > 0)
+        {
+            self.OnGameEnd(RoundEndMessage.REASON_TEAM_ELIMINATE, RoundEndMessage.WINNER_RED);
+        }
+        elif (self._blueTeamAlive == 0 && self._redTeamAlive == 0)
+        {
+            if (!self.hasAnyPlantedBomb())
+            {
+                self.OnGameEnd(RoundEndMessage.REASON_DRAW, RoundEndMessage.WINNER_NOBODY);
+            }
+            else
+            {
+                self.OnGameEnd(RoundEndMessage.REASON_BOMB_DETONATE, RoundEndMessage.WINNER_RED);
+            }
+        }
+	}
+
+    function BuildRewardMessage(value, reason)
+    {
+        rewardStr = HTML.Color("+" + value + "G", ColorEnum.Yellowgreen);
+        return rewardStr + ": " + reason;
+    }
+
+    function initHostageMode()
+    {
+        for (obj in Map.FindMapObjectsByName("HostageEscortRegion"))
+        {
+            self._escortRegions.Add(obj);
+        }
+
+        if (self.GameMode == GameModeEnum.HOSTAGE)
+        {
+            if (Network.IsMasterClient)
+            {
+                for (obj in Map.FindMapObjectsByName("HostageReference"))
+                {
+                    if (self._hostages.Count >= self.MaxHostages)
+                    {
+                        return;
+                    }
+
+                    h = HostageProxy(obj.Position, obj.Rotation.Y, obj.Scale.Y);
+                    self._hostages.Set(h.GetViewID(), h);
+                    h.Lock(obj.Position, 1.0);
+                }
+            }
+        }
+        else
+        {
+            for (obj in self._escortRegions)
+            {
+                # Map.DestroyMapObject(obj, true);
+                obj.Position = Vector3(0, -999, 0);
+            }
+        }
+    }
+
+    function initPlants()
+    {
+        for (obj in Map.FindMapObjectsByName("BombPlantRegion"))
+        {
+            if (self.GameMode == GameModeEnum.BOMB_PLANT)
+            {
+                plant = obj.GetComponent("BombPlant");
+                if (self.PlantingDelay > 0.0)
+                {
+                    plant.PLANTING_DELAY = self.PlantingDelay;
+                    plant._plantingTimer.Reset(self.PlantingDelay);
+                }
+                if (self.DefuseDelay > 0.0)
+                {
+                    if (PlayerProxy.HasDefuseKit())
+                    {
+                        plant.DEFUSE_DELAY = self.DefuseDelayWithKit;
+                        plant._defuseTimer.Reset(self.DefuseDelayWithKit);
+                    }
+                    else
+                    {
+                        plant.DEFUSE_DELAY = self.DefuseDelay;
+                        plant._defuseTimer.Reset(self.DefuseDelay);
+                    }
+                }
+                if (self.ExplosionDelay > 0.0)
+                {
+                    plant.EXPLOSION_DELAY = self.ExplosionDelay;
+                    plant._explosionTimer.Reset(self.ExplosionDelay);
+                }
+                self._bombPlantRegions.Add(plant);
+            }
+            else
+            {
+                # Map.DestroyMapObject(obj, true);
+                obj.Position = Vector3(0, -999, 0);
+            }
+        }
+    }
+
+    function initSpecials()
+    {
+        self._specials.Set(CustomSpecialEnum.ZOOM, ZoomSpecial());
+        self._specials.Set(CustomSpecialEnum.SMOKE, SmokeSpecial(
+            self.SmokeDuration,
+            self.SmokeCooldown
+        ));
+
+        for (special in SpecialEnum.GetList())
+        {
+            self._specials.Set(special, StockSpecial(special));
+        }
+    }
+
+    function initWeapons()
+    {
+        bladesWeapon = Weapon(
+            WeaponEnum.BLADES, 
+            "Blades", 
+            WeaponEnum.BLADES, 
+            self.BladesDamage, 
+            -1, 
+            self.BladesMaxDurability,
+            self.BladesMaxBlades,
+            -1,
+            -1,
+            false,
+            self.BladesKillReward, 
+            ItemSlotEnum.WEAPON_PRIMARY,
+            self._specials.Get(SpecialEnum.SWITCHBACK, null)
+        );
+        bladesWeapon.AddAddon(GravitySlashWeaponAddon(
+            self.BladesGravityDistance,
+            self.BladesGravityTPDistance,
+            self.BladesGravityForce,
+            self.BladesGravityUses,
+            self.BladesGravityCooldown
+        ));
+
+        self._weapons.Set(
+            WeaponEnum.BLADES, 
+            bladesWeapon
+        );
+        uspsWeapon = Weapon(
+                CustomWeaponEnum.USP_S, 
+                "USP-S", 
+                WeaponEnum.APG, 
+                self.USPSDamage, 
+                self.USPSHeadShotMultiplier / 100.0,
+                self.USPSMaxRounds,
+                self.USPSMaxAmmo,
+                self.USPSDistance,
+                -1,
+                false,
+                self.USPSKillReward,
+                ItemSlotEnum.WEAPON_SECONDARY,
+                self._specials.Get(CustomSpecialEnum.SMOKE, null)
+        );
+        self._weapons.Set(
+            CustomWeaponEnum.USP_S, 
+            uspsWeapon
+        );
+        self._weapons.Set(
+            CustomWeaponEnum.SAWED_OFF, 
+            Weapon(
+                CustomWeaponEnum.SAWED_OFF, 
+                "Sawed-Off", 
+                WeaponEnum.AHSS, 
+                self.SawedOffDamage, 
+                -1, 
+                self.SawedOffMaxRounds,
+                self.SawedOffMaxAmmo,
+                -1,
+                -1,
+                false,
+                self.SawedOffKillReward,
+                ItemSlotEnum.WEAPON_SECONDARY,
+                self._specials.Get(CustomSpecialEnum.SMOKE, null)
+            )
+        );
+        self._weapons.Set(
+            CustomWeaponEnum.RPG, 
+            Weapon(
+                CustomWeaponEnum.RPG, 
+                "RPG", 
+                WeaponEnum.TS, 
+                self.RPGDamage, 
+                -1,
+                self.RPGMaxRounds,
+                self.RPGMaxAmmo,
+                -1,
+                -1,
+                false,
+                self.RPGKillReward,
+                ItemSlotEnum.WEAPON_SECONDARY,
+                self._specials.Get(SpecialEnum.SWITCHBACK, null)
+        )
+        );
+        deadlyBladesWeapon = Weapon(
+            CustomWeaponEnum.DEADLY_BLADES, 
+            "Deadly Blades", 
+            WeaponEnum.BLADES, 
+            self.DeadlyBladesDamage, 
+            -1,
+            self.DeadlyBladesMaxDurability,
+            self.DeadlyBladesMaxBlades,
+            -1,
+            -1,
+            false,
+            self.DeadlyBladesKillReward,
+            ItemSlotEnum.WEAPON_PRIMARY,
+            self._specials.Get(SpecialEnum.SWITCHBACK, null)
+        );
+        deadlyBladesWeapon.AddAddon(GravitySlashWeaponAddon(
+            self.DeadlyBladesGravityDistance, 
+            self.DeadlyBladesGravityTPDistance, 
+            self.DeadlyBladesGravityForce,
+            self.DeadlyBladesGravityUses,
+            self.DeadlyBladesGravityCooldown
+        ));
+        self._weapons.Set(
+            CustomWeaponEnum.DEADLY_BLADES, 
+            deadlyBladesWeapon
+        );
+        magnumWeapon = Weapon(
+            CustomWeaponEnum.MAGNUM, 
+            "Magnum", 
+            WeaponEnum.APG, 
+            self.MagnumDamage, 
+            self.MagnumHeadShotMultiplier / 100.0,
+            self.MagnumMaxRounds,
+            self.MagnumMaxAmmo,
+            self.MagnumDistance,
+            -1,
+            false,
+            self.MagnumKillReward,
+            ItemSlotEnum.WEAPON_SECONDARY,
+            self._specials.Get(SpecialEnum.SWITCHBACK, null)
+        );
+
+        self._weapons.Set(
+            CustomWeaponEnum.MAGNUM, 
+            magnumWeapon
+        );
+        self._weapons.Set(
+            CustomWeaponEnum.SMG, 
+            Weapon(
+                CustomWeaponEnum.SMG, 
+                "SMG", 
+                WeaponEnum.APG, 
+                self.SMGDamage, 
+                self.SMGHeadShotMultiplier / 100.0, 
+                self.SMGMaxRounds,
+                self.SMGMaxAmmo,
+                self.SMGDistance,
+                -1,
+                true,
+                self.SMGKillReward,
+                ItemSlotEnum.WEAPON_SECONDARY,
+                self._specials.Get(SpecialEnum.SWITCHBACK, null)
+            )
+        );
+        self._weapons.Set(
+            CustomWeaponEnum.MAG_7, 
+            Weapon(
+                CustomWeaponEnum.MAG_7, 
+                "MAG-7", 
+                WeaponEnum.AHSS, 
+                self.MAG7Damage, 
+                -1,
+                self.MAG7MaxRounds,
+                self.MAG7MaxAmmo,
+                -1,
+                -1,
+                false,
+                self.MAG7KillReward,
+                ItemSlotEnum.WEAPON_SECONDARY,
+                self._specials.Get(CustomSpecialEnum.SMOKE, null)
+            )
+        );
+        awpWeapon = Weapon(
+            CustomWeaponEnum.AWP, 
+            "AWP", 
+            WeaponEnum.APG, 
+            self.AWPDamage, 
+            self.AWPHeadShotMultiplier / 100.0, 
+            self.AWPMaxRounds,
+            self.AWPMaxAmmo,
+            self.AWPDistance,
+            -1,
+            false,
+            self.AWPKillReward,
+            ItemSlotEnum.WEAPON_SECONDARY,
+            self._specials.Get(CustomSpecialEnum.ZOOM, null)
+        );
+        awpWeapon.AddAddon(ThermalVisionWeaponAddon(
+            self.ThermalVisionRadius,
+            self.ThermalVisionStartCooldown,
+            self.ThermalVisionCooldown,
+            self.ThermalVisionDuration
+        ));
+        self._weapons.Set(
+            CustomWeaponEnum.AWP, 
+            awpWeapon
+        );
+    }
+
+    function initShops()
+    {
+        self._shoppingItems.Clear();
+        if (self.GameMode == GameModeEnum.DEATHMATCH)
+        {
+            self._shoppingItems.Add(ArmorShoppingItem(0, self.ArmorValue));
+            self._shoppingItems.Add(FragGrenadeShoppingItem(0));
+            self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, 0));
+            self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, 0));
+        }
+        else 
+        {
+            self._shoppingItems.Add(ArmorShoppingItem(self.ArmorPrice, self.ArmorValue));
+            if (self.GameMode == GameModeEnum.BOMB_PLANT && PlayerProxy.GetTeam() == TeamEnum.BLUE)
+            {
+                self._shoppingItems.Add(DefuseKitShoppingItem(self.DefuseKitPrice));
+            }
+            self._shoppingItems.Add(FragGrenadeShoppingItem(self.FragGrenadePrice));
+            self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, self.USPSPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, self.MagnumPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, self.SawedOffPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, self.MAG7Price));
+            self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, self.SMGPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, self.AWPPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, self.RPGPrice));
+            self._shoppingItems.Add(WeaponShoppingItem("Deadly Blades", CustomWeaponEnum.DEADLY_BLADES, self.DeadlyBladesPrice));
+        }
+
+        self._shoppingRegions.Clear();
+        for (obj in Map.FindMapObjectsByName("ShoppingRegion"))
+        {
+            self._shoppingRegions.Add(obj);
+            shoppingZone = obj.GetComponent("ShoppingZone");
+            if (self.GameMode == GameModeEnum.DEATHMATCH)
+            {
+                shoppingZone._iPos = Vector3(0, -9999, 0);
+            }
+            else
+            {
+                self._shoppingZones.Add(shoppingZone);
+                shoppingZone.ClearItems();
+                for (item in self._shoppingItems)
+                {
+                    shoppingZone.AddItem(item);
+                }
+                shoppingZone.InitShop();
+            }
+        }
+
+        if (self.GameMode == GameModeEnum.DEATHMATCH)
+        {
+            obj = Map.FindMapObjectByName("ShoppingRegionDM");
+            if (obj != null)
+            {
+                shoppingZone = obj.GetComponent("ShoppingZone");
+                if (shoppingZone != null)
+                {
+                    shoppingZone._iPos = Vector3(
+                        PlayerProxy.GetHuman().Position.X,
+                        PlayerProxy.GetHuman().Position.Y + 0.5,
+                        PlayerProxy.GetHuman().Position.Z
+                    );
+                    shoppingZone.ClearItems();
+                    for (item in self._shoppingItems)
+                    {
+                        shoppingZone.AddItem(item);
+                    }
+                    shoppingZone.InitShop();
+                }
+            }
+        }
+    }
+
+    function handleGameModules()
+    {
+        if (self.FPV)
+        {
+            GameModules.ForceFPV();
+        }
+        h = PlayerProxy.GetHuman();
+        if (h != null)
+        {
+            if (self.DisableGas)
+            {
+                GameModules.DisableGas(h);
+            }
+
+            if (self.CustomSpeed > 0)
+            {
+                GameModules.CustomPlayerSpeed(h, self.CustomSpeed, self.CustomDodgeSpeed);
+            }
+        }
+    }
+
+    function updateGameModes()
+    {
+        if (self.GameMode == GameModeEnum.DEATHMATCH)
+        {
+            self._respawnTimer.UpdateOnTick();
+            if (Network.MyPlayer.Status == PlayerStatusEnum.DEAD && self.GameMode == GameModeEnum.DEATHMATCH)
+            {
+                if (self._respawnTimer.IsDone())
+                {
+                    Game.SpawnPlayer(Network.MyPlayer, false);
+                }
+                else
+                {
+                    UI.SetLabelForTime(UILabelTypeEnum.MIDDLECENTER, HTML.Color("Respawn in " + self._respawnTimer.String(2), ColorEnum.Khaki), 0.1);
+                }
+            }
+        }
+        else 
+        {
+            canRes = !self._hasSpawned || self._preparationTimeLeft > 0;
+            if (Network.IsMasterClient && canRes)
+            {
+                for (p in Network.Players)
+                {
+                    if (p.Status == PlayerStatusEnum.DEAD)
+                    {
+                        Game.SpawnPlayer(p, false);
+                    }
+                }
+            }
+        }
+        
+        if (self.GameMode != GameModeEnum.DEATHMATCH)
+        {
+            if (self.GameMode == GameModeEnum.HOSTAGE && self._preparationTimeLeft <= 0)
+            {
+                self.UpdateHostageMode();
+            }
+
+            if (!self.hasAnyPlantedBomb() && self._preparationTimeLeft <= 0)
+            {
+                self.UpdateRoundTimeMode();
+            }
+            self.UpdateLastTeamMode();
+        }
+    }
+
+    function updateGameState()
+    { 
+        if (self.GameMode != GameModeEnum.DEATHMATCH)
+        {
+            self.updateTeamsState();
+        }
+
+        self._shoppingTimer.UpdateOnTick();
+
+        if (self._preparationTimeLeft > 0)
+        {
+            self._preparationTimeLeft = self.PreparationTime - Time.GameTime;
+        }
+        else
+        {
+            self.updateRoundTime();
+        }
+    }
+
+    function updateTeamsState()
+    {
+        self._redTeamTotal = 0;
+        self._redTeamDead = 0;
+        self._redTeamAlive = 0;
+        self._blueTeamTotal = 0;
+        self._blueTeamDead = 0;
+        self._blueTeamAlive = 0;
+
+        for (p in Network.Players)
+        {
+            if (p.Team == TeamEnum.BLUE)
+            {
+                self._blueTeamTotal += 1;
+                if (p.Status == PlayerStatusEnum.DEAD)
+                {
+                    self._blueTeamDead += 1;
+                }
+            }
+            elif (p.Team == TeamEnum.RED)
+            {
+                self._redTeamTotal += 1;
+                if (p.Status == PlayerStatusEnum.DEAD)
+                {
+                    self._redTeamDead += 1;
+                }
+            }
+        }
+        for (p in Game.PlayerHumans)
+        {
+            if (p.Team == TeamEnum.BLUE)
+            {
+                self._blueTeamAlive += 1;
+            }
+            elif (p.Team == TeamEnum.RED)
+            {
+                self._redTeamAlive += 1;
+            }
+        }
+    }
+
+    function updateRoundTime()
+    {
+        if (self._roundTimeLeft > 0)
+        {
+            self._roundTimeLeft = self.RoundTime + self.PreparationTime - Time.GameTime;
+        }
+    }
+
+    function hasAnyPlantedBomb()
+    {
+        for (plant in self._bombPlantRegions)
+        {
+            if (plant._bombState == BombStateEnum.PLANTED)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getAnyPlantedRegion()
+    {
+        for (plant in self._bombPlantRegions)
+        {
+            if (plant._bombState == BombStateEnum.PLANTED)
+            {
+                return plant;
+            }
+        }
+        return null;
+    }
+
+    function SendGetDamageMessage(p, dmg)
+    {
+        msg = GetDamageMessage.New(dmg);
+        Dispatcher.Send(p, msg);
+    }
+
+    function SendThrowGrenadeMessage(pos, dir, vel, force)
+    {
+        msg = ThrowGrenadeMessage.New(pos, dir, vel, force);
+        Dispatcher.SendAll(msg);
+    }
+
+    function SendHostageEscortRequestMessage(id)
+    {
+        msg = HostageEscortRequestMessage.New(id);
+        Dispatcher.Send(Network.MasterClient, msg);
+    }
+
+    function SendRoundEndMessage(reason, winner)
+    {
+        msg = RoundEndMessage.New(reason, winner);
+        Dispatcher.SendAll(msg);
+    }
+
+    function buildRoundEndMessage(reason, winner)
+    {
+        if (reason == RoundEndMessage.REASON_TIME_LEFT)
+        {
+            return HTML.Color("Blue team wins!", ColorEnum.BlueTeam);
+        }
+        elif (reason == RoundEndMessage.REASON_TEAM_ELIMINATE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return HTML.Color("Blue team wins!", ColorEnum.BlueTeam);
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color("Red team wins!", ColorEnum.RedTeam);
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_DRAW)
+        {
+            return "Nobody wins!";
+        }
+        elif (reason == RoundEndMessage.REASON_BOMB_DETONATE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return "";
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color("Red team wins!", ColorEnum.RedTeam);
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_BOMB_DEFUSE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return HTML.Color("Bomb has been defused!", ColorEnum.BlueTeam);
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return "";
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_BOMB_DETONATE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return "";
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color("Bomb has been exploded!", ColorEnum.RedTeam);
+            }
+        }
+    }
+
+    function buildGameStatusLabel()
+    {
+        label = "";
+
+        if (self.GameMode != GameModeEnum.DEATHMATCH)
+        {
+            label = self.buildRoundsWonLabel();
+            label += String.Newline + self.buildPlayersLeftLabel();
+
+            if (self._preparationTimeLeft > 0)
+            {
+                label += String.Newline + self.buildPreparationTimeLeftLabel();
+            } 
+            elif (self.hasAnyPlantedBomb())
+            {
+                label += String.Newline + self.buildBombDetonationTimeLeftLabel();
+            }
+            elif (!Game.IsEnding)
+            {
+                label += String.Newline + self.buildRoundTimeLeftLabel();
+            }
+        }
+
+        return label;
+    }
+
+    function buildRoundsWonLabel()
+    {
+        redCountLabel = "RED: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.RED));
+        blueCountLabel = "BLUE: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.BLUE));
+
+        return HTML.Color(redCountLabel, ColorEnum.RedTeam) 
+        + " | " 
+        + HTML.Color(blueCountLabel, ColorEnum.BlueTeam);
+    }
+
+    function buildPlayersLeftLabel()
+    {
+        redPlayersDeadCounter = "";
+        redPlayersCounter = "";
+        for (i in Range(0, self._redTeamAlive, 1))
+        {
+            redPlayersCounter += "X ";
+        }
+        for (i in Range(0, self._redTeamDead, 1))
+        {
+            redPlayersDeadCounter += "X ";
+        }
+        bluePlayersDeadCounter = "";
+        bluePlayersCounter = "";
+        for (i in Range(0, self._blueTeamAlive, 1))
+        {
+            bluePlayersCounter += " X";
+        }
+        for (i in Range(0, self._blueTeamDead, 1))
+        {
+            bluePlayersDeadCounter += " X";
+        }
+
+        return HTML.Color(redPlayersDeadCounter, ColorEnum.RedTeamDead)
+        +HTML.Color(redPlayersCounter, ColorEnum.RedTeam)
+        + " | "
+        + HTML.Color(bluePlayersCounter, ColorEnum.BlueTeam)
+        + HTML.Color(bluePlayersDeadCounter, ColorEnum.BlueTeamDead);
+    }
+
+    function buildPreparationTimeLeftLabel()
+    {
+        return HTML.Color("Preparation Time left: " + String.FormatFloat(self._preparationTimeLeft, 2), ColorEnum.Yellowgreen);
+    }
+
+    function buildBombDetonationTimeLeftLabel()
+    {
+        if (self._watchingPlant == null)
+        {
+            self._watchingPlant = self.getAnyPlantedRegion();
+        }
+        
+        return HTML.Color("Bomb explodes in: " + self._watchingPlant._explosionTimer.String(2), ColorEnum.RedTeam); 
+    }
+
+    function buildRoundTimeLeftLabel()
+    {
+        return HTML.Color("Round Time left: " + String.FormatFloat(self._roundTimeLeft, 2), ColorEnum.Khaki);
+    }
+
+    function buildPlayerStatusLabel()
+    {
+        label = "";
+        
+        if (!PlayerProxy.IsAlive())
+        {
+            return label;
+        }
+
+        label += self.buildPlayerBalanceLabel();
+        label += String.Newline + self.buildPlayerHealthLabel();
+        armorLabel = self.buildPlayerArmorLabel();
+        if (armorLabel != "")
+        {
+            label += " | " + armorLabel;
+        }
+        label += String.Newline + self.buildPlayerAbilitiesLabel();
+
+        label += String.Newline + self.buildAvailableWeaponsLabel();
+
+        playerItemsLabel = self.buildPlayerItemsLabel();
+        if (playerItemsLabel != "")
+        {
+            label += String.Newline + playerItemsLabel;
+        }
+
+        label += String.Newline + HTML.Color("[" + Input.GetKeyName(KeyBindsEnum.GENERAL_CHANGECHARACTER)+ "] Switch Team", ColorEnum.PastelOrange);
+
+        return label;
+    }
+
+    function buildPlayerBalanceLabel()
+    {
+        return "Balance: " + PlayerProxy.GetBalance() + "G";
+    }
+
+    function buildPlayerHealthLabel()
+    {
+        label = "Health: " + PlayerProxy.GetCurrentHealthWithoutArmor() + "/" + PlayerProxy.GetMaxHealthWithoutArmor();
+        percentLeft = PlayerProxy.GetCurrentHealth() / PlayerProxy.GetMaxHealth();
+        if (percentLeft < 0.3)
+        {
+            label = HTML.Color(label, ColorEnum.RedTeam);
+        }
+        elif (percentLeft < 0.6)
+        {
+            label = HTML.Color(label, ColorEnum.Palegoldenrod);
+        }
+        return label;
+    }
+
+    function buildPlayerArmorLabel()
+    {
+        armor = PlayerProxy.GetArmorDurability();
+        if (armor > 0)
+        {
+            return "Armor: " + armor;
+        }
+
+        return "";
+    }
+
+    function buildPlayerItemsLabel()
+    {
+        label = "";
+        
+        fragGrenadesCount = PlayerProxy.GetThrowables(ThrowableEnum.FRAG_GRENADE);
+        if (fragGrenadesCount > 0)
+        {
+            label += String.Newline + "[" + Input.GetKeyName(InputManager.ThrowFragGrenade) + "] Frag Grenade: " + fragGrenadesCount;
+        }
+
+        if (PlayerProxy.HasBomb())
+        {
+            label += String.Newline + HTML.Color("Bomb", ColorEnum.RedTeam);
+        }
+
+        if (PlayerProxy.HasDefuseKit())
+        {
+            label += String.Newline + HTML.Color("Defuse Kit", ColorEnum.BlueTeam);
+        }
+
+        if (label != "")
+        {
+            label = "Items:" + label;
+        }
+
+        return label;
+    }
+
+    function buildPlayerAbilitiesLabel()
+    {
+        label = "";
+        for (a in PlayerProxy.GetAbilities())
+        {
+            label += String.Newline + a.GetName();
+            infoStr = a.GetInfoString();
+            if (infoStr != "")
+            {
+                label += " " + infoStr;
+            }
+        }
+
+        if (label == "")
+        {
+            return "";
+        }
+
+        label = "Abilities:" + label;
+        return label;
+    }
+
+    function buildAvailableWeaponsLabel()
+    {
+        label = "";
+        primaryWeapon = PlayerProxy.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY);
+        if (primaryWeapon != null)
+        {
+            weaponLabel = self.buildWeaponChangeLabel(InputManager.SelectWeapon1, primaryWeapon.GetName());
+            special = primaryWeapon.GetSpecial();
+            if (special != null && special.GetName() != null && special.GetName() != "")
+            {
+                weaponLabel += " | " + special.GetName();
+            }
+
+            for (addon in primaryWeapon.GetAddons())
+            {
+                weaponLabel += " | " + addon.GetName();
+                infoStr = addon.GetInfoString();
+                if (infoStr != "")
+                {
+                    weaponLabel += " " + infoStr;
+                }
+            }
+
+            if (primaryWeapon == PlayerProxy._selectedWeapon)
+            {
+                weaponLabel = HTML.Color(weaponLabel, ColorEnum.DarkkhakiGreen);
+            }
+
+            label += weaponLabel;
+        }
+
+        secondaryWeapon = PlayerProxy.GetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY);
+        if (secondaryWeapon != null)
+        {
+            weaponLabel = self.buildWeaponChangeLabel(InputManager.SelectWeapon2, secondaryWeapon.GetName());
+            human = PlayerProxy.GetHuman();
+            if (human != null)
+            {
+                special = secondaryWeapon.GetSpecial();
+                if (special != null)
+                {
+                    weaponLabel += " | " + special.GetName();
+                    infoStr = special.GetInfoString();
+                    if (infoStr != "")
+                    {
+                        weaponLabel += " " + infoStr;
+                    }
+                }
+                weaponLabel += " | Ammo: " + PlayerProxy._lastRounds + "/" + PlayerProxy._lastAmmo;
+            }
+
+            for (addon in secondaryWeapon.GetAddons())
+            {
+                weaponLabel += " | " + addon.GetName();
+                infoStr = addon.GetInfoString();
+                if (infoStr != "")
+                {
+                    weaponLabel += " " + infoStr;
+                }
+            }
+
+            if (secondaryWeapon == PlayerProxy._selectedWeapon)
+            {
+                weaponLabel = HTML.Color(weaponLabel, ColorEnum.DarkkhakiGreen);
+            }
+
+            label += String.Newline + weaponLabel;
+        }
+
+        return label;
+    }
+
+    function buildWeaponChangeLabel(keybind, weapon)
+    {
+        return "[" + Input.GetKeyName(keybind) + "] Select " + weapon;
+    }
+
+    function updatePlayersHighlightning()
+    {
+        if (self.GameMode == GameModeEnum.DEATHMATCH)
+        {
+            return;
+        }
+
+        for (human in Game.PlayerHumans)
+        {
+            highlight = self._highlights.Get(human.Player.ID, null);
+            if (highlight == null)
+            {
+                highlightRef = null;
+                if (human.Team == TeamEnum.BLUE)
+                {
+                    highlightRef = self._blueHighlightRef;
+                }
+                elif (human.Team == TeamEnum.RED)
+                {
+                    highlightRef = self._redHighlightRef;
+                }
+
+                if (highlightRef != null)
+                {
+                    highlight = Map.CopyMapObject(highlightRef, false);
+                    self._highlights.Set(human.Player.ID, highlight);
+                }
+            }
+
+            if (highlight != null)
+            {
+                highlight.Position = human.Position;
+            }
+        }
+    }
+
+    function updatePlayersHitboxes()
+    {
+        for (human in Game.PlayerHumans)
+        {
+            if (!human.IsMine)
+            {
+                hitboxHead = self._hitboxes.Get(human.Player.ID, null);
+                if (hitboxHead == null)
+                {
+                    hitboxHeadRef = self._hitboxHeadRef;
+                    if (hitboxHeadRef != null)
+                    {
+                        hitboxHead = Map.CopyMapObject(hitboxHeadRef, false);
+                        self._hitboxes.Set(human.Player.ID, hitboxHead);
+                        self._hitboxHumans.Set(hitboxHead.ID, human);
+                    }
+                }
+
+                if (hitboxHead != null)
+                {
+                    baseOffset = Vector3(0, 1.4, 0);
+                    horizontalVelocityMagnitude = Math.Sqrt(human.Velocity.X * human.Velocity.X + human.Velocity.Z * human.Velocity.Z);
+                    if (horizontalVelocityMagnitude > 0.2 || human.State == "Land")
+                    {
+                        # thetaRadians = human.Rotation.Y;
+                        # forwardVector = Vector3(Math.Sin(thetaRadians), 0, Math.Cos(thetaRadians));
+                        forwardVector = Vector3.GetRotationDirection(human.Rotation, Vector3.Forward);
+                        offsetAmount = 0.5;
+                        rotationOffset = forwardVector.Scale(offsetAmount);
+                        baseOffset.X = baseOffset.X + rotationOffset.X;
+                        baseOffset.Y = baseOffset.Y + rotationOffset.Y - 0.3;
+                        baseOffset.Z = baseOffset.Z + rotationOffset.Z;
+                    }
+
+                    hitboxHead.Position = Vector3(
+                        human.Position.X + baseOffset.X,
+                        human.Position.Y + baseOffset.Y,
+                        human.Position.Z + baseOffset.Z
+                    );
+                }
+            }
+        }
+    }
+
+    function printGameInfo()
+    {
+        text = HTML.Color("Counter Strike in AoTTG before GTA VI", ColorEnum.PastelYellow)
+                + String.Newline
+                + HTML.Color("Credits:", ColorEnum.PastelBlue) 
+                + String.Newline
+                + "- " + HTML.Color("Jagerente", ColorEnum.White) + HTML.Color(": Custom Logic, Map Adapting and Enhancing", ColorEnum.PastelCream)
+                ;
+        if (self.Map == MapEnum.DE_DUST)
+        {
+            text += String.Newline
+                + "- " + HTML.Color("Dimenshion", ColorEnum.White)+ HTML.Color(": Original Map.", ColorEnum.PastelCream);
+        }
+        elif (self.Map == MapEnum.ASSAULT)
+        {
+            text += String.Newline
+                + "- " + HTML.Color("cowcowtony", ColorEnum.White)+ HTML.Color(": Original AoTTG 1 Map.", ColorEnum.PastelCream);
+        }
+
+        Game.Print(text);
+    }
+
+    function initRouter()
+    {
+        Router.RegisterHandler(GetDamageMessage.TOPIC, GetDamageMessageHandler());
+        Router.RegisterHandler(ThrowGrenadeMessage.TOPIC, ThrowGrenadeMessageHandler());
+        Router.RegisterHandler(HostageEscortRequestMessage.TOPIC, HostageEscortRequestMessageHandler());
+        Router.RegisterHandler(SyncRoomDataMessage.TOPIC, SyncRoomDataMessageHandler());
+        Router.RegisterHandler(SyncAllRoomDataMessage.TOPIC, SyncAllRoomDataMessageHandler());
+        Router.RegisterHandler(RoundEndMessage.TOPIC, RoundEndMessageHandler());
+    }
+}
+
+extension PlayerProxy
+{
+    _lastGas = null;
+    _lastBlades = null;
+    _lastBladesDurability = null;
+    _lastRounds = null;
+    _lastAmmo = null;
+
+    _selectedWeapon = null;
+    _previousSelectedWeapon = null;
+    _justBoughtWeapons = Dict();
+    _abilities = List();
+    _currentCharacter = null;
+
+    function InitUser()
+    {
+        if (Main.AirMovementPreset != AirMovementPreset.NONE)
+        {
+            airMovement = AirMovementAbility(
+                Main.AirMovementForceMultiplier / 100.0,
+                Main.AirMovementForceType,
+                Main.GravityMultiplier / 100.0,
+                Main.MaxAirSpeed / 100.0
+            );
+            
+            if (Main.AirMovementPreset == AirMovementPreset.DEFAULT)
+            {
+                airMovement.SetDefaultSettings();
+            }
+            elif (Main.AirMovementPreset == AirMovementPreset.QUAKE)
+            {
+                airMovement.SetQuakeSettings();
+            }
+            self.AddAbility(airMovement);
+        }
+
+        if (Main.BunnyHop)
+        {
+            self.AddAbility(BunnyHopAbility(0.2));
+        }
+        PlayerProxy.AddAbility(AirDashAbility(Main.AirDashForce/100.0, Main.AirDashCooldown));
+        if (!self.IsInited())
+        {
+            self.SetBalance(Main.StartBalance);
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY, null);
+            self.RemoveThrowables();
+            self.SetInited();
+        }
+
+        if (self.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY) == null)
+        {
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));        
+        }
+    }
+
+    function IsInited()
+    {
+        return Network.MyPlayer.GetCustomProperty("inited") == 1;
+    }
+
+    function SetInited()
+    {
+        Network.MyPlayer.SetCustomProperty("inited", 1);
+    }
+
+    function ResetInited()
+    {
+        Network.MyPlayer.SetCustomProperty("inited", 0);
+    }
+
+    function GetHuman()
+    {
+        return self._currentCharacter;
+    }
+
+    function GetTeam()
+    {
+        return Network.MyPlayer.Team;
+    }
+
+    function OnSpawn(character)
+    {
+        self._currentCharacter = character;
+        self.InitUser();
+
+        if (Main.GameMode == GameModeEnum.BOMB_PLANT)
+        {
+            if (self.GetTeam() == TeamEnum.RED)
+            {
+                self.AddBomb();
+                self.RemoveDefuseKit();
+            }
+            elif (self.GetTeam() == TeamEnum.BLUE)
+            {
+                self.RemoveBomb();
+            }
+        }
+        else
+        {
+            self.RemoveBomb();
+            self.RemoveDefuseKit();
+        }
+
+        self.SetMaxHealth(Main.MaxHealth + self.GetArmorDurability());
+        self.SetCurrentHealth(self.GetMaxHealth());
+        
+        if (!self.SelectWeapon(ItemSlotEnum.WEAPON_SECONDARY))
+        {
+            if (!self.SelectWeapon(ItemSlotEnum.WEAPON_PRIMARY))
+            {
+                Game.Print(
+                    HTML.Color(
+                        "TELL ABOUT THIS LOG TO JAGERENTE!!!" 
+                        + String.Newline 
+                        + "Failed to Select Weapon: " + Main._weapons
+                        , ColorEnum.PastelRed
+                    )
+                );
+            }
+        }
+    }
+
+    function OnDamaged(damage)
+    {
+        self.DecreaseArmorDurability(damage);
+    }
+
+    function OnDie()
+    {
+        self.ResetArmor();
+        if (Main.GameMode != GameModeEnum.DEATHMATCH)
+        {
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY, null);
+        }
+        self.RemoveDefuseKit();
+        self.RemoveBomb();
+        self.RemoveThrowables();
+        self._abilities.Clear();
+        self._justBoughtWeapons.Clear();
+        self._selectedWeapon = null;
+        self._previousSelectedWeapon = null;
+        self._lastGas = null;
+        self._lastBlades = null;
+        self._lastBladesDurability = null;
+        self._lastRounds = null;
+        self._lastAmmo = null;
+        self._currentCharacter = null;
+    }
+
+    function OnTick()
+    {
+        if (self.IsAlive())
+        {
+            for (a in self._abilities)
+            {
+                a.OnTickHandler();
+            }
+
+            if (self._selectedWeapon != null)
+            {
+                self._selectedWeapon.OnTickHandler();
+            }
+        }
+    }
+
+    function OnFrame()
+    {
+        if (self.IsAlive())
+        {
+            for (a in self._abilities)
+            {
+                a.OnFrameHandler();
+            }
+
+            self.syncGas();
+            self.syncAmmo();
+            self._previousSelectedWeapon = self._selectedWeapon;
+
+            primaryWeapon = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY);
+            if (primaryWeapon != null)
+            {
+                primaryWeapon.OnFrameBGHandler();
+            }
+            secondaryWeapon = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY);
+            if (secondaryWeapon != null)
+            {
+                secondaryWeapon.OnFrameBGHandler();
+            }
+
+            if (self._selectedWeapon != null)
+            {
+                self._selectedWeapon.OnFrameHandler();
+                self._justBoughtWeapons.Set(self._selectedWeapon.GetID(), false);
+            }
+
+            if (Main.GameMode == GameModeEnum.HOSTAGE && Network.MyPlayer.Team == TeamEnum.RED)
+            {
+                startPos = Camera.Position + Camera.Forward.Normalized * 0.7;
+                endPos = startPos + Camera.Forward.Normalized * 3;
+
+                res = Physics.LineCast(
+                    startPos, 
+                    endPos, 
+                    CollideWithEnum.TITANS
+                );
+                if (res != null)
+                {
+                    UI.SetLabelForTime(UILabelTypeEnum.MIDDLECENTER, "Press [" + Input.GetKeyName(InputManager.EscortHostage) + "] to escort the hostage.", 0.1);
+                    if (Input.GetKeyDown(InputManager.EscortHostage))
+                    {
+                        Main.SendHostageEscortRequestMessage(res.Collider.ViewID);
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(InputManager.SelectWeapon1))
+            {
+                PlayerProxy.SelectWeapon(ItemSlotEnum.WEAPON_PRIMARY);
+            }
+            elif (Input.GetKeyDown(InputManager.SelectWeapon2))
+            {
+                PlayerProxy.SelectWeapon(ItemSlotEnum.WEAPON_SECONDARY);
+            }
+            elif (Input.GetKeyDown(InputManager.ThrowFragGrenade))
+            {
+                if (self.GetThrowables(ThrowableEnum.FRAG_GRENADE) > 0)
+                {
+                    FragGrenadeThrowable.Throw();
+                    self.DecreaseThrowable(ThrowableEnum.FRAG_GRENADE);
+                }
+            }
+        }
+    }
+
+    function GetAbilities()
+    {
+        return self._abilities;
+    }
+
+    function AddAbility(a)
+    {
+        self._abilities.Add(a);
+    }
+
+    function GetThrowables(name)
+    {
+        count = Network.MyPlayer.GetCustomProperty("throwables:" + name);
+        if (count == null)
+        {
+            return 0;
+        }
+
+        return Math.Max(0, count);
+    }
+
+    function SetThrowables(name, count)
+    {
+        Network.MyPlayer.SetCustomProperty("throwables:" + name, Math.Max(0, count));
+    }
+
+    function AddThrowable(name)
+    {
+        self.SetThrowables(name, self.GetThrowables(name) + 1);
+    }
+
+    function DecreaseThrowable(name)
+    {
+        self.SetThrowables(name, self.GetThrowables(name) - 1);
+    }
+
+    function RemoveThrowables()
+    {
+        self.SetThrowables(ThrowableEnum.FRAG_GRENADE, 0);
+    }
+    
+
+    function HasWatchedGuide()
+    {
+        return Network.MyPlayer.GetCustomProperty("watched_guide") == 1;
+    }
+    
+    function SetWatchedGuide()
+    {
+        Network.MyPlayer.SetCustomProperty("watched_guide", 1);
+    }
+
+    function GetBalance()
+    {
+        balance = Network.MyPlayer.GetCustomProperty("balance");
+        if (balance == null)
+        {
+            balance = 0;
+        }
+
+        return balance;
+    }
+
+    function SetBalance(value)
+    {
+        Network.MyPlayer.SetCustomProperty("balance", Math.Clamp(value, 0, 16000));
+    }
+
+    function IncreaseBalance(value)
+    {
+        Network.MyPlayer.SetCustomProperty("balance", Math.Min(16000, self.GetBalance() + value));
+    }
+
+    function DecreaseBalance(value)
+    {
+        Network.MyPlayer.SetCustomProperty("balance", Math.Max(0, self.GetBalance() - value));
+    }
+
+    function GetStatus()
+    {
+        return Network.MyPlayer.Status;
+    }
+
+    function IsAlive()
+    {
+        return Network.MyPlayer.Status == PlayerStatusEnum.ALIVE && self.GetHuman() != null;
+    }
+
+    function GetWeaponInSlot(slot)
+    {
+        weaponID = Network.MyPlayer.GetCustomProperty("weapon:" + slot);
+        return Main._weapons.Get(weaponID, null);
+    }
+
+    function HasDefuseKit()
+    {
+        return Network.MyPlayer.GetCustomProperty("inventory:defuse_kit") == 1;
+    }
+
+    function AddDefuseKit()
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:defuse_kit", 1);
+        for (plant in Main._bombPlantRegions)
+        {
+            plant.DEFUSE_DELAY = Main.DefuseDelayWithKit;
+            plant._defuseTimer.Reset(Main.DefuseDelayWithKit);
+        }
+    }
+
+    function RemoveDefuseKit()
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:defuse_kit", 0);
+        for (plant in Main._bombPlantRegions)
+        {
+            plant.DEFUSE_DELAY = Main.DefuseDelay;
+            plant._defuseTimer.Reset(Main.DefuseDelay);
+        }
+    }
+
+    function GetArmorDurability()
+    {
+        armor = Network.MyPlayer.GetCustomProperty("inventory:armor");
+        if (armor == null)
+        {
+            return 0;
+        }
+
+        return armor;
+    }
+
+    function SetArmorDurability(value)
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:armor", value);
+        self.SetMaxHealth(Main.MaxHealth + value);
+        self.SetCurrentHealth(self.GetCurrentHealth() + value);
+    }
+
+    function ResetArmor()
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:armor", 0);
+    }
+
+    function DecreaseArmorDurability(value)
+    {
+        Network.MyPlayer.SetCustomProperty(
+            "inventory:armor", 
+            Math.Max(0, self.GetArmorDurability() - value)
+        );
+    }
+
+    function HasBomb()
+    {
+        return Network.MyPlayer.GetCustomProperty("inventory:bomb") == 1;
+    }
+
+    function AddBomb()
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:bomb", 1);
+    }
+
+    function RemoveBomb()
+    {
+        Network.MyPlayer.SetCustomProperty("inventory:bomb", 0);
+    }
+
+    function SetWeaponInSlot(slot, weapon)
+    {
+        weaponID = "";
+        if (weapon != null)
+        {
+            weaponID = weapon.GetID();
+            self._justBoughtWeapons.Set(weaponID, true);
+        }
+        Network.MyPlayer.SetCustomProperty("weapon:" + slot, weaponID);
+    }
+
+    function GetSelectedWeapon()
+    {
+        return self._selectedWeapon;
+    }
+
+    function SelectWeapon(slot)
+    {
+        if (!self.IsAlive())
+        {
+            return false;
+        }
+
+        human = self.GetHuman();
+        weapon = self.GetWeaponInSlot(slot);
+        if (weapon == null)
+        {
+            return false;
+        }
+
+        if (weapon == self._selectedWeapon && !self._justBoughtWeapons.Get(weapon.GetID(), true))
+        {
+            return true;
+        }
+        
+        human.SetWeapon(weapon.GetBaseWeapon());
+        special = weapon.GetSpecial();
+        if (special != null)
+        {
+            human.SetSpecial(special.GetBaseID());
+        }
+        customDamage = weapon.GetCustomDamage();
+        if (customDamage > 0)
+        {
+            human.CustomDamageEnabled = true;
+            human.CustomDamage = customDamage;
+        }
+        if (weapon.GetMaxRounds() > 0)
+        {
+            if (slot == ItemSlotEnum.WEAPON_PRIMARY)
+            {
+                human.MaxBladeDurability = Convert.ToFloat(weapon.GetMaxRounds());
+                human.CurrentBladeDurability = human.MaxBladeDurability;
+            }
+            else
+            {
+                human.MaxAmmoRound = weapon.GetMaxRounds();
+                human.CurrentAmmoRound = human.MaxAmmoRound;
+            }
+        }
+        if (weapon.GetMaxAmmo() > 0)
+        {
+            if (slot == ItemSlotEnum.WEAPON_PRIMARY)
+            {
+                human.MaxBlade = weapon.GetMaxAmmo();
+                human.CurrentBlade = human.MaxBlade;
+            }
+            else
+            {
+                human.MaxAmmoTotal = weapon.GetMaxAmmo();
+                human.CurrentAmmoLeft = human.MaxAmmoTotal;
+            }
+        }
+
+        self._selectedWeapon = weapon;
+        return true;
+    }
+
+    function AddWeapon(weaponID)
+    {
+        weapon = Main._weapons.Get(weaponID, null);
+        if (weapon == null)
+        {
+            return;
+        }
+
+        self.SetWeaponInSlot(weapon.GetSlot(), weapon);
+
+        if (!self.IsAlive())
+        {
+            return;
+        }
+
+        human = self.GetHuman();
+        if (human == null)
+        {
+            return;
+        }
+
+        self.SelectWeapon(weapon.GetSlot());
+    }
+
+    function GetSpecial()
+    {
+        human = self.GetHuman();
+        if (human == null)
+        {
+            return SpecialEnum.NONE;
+        }
+
+        return human.CurrentSpecial;
+    }
+
+    function SetSpecial(special)
+    {
+        human = self.GetHuman();
+        if (human == null)
+        {
+            return;
+        }
+
+        human.SetSpecial(special);
+    }
+
+    function GetMaxHealth()
+    {
+        if (Network.MyPlayer == null || Network.MyPlayer.Character == null)
+        {
+            return 0;
+        }
+
+        return Network.MyPlayer.Character.MaxHealth;
+    }
+    
+    function GetMaxHealthWithoutArmor()
+    {
+        return Main.MaxHealth;
+    }
+
+    function SetMaxHealth(health)
+    {
+        Network.MyPlayer.Character.MaxHealth = health;
+    }
+
+    function GetCurrentHealth()
+    {
+        if (Network.MyPlayer == null || Network.MyPlayer.Character == null)
+        {
+            return 0;
+        }
+
+        return Network.MyPlayer.Character.Health;
+    }
+
+    function GetCurrentHealthWithoutArmor()
+    {
+        return self.GetCurrentHealth() - self.GetArmorDurability();
+    }
+
+    function SetCurrentHealth(health)
+    {
+        Network.MyPlayer.Character.Health = health;
+    }
+
+    function syncGas()
+    {
+        human = self.GetHuman();
+        if (self._lastGas == null)
+        {
+            self._lastGas = human.CurrentGas;
+        }
+        elif (self._lastGas < human.CurrentGas && self._previousSelectedWeapon != self._selectedWeapon)
+        {
+            human.CurrentGas = self._lastGas;
+        }
+        else
+        {
+            self._lastGas = human.CurrentGas;
+        }
+    }
+
+    function syncAmmo()
+    {
+        if (self._selectedWeapon != null)
+        {
+            if (self._selectedWeapon.GetSlot() == ItemSlotEnum.WEAPON_PRIMARY)
+            {
+                self.syncBlades();
+            }
+            else
+            {
+                self.syncGuns();
+            }
+        }
+    }
+
+    function syncBlades()
+    {
+        human = self.GetHuman();
+
+        weaponID = self._selectedWeapon.GetID();
+        isNew = self._justBoughtWeapons.Get(weaponID, true);
+        if (self._lastBladesDurability == null)
+        {
+            self._lastBladesDurability = human.CurrentBladeDurability;
+        }
+        elif (self._lastBladesDurability < human.CurrentBladeDurability && self._previousSelectedWeapon != self._selectedWeapon && !isNew)
+        {
+            human.CurrentBladeDurability = self._lastBladesDurability;
+        }
+        else
+        {
+            self._lastBladesDurability = human.CurrentBladeDurability;
+        }
+
+        if (self._lastBlades == null)
+        {
+            self._lastBlades = human.CurrentBlade;
+        }
+        elif (self._lastBlades < human.CurrentBlade && self._previousSelectedWeapon != self._selectedWeapon && !isNew)
+        {
+            human.CurrentBlade = self._lastBlades;
+        }
+        else
+        {
+            self._lastBlades = human.CurrentBlade;
+        }
+    }
+
+    function syncGuns()
+    {
+        human = self.GetHuman();
+
+        weaponID = self._selectedWeapon.GetID();
+        isNew = self._justBoughtWeapons.Get(weaponID, true);
+
+        if (self._lastRounds == null)
+        {
+            self._lastRounds = human.CurrentAmmoRound;
+        }
+        elif (self._lastRounds < human.CurrentAmmoRound && self._previousSelectedWeapon != self._selectedWeapon && !isNew)
+        {
+            human.CurrentAmmoRound = self._lastRounds;
+        }
+        else
+        {
+            self._lastRounds = human.CurrentAmmoRound;
+        }
+
+        if (self._lastAmmo == null)
+        {
+            self._lastAmmo = human.CurrentAmmoLeft;
+        }
+        elif (self._lastAmmo < human.CurrentAmmoLeft && self._previousSelectedWeapon != self._selectedWeapon && !isNew)
+        {
+            human.CurrentAmmoLeft = self._lastAmmo;
+        }
+        else
+        {
+            self._lastAmmo = human.CurrentAmmoLeft;
+        }
+    }
+}
+
+class HostageProxy
+{
+    _titan = null;
+    _escorter = null;
+    _escorted = false;
+    _locking = false;    
+    _lockingPos = Vector3();
+    _lockingTimer = Timer(0.0);
+
+    function Init(p, r, s)
+    {
+        self._titan = Game.SpawnTitanAt(TitanTypeEnum.PUNK, p, r);
+        self._titan.Size = s;
+        self._titan.DetectRange = 0;
+        self._titan.FocusRange = 0;
+        self._titan.UsePathfinding = false;
+        self._titan.RotateSpeed = 100.0;
+        self._titan.TurnSpeed = 100.0;
+    }
+
+    function GetViewID()
+    {
+        return self._titan.ViewID;
+    }
+
+    function Lock(pos, time)
+    {
+        self._lockingPos = pos;
+        self._lockingTimer.Reset(time);
+        self._locking = true;
+    }
+
+    function GetEscorter()
+    {
+        return self._escorter;
+    }
+
+    function SetEscorter(p)
+    {
+        self._escorter = p;
+    }
+
+    function IsEscorted()
+    {
+        return self._escorted;
+    }
+
+    function SetEscorted(b)
+    {
+        self._escorted = b;
+    }
+
+    function OnTick()
+    {
+        if (self._locking)
+        {
+            self._lockingTimer.UpdateOnTick();
+            if (self._lockingTimer.IsDone())
+            {
+                self._locking = false;
+            }
+            else {
+                self._titan.Position = self._lockingPos;
+            }
+            return;
+        }
+
+        if (
+            !self._escorted 
+            && self._escorter != null 
+            && self._escorter.Status == PlayerStatusEnum.ALIVE
+            && Vector3.Distance(self._escorter.Character.Position, self._titan.Position) > 3.0
+        )
+        {
+            self._titan.MoveTo(self._escorter.Character.Position, 3.0, true);
+        }
+        else
+        {
+            self._titan.Idle(Time.TickTime + 0.1);
+        }
+    }
+}
+
+#######################
+# ABILITIES
+#######################
+
+extension AirMovementPreset
+{
+    NONE = "None";
+    DEFAULT = "Default";
+    QUAKE = "Quake";
+}
+
+class AirMovementAbility
+{
+    _force = 1.0;
+    _forceType = "Force";
+    _gravityEffect = 9.81;
+    _maxAirSpeed = 15.0;
+
+    function Init(forceMultiplier, forceType, gravityMultiplier, maxAirSpeed)
+    {
+        self._force *= forceMultiplier;
+        self._forceType = forceType;
+        self._gravityEffect = 9.81 * gravityMultiplier;
+        self._maxAirSpeed = maxAirSpeed;
+    }
+
+    function GetName()
+    {
+        return "Air Movement";
+    }
+
+    function GetInfoString()
+    {
+        return "";
+    }
+
+    function SetDefaultSettings()
+    {
+        self._force = 50.0;
+        self._forceType = ForceModeEnum.FORCE;
+        self._gravityEffect = 9.81;
+        self._maxAirSpeed = 15.0;
+    }
+
+    function SetQuakeSettings()
+    {
+        self._force = 10.0;
+        self._forceType = ForceModeEnum.IMPULSE;
+        self._gravityEffect = 9.81;
+        self._maxAirSpeed = 15.0;
+    }
+
+    function OnTickHandler()
+    {
+        h = PlayerProxy.GetHuman();
+        if (h == null)
+        {
+            return;
+        }
+
+        position = h.Position + Vector3(0, 0.5, 0);
+        targetPosition = Vector3(position.X, position.Y - 5, position.Z);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+
+        isInAir = res == null || res.Distance > 0.6;
+        cameraForward = Camera.Forward.Normalized;
+        cameraLeft = Vector3.Cross(cameraForward, Vector3(0, 1, 0)).Normalized;
+
+        cameraForward = Vector3(cameraForward.X, 0, cameraForward.Z).Normalized;
+        cameraLeft = Vector3(cameraLeft.X, 0, cameraLeft.Z).Normalized;
+
+        if (isInAir)
+        {
+            h.AddForce(Vector3(0, self._gravityEffect * -1, 0), ForceModeEnum.FORCE);
+
+            movementForce = Vector3(0, 0, 0);
+            currentVelocity = h.Velocity;
+
+            forwardVelocity = Vector3.Dot(currentVelocity, cameraForward);
+            leftVelocity = Vector3.Dot(currentVelocity, cameraLeft);
+
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_FORWARD))
+            {
+                if (forwardVelocity < self._maxAirSpeed)
+                {
+                    movementForce += cameraForward * self._force;
+                }
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_BACK))
+            {
+                if (forwardVelocity > self._maxAirSpeed * -1)
+                {
+                    movementForce += cameraForward * self._force * -1;
+                }
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_LEFT))
+            {
+                if (leftVelocity < self._maxAirSpeed)
+                {
+                    movementForce += cameraLeft * self._force;
+                }
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_RIGHT))
+            {
+                if (leftVelocity > self._maxAirSpeed * -1)
+                {
+                    movementForce += cameraLeft * self._force * -1;
+                }
+            }
+
+            if (movementForce != Vector3(0, 0, 0))
+            {
+                h.AddForce(movementForce, self._forceType);
+            }
+        }
+    }
+
+    function OnFrameHandler()
+    {
+        
+    }
+}
+
+class AirDashAbility
+{
+    _force = 1.0;
+    _cooldown = 1.0;
+    _cdTimer = Timer(0.0);
+
+    function Init(forceMultiplier, cooldown)
+    {
+        self._force *= forceMultiplier;
+        self._cooldown = cooldown;
+        self._cdTimer = Timer(0.0);
+    }
+
+    function GetName()
+    {
+        return "Air Dash";
+    }
+
+    function GetInfoString()
+    {
+        text =  "[" + Input.GetKeyName(InputManager.AirDash) + "] | [" + Input.GetKeyName(InputManager.AirDashDown) + "] Down";
+
+        cd = self._cdTimer.GetTime();
+        if (cd < self._cooldown && cd > 0)
+        {
+            text +=  " | Cooldown: " + String.FormatFloat(cd, 2);
+        }
+
+        return text;
+    }
+
+    function OnFrameHandler()
+    {
+        h = PlayerProxy.GetHuman();
+        if (h == null)
+        {
+            return;
+        }
+
+        self._cdTimer.UpdateOnFrame();
+
+        if (!self._cdTimer.IsDone())
+        {
+            return;
+        }
+
+        position = h.Position + Vector3(0, 0.5, 0);
+        targetPosition = Vector3(position.X, position.Y - 5, position.Z);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+
+        isInAir = res == null || res.Distance > 0.6;
+        if (isInAir)
+        {
+            movementForce = Vector3(0, 0, 0);
+            cameraForward = Camera.Forward.Normalized;
+            cameraLeft = Vector3.Cross(cameraForward, Vector3(0, 1, 0)).Normalized;
+            cameraUp = Vector3(0, 1, 0);
+            cameraDown = Vector3(0, -1, 0);
+
+            # animation = "Armature|dash";
+            directionPressed = false;
+
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_FORWARD) && Input.GetKeyDown(InputManager.AirDash))
+            {
+                movementForce += cameraForward * self._force;
+                # animation = "Armature|air_release";
+                directionPressed = true;
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_BACK) && Input.GetKeyDown(InputManager.AirDash))
+            {
+                movementForce += cameraForward * -1 * self._force;
+                directionPressed = true;
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_LEFT) && Input.GetKeyDown(InputManager.AirDash))
+            {
+                movementForce += cameraLeft * self._force;
+                directionPressed = true;
+            }
+            if (Input.GetKeyHold(KeyBindsEnum.GENERAL_RIGHT) && Input.GetKeyDown(InputManager.AirDash))
+            {
+                movementForce += cameraLeft * -1 * self._force;
+                directionPressed = true;
+            }
+            if (Input.GetKeyDown(InputManager.AirDashDown))
+            {
+                movementForce += cameraDown * self._force;
+                # animation = "Armature|air2_backward";
+                directionPressed = true;
+            }
+
+            if (!directionPressed && Input.GetKeyDown(InputManager.AirDash))
+            {
+                movementForce += cameraUp * self._force;
+                # animation = "Armature|air_release";
+            }
+
+            if (movementForce != Vector3(0, 0, 0))
+            {
+                h.AddForce(movementForce, ForceModeEnum.IMPULSE);
+                # h.PlayAnimation(animation);
+                self._cdTimer.Reset(self._cooldown);
+            }
+        }
+    }
+}
+
+class BunnyHopAbility
+{
+    _bunnyHopTimer = Timer(0.0);
+    _landingVelocity = Vector3(0, 0, 0);
+    _maxBunnyHopDelay = 0.2;
+    _isInAir = false;
+    _wasInAir = false;
+
+    function Init(maxBunnyHopDelay)
+    {
+        self._maxBunnyHopDelay = maxBunnyHopDelay;
+    }
+
+    function GetName()
+    {
+        return "Bunny Hop";
+    }
+
+    function GetInfoString()
+    {
+        return "[" + Input.GetKeyName(KeyBindsEnum.HUMAN_JUMP) + "] (hold)";
+    }
+
+    function OnTickHandler()
+    {
+        
+    }
+
+    function OnFrameHandler()
+    {
+        self._bunnyHopTimer.UpdateOnFrame();
+
+
+        h = PlayerProxy.GetHuman();
+        if (h == null)
+        {
+            return;
+        }
+
+        position = h.Position + Vector3(0, 0.5, 0);
+        targetPosition = Vector3(position.X, position.Y - 0.67, position.Z);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+
+        self._isInAir = res == null
+                        || res.Collider.Name == "BombPlantRegion" 
+                        || res.Collider.Name == "ShoppingRegion" 
+                        || res.Collider.Name == "ExplosionKillRegion"
+                        || res.Collider.Name == "TeamTPRegion"
+                        || res.Collider.Name == "FragGrenade_ExplosionRegion"
+                        || res.Collider.Name == "FragGrenade"
+                        || res.Collider.Name == "HostageEscortRegion";
+
+        if (!self._isInAir && self._wasInAir)
+        {
+            self._landingVelocity = h.Velocity;
+            self._bunnyHopTimer.Reset(self._maxBunnyHopDelay);
+        }
+
+        self._wasInAir = self._isInAir;
+        
+        if (Input.GetKeyHold(KeyBindsEnum.HUMAN_JUMP) && !self._isInAir && !self._bunnyHopTimer.IsDone())
+        {
+            velY = self._landingVelocity.Y;
+            if (velY <= 0)
+            {
+                velY = 16.0;
+            }
+
+            reversedVelocity = Vector3(self._landingVelocity.X, velY, self._landingVelocity.Z);
+            h.Velocity = reversedVelocity;
+            self._bunnyHopTimer.Reset(0.0); 
+            h.PlaySound(PlayerSoundEnum.JUMP);
+        }
+    }
+}
+
+#######################
+# SHOPPING ITEMS
+#######################
+
+class ArmorShoppingItem
+{
+    _name = "Armor";
+    _price = 0;
+    _value = 0;
+    _amount = 1;
+
+    function Init(price, value)
+    {
+        self._price = price;
+        self._value = value;
+    }
+
+    function GetAmount()
+    {
+        return self._amount;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetPrice()
+    {
+        return self._price;
+    }
+
+    function Purchase()
+    {
+        self._amount -= 1;
+        PlayerProxy.SetArmorDurability(self._value);
+    }
+}
+
+class DefuseKitShoppingItem
+{
+    _name = "Defuse Kit";
+    _price = 0;
+    _amount = 1;
+
+    function Init(price)
+    {
+        self._price = price;
+    }
+
+    function GetAmount()
+    {
+        return self._amount;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetPrice()
+    {
+        return self._price;
+    }
+
+    function Purchase()
+    {
+        self._amount -= 1;
+        PlayerProxy.AddDefuseKit();
+    }
+}
+
+class FragGrenadeShoppingItem
+{
+    _name = "Frag Grenade";
+    _price = 0;
+    _amount = 3;
+    _weaponID = "";
+
+    function Init(price)
+    {
+        self._price = price;
+    }
+
+    function GetAmount()
+    {
+        return self._amount;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetPrice()
+    {
+        return self._price;
+    }
+
+    function Purchase()
+    {
+        self._amount -= 1;
+        PlayerProxy.AddThrowable(ThrowableEnum.FRAG_GRENADE);
+    }
+}
+
+class WeaponShoppingItem
+{
+    _name = "";
+    _price = 0;
+    _amount = 1;
+    _weaponID = "";
+
+    function Init(name, weaponID, price)
+    {
+        self._name = name;
+        self._price = price;
+        self._weaponID = weaponID;
+    }
+
+    function GetAmount()
+    {
+        return self._amount;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetPrice()
+    {
+        return self._price;
+    }
+
+    function Purchase()
+    {
+        self._amount -= 1;
+        PlayerProxy.AddWeapon(self._weaponID);
+    }
+}
+
+#######################
+# Throwables
+#######################
+
+extension ThrowableEnum
+{
+    FRAG_GRENADE = "frag_grenade";
+}
+
+extension FragGrenadeThrowable
+{
+    function Throw()
+    {
+        h = PlayerProxy.GetHuman();
+        direction = Vector3.GetRotationDirection(Camera.Rotation, Vector3.Forward).Normalized;
+        pitchAngleDegrees = Main.FragGrenadePitchDegrees / 100.0;
+        right = Vector3.Cross(direction, Vector3.Up).Normalized;
+        cosTheta = Math.Cos(pitchAngleDegrees);
+        sinTheta = Math.Sin(pitchAngleDegrees);
+        term1 = direction.Scale(cosTheta);
+        crossProduct = Vector3.Cross(right, direction);
+        term2 = crossProduct.Scale(sinTheta);
+
+        rotatedDirection = Vector3(
+            term1.X + term2.X,
+            term1.Y + term2.Y,
+            term1.Z + term2.Z
+        ).Normalized;
+
+        Main.SendThrowGrenadeMessage(h.Position, rotatedDirection, h.Velocity, Main.FragGrenadeForce / 100.0);
+    }
+}
+
+#######################
+# WEAPONS
+#######################
+
+class Weapon
+{
+    _id = "";
+    _name = "";
+    _baseWeapon = "";
+    _damage = -1;
+    _hsMultiplier = 1.0;
+    _maxRounds = -1;
+    _maxAmmo = -1;
+    _distance = -1;
+    _radius = -1;
+    _isAutomatic = false;
+    _shotDelayTimer = Timer(0.2);
+    _killReward = 0;
+    _slot = 0;
+    _special = null;
+    _addons = List();
+
+    function Init(
+        id, 
+        name, 
+        baseWeapon,
+        damage,
+        hsMultiplier,
+        maxRounds,
+        maxAmmo,
+        distance,
+        radius,
+        isAutomatic,
+        killReward,
+        slot,
+        special
+    )
+    {
+        self._id = id;
+        self._name = name;
+        self._baseWeapon = baseWeapon;
+        self._damage = damage;
+        self._hsMultiplier = hsMultiplier;
+        self._maxRounds = maxRounds;
+        self._maxAmmo = maxAmmo;
+        self._distance = distance;
+        if (distance > 0 && baseWeapon != WeaponEnum.BLADES && !isAutomatic)
+        {
+            self._maxRounds *= 2;
+            self._maxAmmo *= 2;
+        }
+        self._radius = radius;
+        self._isAutomatic = isAutomatic;
+        self._shotDelayTimer = Timer(0.3);
+        self._killReward = killReward;
+        self._slot = slot;
+        self._special = special;
+    }
+
+    function OnTickHandler()
+    {
+        for (addon in self._addons)
+        {
+            addon.OnTickHandler();
+        }
+    }
+
+    function OnFrameBGHandler()
+    {
+        for (addon in self._addons)
+        {
+            addon.OnFrameBGHandler();
+        }
+
+        special = self._special;
+        if (special != null)
+        {
+            special.OnFrameBGHandler();
+        }
+    }
+
+    function OnFrameHandler()
+    {
+        for (addon in self._addons)
+        {
+            addon.OnFrameHandler();
+        }
+
+        if (self._special != null)
+        {
+            self._special.OnFrameHandler();
+        }
+
+        human = PlayerProxy.GetHuman();
+        if (human == null)
+        {
+            return;
+        }
+
+        if (human.State == PlayerStateEnum.RELOAD)
+        {
+            return;
+        }
+
+        if (self._distance > 0 && Input.GetKeyDown(KeyBindsEnum.HUMAN_ATTACKDEFAULT))
+        {
+            if (human.CurrentAmmoRound < 1)
+            {
+                return;
+            }
+
+            if (self._id == CustomWeaponEnum.AWP)
+            {
+                human.PlaySound(PlayerSoundEnum.TSLAUNCH1);
+                human.PlaySound(PlayerSoundEnum.SLIDE);
+                human.PlaySound(PlayerSoundEnum.HOOKIMPACTLOUD);
+            }
+            elif (self._id == CustomWeaponEnum.MAG_7)
+            {
+                human.PlaySound(PlayerSoundEnum.AHSSGUNSHOTDOUBLE1);
+            }
+            elif (self._id == CustomWeaponEnum.MAGNUM)
+            {
+                human.PlaySound(PlayerSoundEnum.NOGAS);
+                human.PlaySound(PlayerSoundEnum.GUNEXPLODE);
+            }
+
+            human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
+
+            position = Camera.Position;
+
+            normalizedDirection = Camera.Forward.Normalized;
+
+            offset = normalizedDirection * 3;
+            startPosition = position + offset;
+
+            targetPosition = position + normalizedDirection * self._distance;
+
+            headShotRes = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.MAP_OBJECTS);
+            if (headShotRes != null)
+            {
+                obj = headShotRes.Collider;
+                if (obj.Name == "Hitbox_HEAD")
+                {
+                    targetHuman = Main._hitboxHumans.Get(obj.ID, null);
+                    if (
+                        targetHuman != null 
+                        && (
+                            targetHuman.Team != human.Team
+                            || human.Team == TeamEnum.NONE 
+                            || targetHuman.Team == TeamEnum.NONE
+                        )
+                    )
+                    {
+                        Main.SendGetDamageMessage(targetHuman.Player, self._damage * self._hsMultiplier);
+                        Game.ShowKillScore(self._damage * self._hsMultiplier);
+                        return;
+                    }
+                }
+            }
+            res = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.HUMANS);
+            if (res != null)
+            {
+                obj = res.Collider;
+                if (
+                    obj.Type == "Human" 
+                    && (
+                            obj.Team != human.Team
+                            || human.Team == TeamEnum.NONE 
+                            || obj.Team == TeamEnum.NONE
+                    )
+                )
+                {
+                    Main.SendGetDamageMessage(obj.Player, self._damage);
+                    Game.ShowKillScore(self._damage);
+                    return;
+                }
+            }
+        }
+        elif(Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKDEFAULT) && self._distance > 0 && self._isAutomatic)
+        {
+            self._shotDelayTimer.UpdateOnFrame();
+            if (!self._shotDelayTimer.IsDone())
+            {
+                return;
+            }
+
+            self._shotDelayTimer.Reset(0.3);
+            human = PlayerProxy.GetHuman();
+            if (human.CurrentAmmoRound <= 0)
+            {
+                return;
+            }
+
+            human.PlaySound(APGSoundSequence.GetSound());
+            human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
+
+            position = Camera.Position;
+
+            normalizedDirection = Camera.Forward.Normalized;
+
+            offset = normalizedDirection * 3;
+            startPosition = position + offset;
+
+            targetPosition = position + normalizedDirection * self._distance;
+
+            headShotRes = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.MAP_OBJECTS);
+            if (headShotRes != null)
+            {
+                obj = headShotRes.Collider;
+                if (obj.Name == "Hitbox_HEAD")
+                {
+                    targetHuman = Main._hitboxHumans.Get(obj.ID, null);
+                    if (
+                        targetHuman != null 
+                        && (
+                            targetHuman.Team != human.Team
+                            || human.Team == TeamEnum.NONE 
+                            || targetHuman.Team == TeamEnum.NONE
+                        )
+                    )
+                    {
+                        Main.SendGetDamageMessage(targetHuman.Player, self._damage * 2);
+                        Game.ShowKillScore(self._damage * 2);
+                        return;
+                    }
+                }
+            }
+
+            res = Physics.LineCast(startPosition, targetPosition, "Characters");
+            if (res != null)
+            {
+                obj = res.Collider;
+                if (
+                    obj.Type == "Human" 
+                    && (
+                        obj.Team != human.Team
+                        || human.Team == TeamEnum.NONE 
+                        || obj.Team == TeamEnum.NONE
+                    )
+                )
+                {
+                    Main.SendGetDamageMessage(obj.Player, self._damage);
+                    Game.ShowKillScore(self._damage);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            self._shotDelayTimer.Reset(0.3);
+        }
+    }
+
+    function GetID()
+    {
+        return self._id;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetBaseWeapon()
+    {
+        return self._baseWeapon;
+    }
+
+    function GetCustomDamage()
+    {
+        return self._damage;
+    }
+
+    function GetMaxRounds()
+    {
+        return self._maxRounds;
+    }
+
+    function GetMaxAmmo()
+    {
+        return self._maxAmmo;
+    }
+
+    function GetDistance()
+    {
+        return self._distance;
+    }
+
+    function GetRadius()
+    {
+        return self._radius;
+    }
+
+    function GetKillReward()
+    {
+        return self._killReward;
+    }
+
+    function GetSlot()
+    {
+        return self._slot;
+    }
+
+    function GetSpecial()
+    {
+        return self._special;
+    }
+
+    function GetAddons()
+    {
+        return self._addons;
+    }
+
+    function AddAddon(addon)
+    {
+        self._addons.Add(addon);
+    }
+}
+
+#######################
+# SPECIALS
+#######################
+
+class StockSpecial
+{
+    _name = null;
+    _baseID = null;
+
+    function Init(specialID)
+    {
+        self._name = specialID;
+        self._baseID = specialID;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetInfoString()
+    {
+        return "";
+    }
+
+    function GetBaseID()
+    {
+        return self._baseID;
+    }
+
+    function OnFrameBGHandler()
+    {
+        return;
+    }
+
+    function OnFrameHandler()
+    {
+        return;
+    }
+}
+
+class ZoomSpecial
+{
+    _name = "Zoom";
+    _baseID = null;
+    _fov = 30.0;
+
+    function Init()
+    {
+        self._baseID = SpecialEnum.NONE;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetInfoString()
+    {
+        return String.FormatFloat(self._fov, 0) + "x";
+    }
+
+    function GetBaseID()
+    {
+        return self._baseID;
+    }
+
+    function OnFrameBGHandler()
+    {
+        return;
+    }
+
+    function OnFrameHandler()
+    {
+        if (Input.GetKeyHold(InputManager.Zoom))
+        {
+            Camera.SetFOV(self._fov);
+        }
+        if (Input.GetKeyUp(InputManager.Zoom))
+        {
+            Camera.SetFOV(Main._savedFOV);
+        }
+    }
+}
+
+class SmokeSpecial
+{
+    _name = "Smoke Grenade";
+    _baseID = null;
+    _cooldown = 30.0;
+    _distance = 512.0;
+    _cdTimer = Timer(0.0);
+    _duration = 18.0;
+    _durationTimer = Timer(18.0);
+    _fxSpawnDelayTimer = Timer(0.0);
+    _fxSpawnDelay = 0.3;
+    _pos = null;
+
+    function Init(duration, cooldown)
+    {
+        self._baseID = SpecialEnum.SMOKEBOMB;
+        self._duration = duration;
+        self._durationTimer.Reset(duration);
+        self._cooldown = cooldown;
+        self._cdTimer = Timer(0.0);
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetInfoString()
+    {
+        cd = self._cdTimer.GetTime();
+        if (cd < self._cooldown && cd > 0)
+        {
+            return "Cooldown: " + String.FormatFloat(cd, 2);
+        }
+
+        return "";
+    }
+
+    function GetBaseID()
+    {
+        return self._baseID;
+    }
+
+    function OnFrameBGHandler()
+    {
+        self._cdTimer.UpdateOnFrame();
+
+        if (self._pos != null)
+        {
+            self._fxSpawnDelayTimer.UpdateOnFrame();
+            self._durationTimer.UpdateOnFrame();
+
+            if (self._durationTimer.IsDone())
+            {
+                self._durationTimer.Reset(self._duration);
+                self._pos = null;
+            }
+
+            if (self._fxSpawnDelayTimer.IsDone())
+            {
+                self._fxSpawnDelayTimer.Reset(self._fxSpawnDelay);
+                Game.SpawnEffect(EffectEnum.TITANDIE1, self._pos, Vector3(-90,0,0), 5.0);
+            }
+        }
+    }
+
+    function OnFrameHandler()
+    {
+        if (!self._cdTimer.IsDone())
+        {
+            special = SpecialEnum.NONE;
+            if (PlayerProxy.GetSpecial() != special)
+            {
+                PlayerProxy.SetSpecial(special);
+            }
+        }
+        else
+        {
+            special = self._baseID;
+            if (PlayerProxy.GetSpecial() != special)
+            {
+                PlayerProxy.SetSpecial(special);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyBindsEnum.HUMAN_ATTACKSPECIAL) && self._cdTimer.IsDone())
+        {
+            human = PlayerProxy.GetHuman();
+            self._cdTimer.Reset(self._cooldown);
+
+            position = Camera.Position;
+
+            normalizedDirection = Camera.Forward.Normalized;
+
+            offset = normalizedDirection * 3;
+            startPosition = position + offset;
+
+            targetPosition = position + normalizedDirection * self._distance;
+
+            res = Physics.LineCast(startPosition, targetPosition, "All");
+            if (res != null)
+            {
+                self._pos = res.Point;
+            }
+        }
+    }
+}
+
+#######################
+# WEAPON ADDONS
+#######################
+
+class GravitySlashWeaponAddon
+{
+    _name = "Gravity Slash";
+    _distance = Math.Infinity;
+    _tpDistance = Math.Infinity;
+    _cooldown = 10.0;
+    _cdTimer = Timer(10.0);
+    _uses = 3;
+    _maxUses = 3;
+    _force = 100.0;
+    _targetPlayer = null;
+    _nearestHPos = null;
+    _nearestDistance = Math.Infinity;
+    _teleportedOnce = false;
+
+    function Init(
+        distance, 
+        tpDistance, 
+        force,
+        uses,
+        cooldown
+    )
+    {
+        self._distance = distance;
+        self._tpDistance = tpDistance;
+        self._force = force;
+        self._maxUses = uses;
+        self._uses = uses;
+        self._cooldown = cooldown;
+        self._cdTimer.Reset(cooldown);
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetInfoString()
+    {
+        text = "Charges: " + self._uses + "/" + self._maxUses;
+        cd = self._cdTimer.GetTime();
+        if (cd < self._cooldown && cd > 0)
+        {
+            text += " Cooldown: " + String.FormatFloat(self._cdTimer.GetTime(), 2);
+        }
+        return text;
+    }
+
+    function OnFrameHandler()
+    {
+        if (Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKDEFAULT))
+        {
+            if (self._uses <= 0)
+            {
+                return;
+            }
+
+            myHuman = PlayerProxy.GetHuman();
+            myPosition = myHuman.Position;
+
+            if (self._targetPlayer == null)
+            {
+                self._nearestHPos = null;
+                self._nearestDistance = self._distance;
+                for (h in Game.PlayerHumans)
+                {
+                    if (
+                        !h.IsMine 
+                        && (
+                            h.Team != myHuman.Team
+                            || myHuman.Team == TeamEnum.NONE 
+                            || h.Team == TeamEnum.NONE
+                        )
+                    )
+                    {
+                        hPos = h.Position;
+                        distance = Vector3.Distance(myPosition, hPos);
+                        if (distance < self._nearestDistance)
+                        {
+                            self._nearestDistance = distance;
+                            self._nearestHPos = hPos;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                self._nearestHPos = self._targetPlayer.Position;
+                self._nearestDistance = Vector3.Distance(myPosition, self._nearestHPos);
+            }    
+        }
+
+        if (Input.GetKeyUp(KeyBindsEnum.HUMAN_ATTACKDEFAULT))
+        {
+            if (self._teleportedOnce)
+            {
+                self._uses -= 1;
+                if (self._uses < 0)
+                {
+                    self._uses = 0;
+                }
+
+                self._teleportedOnce = false;
+            }
+
+            self._targetPlayer = null;
+            self._nearestHPos = null;
+        }
+    }
+
+    function OnTickHandler()
+    {
+        if (self._uses <= 0)
+        {
+            return;
+        }
+
+        if (self._nearestHPos != null)
+        {
+            myHuman = PlayerProxy.GetHuman();
+            if (myHuman.State != PlayerStateEnum.ATTACK)
+            {
+                return;
+            }
+
+            myPosition = myHuman.Position;
+            if (self._nearestDistance < self._tpDistance)
+            {
+                directionToNearest = self._nearestHPos - myPosition;
+                directionToNearest = directionToNearest.Normalized;
+
+                moveSpeed = 0.83; 
+                myPosition += directionToNearest * moveSpeed;
+
+                myHuman.Position = myPosition;
+
+                self._teleportedOnce = true;
+            }
+            else
+            {
+                directionToNearest = self._nearestHPos - myPosition;
+                directionToNearest = directionToNearest.Normalized;
+                dashForce = directionToNearest * self._force;
+                myHuman.AddForce(dashForce, ForceModeEnum.FORCE);
+            }
+        }
+    }
+
+    function OnFrameBGHandler()
+    {
+        if (self._uses < self._maxUses)
+        {
+            self._cdTimer.UpdateOnFrame();
+            if (self._cdTimer.IsDone())
+            {
+                self._uses += 1;
+                if (self._uses > self._maxUses)
+                {
+                    self._uses = self._maxUses;
+                }
+                self._cdTimer.Reset(self._cooldown); 
+            }
+        }
+    }
+}
+
+class ThermalVisionWeaponAddon
+{
+    _name = "Thermal Vision";
+    _radius = 64;
+    _cd = 75.0;
+    _cdTimer = Timer(0.0);
+    _duration = 15.0;
+    _durationTimer = Timer(0.0);
+
+    function Init(radius, startCD, cd, duration)
+    {
+        self._radius = radius;
+        if (startCD > 0)
+        {
+            self._cdTimer.Reset(startCD);
+        }
+        self._cd = cd;
+        self._duration = duration;
+    }
+
+    function GetName()
+    {
+        return self._name;
+    }
+
+    function GetInfoString()
+    {
+        str = "[" + Input.GetKeyName(InputManager.ThermalVision) + "]";
+        cd = self._cdTimer.GetTime();
+        duration = self._durationTimer.GetTime();
+        if (duration < self._duration && duration > 0.0)
+        {
+            str += " Duration: " + String.FormatFloat(duration, 2);
+        }
+        elif (cd < self._cd && cd > 0.0)
+        {
+            str += " Cooldown: " + String.FormatFloat(cd, 2);
+        }
+
+        return str;
+    }
+
+    function OnFrameBGHandler()
+    {
+        self._durationTimer.UpdateOnFrame();
+        self._cdTimer.UpdateOnFrame();
+
+        myHuman = PlayerProxy.GetHuman();
+        for (h in Game.PlayerHumans)
+        {
+            if (h != myHuman)
+            {
+                if (
+                    h.Team != myHuman.Team
+                    || myHuman.Team == TeamEnum.NONE 
+                    || h.Team == TeamEnum.NONE
+                )
+                {
+                    if (self._durationTimer.IsDone())
+                    {
+                        h.RemoveOutline();
+                    }
+                    else
+                    {
+                        if (Vector3.Distance(myHuman.Position, h.Position) < self._radius)
+                        {
+                            h.AddOutline(Color("#" + ColorEnum.PastelCream), OutlineModeEnum.OUTLINEALL);
+                        }
+                        else
+                        {
+                            h.RemoveOutline();
+                        }
+                    }
+                }
+            }
+        }
+
+        return;
+    }
+
+    function OnFrameHandler()
+    {
+        if (self._durationTimer.IsDone() && self._cdTimer.IsDone() && Input.GetKeyDown(InputManager.ThermalVision))
+        {
+            self._durationTimer.Reset(self._duration);
+            self._cdTimer.Reset(self._cd);
+        }
+    }
+}
+
+#######################
+# COMPONENTS
+#######################
+
+component FragGrenadeZone
+{
+    Owner = null;
+    _damage = 0;
+    _activated = false;
+    _exploded = false;
+    _timer = Timer(0.0);
+    _humans = Dict();
+
+    function OnCollisionStay(other)
+    {
+        if (self.Owner != Network.MyPlayer)
+        {
+            return;
+        }
+
+        if (other.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        self._humans.Set(other.Player.ID, other);
+    }
+
+    function OnCollisionExit(other)
+    {
+        if (self.Owner != Network.MyPlayer)
+        {
+            return;
+        }
+
+        if (other.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        self._humans.Remove(other.Player.ID);
+    }
+
+    function Activate(damage, delay)
+    {
+        self._damage = damage;
+        self._timer.Reset(delay);
+        self._activated = true;
+    }
+
+    function OnTick()
+    {
+        if (!self._activated || self._exploded)
+        {
+            return;
+        }
+        
+        self._timer.UpdateOnTick();
+        if (self._timer.IsDone())
+        {
+            if (self.Owner == Network.MyPlayer)
+            {    
+                rotation = Vector3(-90.0, 0, 0);
+                Game.SpawnEffect(EffectEnum.GUNEXPLODE, self.MapObject.Position, rotation, 1.0);
+                Game.SpawnEffect(EffectEnum.SHIFTERTHUNDER, self.MapObject.Position, rotation, 0.5);
+                Game.SpawnEffect(EffectEnum.BOOM1, self.MapObject.Position, rotation, 1.0);
+                Game.SpawnEffect(EffectEnum.BOOM2, self.MapObject.Position, rotation, 1.0);
+
+                for (h in self._humans.Values)
+                {
+                    player = h.Player;
+                    if (player != null && player.Status == PlayerStatusEnum.ALIVE)
+                    {
+                        Main.SendGetDamageMessage(player, self._damage);
+                    }
+                }
+            }
+            self._exploded = true;
+            Map.DestroyMapObject(self.MapObject.Parent, true);
+            Map.DestroyMapObject(self.MapObject, true);
+        }
+    }
+}
+
+component TeamTP
+{
+    _spawnPointsRed = List();
+    _spawnPointsBlue = List();
+    _firstTeam = null;
+
+    function OnGameStart()
+    {
+        self._spawnPointsRed = Map.FindMapObjectsByTag("HumanSpawnPointRed");
+        self._spawnPointsBlue = Map.FindMapObjectsByTag("HumanSpawnPointBlue");
+    }
+
+    function OnCollisionStay(obj)
+    {
+        t = Main._preparationTimeLeft;
+        if (t > 0)
+        {
+            if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+            {
+                return;
+            }
+
+            if (!obj.IsMine)
+            {
+                return;
+            }
+
+            if (self._firstTeam == null)
+            {
+                self._firstTeam = obj.Team;
+                PlayerProxy.OnSpawn(obj);
+            }
+
+            PositionLocker.SetPosition(null);
+            rnd = Random(Convert.ToInt(t*100));
+            if (obj.Team == TeamEnum.RED && self._spawnPointsRed.Count > 1)
+            {
+                i = rnd.RandomInt(0, self._spawnPointsRed.Count - 1);
+                sp = self._spawnPointsRed.Get(i);
+                obj.Position = sp.Position;
+            }
+            elif (obj.Team == TeamEnum.BLUE && self._spawnPointsBlue.Count > 1)
+            {
+                i = rnd.RandomInt(0, self._spawnPointsBlue.Count - 1);
+                sp = self._spawnPointsBlue.Get(i);
+                obj.Position = sp.Position;
+            }
+            PositionLocker.SetPosition(obj.Position);
+        }
+    }
+}
+
+component BombPlant
+{
+    Name = "";
+    AllowedActionPositionChange = 0.5;
+
+    PLANT_COLOR_PLANTED = Color(255, 0, 0, 115);
+    PLANT_COLOR_DEFUSED = Color(0, 0, 255, 115);
+
+    ALPHA_VALUE_MIN = 55;
+    ALPHA_VALUE_MAX = 200;
+    ALPHA_TWITCHING_STEP = 2;
+
+    PLANTING_DELAY = 5.0;
+    EXPLOSION_DELAY = 45.0;
+    DEFUSE_DELAY = 5.0;
+
+    PLANTED_SOUND_DELAY = 2.0;
+
+    _bombState = 0;
+    
+    _myHuman = null;
+    _myState = 0;
+    _lastActionPosition = null;
+
+    _explosionKillZone = null;
+
+    _bombAshArea = null;
+    
+    _plantingTimer = Timer(self.PLANTING_DELAY);
+    _defuseTimer = Timer(self.DEFUSE_DELAY);
+    _explosionTimer = Timer(self.EXPLOSION_DELAY);
+    _ignoreCollisionMessageTimer = Timer(0);
+    _plantedSoundTimer = Timer(self.PLANTED_SOUND_DELAY);
+
+    _alphaDirection = 1; 
+    _alphaValue = 115; 
+    
+    _logLevel = 1;
+    _logger = Logger(self._logLevel, "[" + self.Name + "]");
+
+    function Init()
+    {
+        self._bombState = BombStateEnum.NONE;
+        self._myState = PlayerCustomStateEnum.NONE;
+        if (self.PLANTED_SOUND_DELAY < 2.0)
+        {
+            self.PLANTED_SOUND_DELAY = 2.0;
+        }
+    }
+
+    function OnGameStart()
+    {
+        for (obj in Map.FindMapObjectsByName("ExplosionKillRegion"))
+        {
+            killZone = obj.GetComponent("KillZone");
+            if (killZone != null && killZone.Name == self.Name)
+            {
+                self._explosionKillZone = killZone;
+            }
+        }
+
+        obj = Map.FindMapObjectByName("BombAshArea");
+        if (obj != null)
+        {
+            self._bombAshArea = obj;
+        }
+    }
+
+    function OnNetworkMessage(sender, message)
+    {
+        self._logger.Trace(message);
+        msg = Json.LoadFromString(message);
+        topic = msg.Get(BaseMessage.KEY_TOPIC);
+        if (topic == BombPlantMessage.TOPIC)
+        {
+            self.handleBombPlantMessage(sender, msg);
+        }
+    }
+
+    function OnCollisionStay(obj)
+    {
+
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = obj;
+
+        if (!Game.IsEnding)
+		{
+            self.showInteractionTooltip();
+		}
+    }
+
+    function OnCollisionExit(obj)
+    {
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = null;
+        self._plantingTimer.Reset(self.PLANTING_DELAY);
+        self._defuseTimer.Reset(self.DEFUSE_DELAY);
+    }
+
+    function OnFrame()
+    {
+        if (!Game.IsEnding && self._myHuman != null)
+        {
+            self.handleInput();
+        }
+        if (self._bombState == BombStateEnum.PLANTED)
+        {
+            self.updateExplosionTimerOnFrame();
+        }
+        self.updatePlantRegionVisualsOnFrame();
+
+        self._ignoreCollisionMessageTimer.UpdateOnFrame();
+    }
+
+    function OnBombPlanting(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " planting.");
+        return;
+    }
+
+    function OnBombPlantingCancel(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " canceled planting.");
+        return;
+    }
+
+    function OnBombPlanted(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " planted.");
+        
+        PlayerProxy.RemoveBomb();
+
+        if (player.Team == PlayerProxy.GetTeam())
+        {
+            reward = Main.BombPlantTeamReward;
+            if (player.ID == Network.MyPlayer.ID)
+            {
+                reward += Main.BombPlantIndividualReward;
+            }
+            PlayerProxy.IncreaseBalance(reward);
+            reason = player.Name + " planted the bomb.";
+            Game.Print(Main.BuildRewardMessage(reward, reason));
+        }
+        self._bombState = BombStateEnum.PLANTED;
+        self._explosionTimer.Reset(self.EXPLOSION_DELAY);
+        self.MapObject.Scale = Vector3(1.0);
+        newPos = Vector3(player.Character.Position.X, player.Character.Position.Y + 0.83, player.Character.Position.Z);
+        self.MapObject.Position = newPos;
+        self.UpdateRegionColor(self.PLANT_COLOR_PLANTED);
+        player.Character.PlaySound(PlayerSoundEnum.CHECKPOINT);
+        player.Character.PlaySound(PlayerSoundEnum.THUNDERSPEARLAUNCH);
+        if (Network.IsMasterClient)
+        {
+            startPos = Vector3(newPos.X, newPos.Y+5.0, newPos.Z);
+            flareVelocity = Vector3(0,1,0).Normalized * 5;
+            flareRotation = Vector3(0,1,0);
+            flareGravity = Vector3(0,100,0);
+            Game.SpawnProjectileWithOwner("Flare", startPos, flareRotation, flareVelocity, flareGravity, self.EXPLOSION_DELAY, player.Character, Color(255, 0, 0, 255));
+            UI.SetLabelForTimeAll("MiddleCenter", HTML.Color("Bomb has been planted!", ColorEnum.RedTeam), 3.5);
+        }
+
+        Cutscene.Start("BombPlantedCutscene", false);
+    }
+
+    function OnBombDefusing(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " defusing.");
+        return;
+    }
+
+    function OnBombDefusingCancel(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " canceled defusing.");
+        return;
+    }
+
+    function OnBombDefused(player)
+    {
+        self._logger.Debug(Utils.PlayerString(player) + " defused.");
+        if (player.ID == Network.MyPlayer.ID)
+        {
+            reward = Main.BombDefuseIndividualReward;
+            PlayerProxy.IncreaseBalance(reward);
+            reason = "Bomb defuse.";
+            Game.Print(Main.BuildRewardMessage(reward, reason));
+        }
+        self._bombState = BombStateEnum.DEFUSED;
+        self.UpdateRegionColor(self.PLANT_COLOR_DEFUSED);
+        if (Network.IsMasterClient)
+		{
+            Main.OnGameEnd(RoundEndMessage.REASON_BOMB_DEFUSE, RoundEndMessage.WINNER_BLUE);
+		}
+    }
+
+    function OnBombExploded()
+    {
+        self._logger.Debug("Exploded");
+        self._bombState = BombStateEnum.EXPLODED; 
+        if (Network.IsMasterClient)
+		{
+            self.spawnBombExplodeVFX(self.MapObject.Position);
+            Main.OnGameEnd(RoundEndMessage.REASON_BOMB_DETONATE, RoundEndMessage.WINNER_RED);
+		}
+
+        self._explosionKillZone.Trigger("Explosion");
+    }
+
+    function UpdateRegionColor(color)
+    {
+        self.MapObject.Color = color;
+    }
+
+    function handleBombPlantMessage(sender, msg)
+    {
+        type = msg.Get(BombPlantMessage.KEY_TYPE);
+        if (type == BombPlantMessage.MESSAGE_PLANTING)
+        {
+            self.OnBombPlanting(sender);
+        }
+        elif (type == BombPlantMessage.MESSAGE_PLANTING_CANCEL)
+        {
+            self.OnBombPlantingCancel(sender);
+        }
+        elif (type == BombPlantMessage.MESSAGE_PLANTED)
+        {
+            self.OnBombPlanted(sender);
+        } 
+        elif (type == BombPlantMessage.MESSAGE_DEFUSING)
+        {
+            self.OnBombDefusing(sender);
+        }
+        elif (type == BombPlantMessage.MESSAGE_DEFUSING_CANCEL)
+        {
+            self.OnBombDefusingCancel(sender);
+        }
+        elif (type == BombPlantMessage.MESSAGE_DEFUSED)
+        {
+            self.OnBombDefused(sender);
+        }
+        elif (type == BombPlantMessage.MESSAGE_EXPLODED)
+        {
+            if (sender != Network.MasterClient)
+            {
+                return;
+            } 
+            self.OnBombExploded();
+        }
+    }
+
+    function canPlantBomb()
+    {
+        if (self._myHuman == null)
+        {
+            return false;
+        }
+        return self._myHuman.Team == TeamEnum.RED && self._bombState == BombStateEnum.NONE;
+    }
+
+    function canDefuseBomb()
+    {
+        if (self._myHuman == null)
+        {
+            return false;
+        }
+        return self._myHuman.Team == TeamEnum.BLUE && self._bombState == BombStateEnum.PLANTED;
+    }
+
+    function handleInput()
+    {
+        if (Network.MyPlayer.Status != PlayerStatusEnum.ALIVE)
+        {
+            return;
+        }
+
+        if (!self.canPlantBomb() && !self.canDefuseBomb())
+        {
+            return;
+        }
+
+        if (Input.GetKeyHold(InputManager.BombInteraction))
+        {
+            if (self._lastActionPosition == null || !self.hasChangedActionPosition() && self._myHuman.State == PlayerStateEnum.IDLE)
+            {
+                if (self._lastActionPosition == null)
+                {
+                    self._lastActionPosition = self._myHuman.Position;
+                }
+                self.handleInteraction();
+            }
+            else 
+            {
+                self._lastActionPosition = null;
+                self.handleInteractionEnd();
+            }
+        }
+
+        if (Input.GetKeyUp(InputManager.BombInteraction))
+        {
+            self.handleInteractionEnd();
+        }
+    }
+
+    function hasChangedActionPosition()
+    {
+        if (self._lastActionPosition != null)
+        {
+            xChanged = Math.Abs(self._myHuman.Position.X - self._lastActionPosition.X) > self.AllowedActionPositionChange;
+            yChanged = Math.Abs(self._myHuman.Position.Y - self._lastActionPosition.Y) > self.AllowedActionPositionChange;
+            zChanged = Math.Abs(self._myHuman.Position.Z - self._lastActionPosition.Z) > self.AllowedActionPositionChange;
+
+            return xChanged || yChanged || zChanged;
+        }
+
+        return false;
+    }
+
+    function handleInteraction()
+    {
+        if (self.canDefuseBomb())
+        {
+            self.handleDefusing();
+        }
+        elif (self.canPlantBomb())
+        {
+            self.handlePlanting();
+        }
+    }
+
+    function handleInteractionEnd()
+    {
+        if (self._myHuman.Team == TeamEnum.RED && self._bombState == BombStateEnum.NONE)
+        {
+            self.handlePlantingCancel();   
+        }
+        elif (self._myHuman.Team == TeamEnum.BLUE && self._bombState == BombStateEnum.PLANTED)
+        {
+            self.handleDefusingCancel();
+        }
+    }
+
+    function handlePlanting()
+    {
+        if (!self._plantingTimer.IsDone())
+        {
+            if (self._myState == PlayerCustomStateEnum.NONE)
+            {
+                self._myState = PlayerCustomStateEnum.PLANTING;
+                self.sendMessageBombPlanting();
+            }
+            self._plantingTimer.UpdateOnFrame();
+            text = HTML.Color("Planting Bomb: " + self._plantingTimer.String(2), ColorEnum.Darkkhaki);
+            UI.SetLabelForTime("MiddleCenter", text, 0.1);
+        }
+        else
+        {
+            self._myState = PlayerCustomStateEnum.NONE;
+            self.sendMessageBombPlanted();
+        }
+    }
+
+    function handleDefusing()
+    {
+        if (!self._defuseTimer.IsDone())
+        {
+            if (self._myState == PlayerCustomStateEnum.NONE)
+            {
+                self._myState = PlayerCustomStateEnum.DEFUSING;
+                self.sendMessageBombDefusing();
+            }
+            self._defuseTimer.UpdateOnFrame();
+            text = HTML.Color("Defusing Bomb: " + self._defuseTimer.String(2), ColorEnum.Darkkhaki);
+            UI.SetLabelForTime("MiddleCenter", text, 0.1);
+        }
+        else
+        {
+            self._myState = PlayerCustomStateEnum.NONE;
+            self.sendMessageBombDefused();
+        }
+    }
+
+    function handlePlantingCancel()
+    {
+        self._myState = PlayerCustomStateEnum.NONE;
+        self._plantingTimer.Reset(self.PLANTING_DELAY);
+        infoTime = 1.5;
+        self.ignoreCollisionMessageFor(infoTime);
+        text = HTML.Color("Cancelled planting!", ColorEnum.Red);
+        UI.SetLabelForTime("MiddleCenter", text, infoTime);
+        self.sendMessageBombPlantingCancel();
+    }
+    
+    function handleDefusingCancel()
+    {
+        self._myState = PlayerCustomStateEnum.NONE;
+        self._defuseTimer.Reset(self.DEFUSE_DELAY);
+        infoTime = 1.5;
+        self.ignoreCollisionMessageFor(infoTime);
+        text = HTML.Color("Cancelled defusing!", ColorEnum.Red);
+        UI.SetLabelForTime("MiddleCenter", text, infoTime);
+        self.sendMessageBombDefusingCancel();
+    }
+
+    function updateExplosionTimerOnFrame()
+    {
+        self._explosionTimer.UpdateOnFrame();
+        if (self._explosionTimer.IsDone() && Network.IsMasterClient)
+        {
+            self.sendMessageBombExploded();
+        }
+    }
+
+    # NOT USED FOR NOW
+    function updatePlantedSoundsOnFrame()
+    {
+        self._plantedSoundTimer.UpdateOnFrame();
+        if (self._plantedSoundTimer.IsDone())
+        {
+            percentageLeft = self._explosionTimer.GetTime() / self.EXPLOSION_DELAY * 100;
+
+            delay = self.PLANTED_SOUND_DELAY;
+            if (self._explosionTimer.GetTime() < 10)
+            {
+                delay = 0.1;
+            }
+            elif (self._explosionTimer.GetTime() < 25)
+            {
+                delay = 0.5;
+            }
+            elif (percentageLeft < 50)
+            {
+                delay = 1.0;
+            }
+
+            self._plantedSoundTimer.Reset(delay);
+            Network.MyPlayer.Character.PlaySound(PlayerSoundEnum.CHECKPOINT);
+        }
+    }
+
+    function sendMessageBombPlanting()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_PLANTING);
+    }
+
+    function sendMessageBombPlantingCancel()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_PLANTING_CANCEL);
+    }
+
+    function sendMessageBombPlanted()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_PLANTED);
+    }
+
+    function sendMessageBombDefusing()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_DEFUSING);
+    }
+    
+    function sendMessageBombDefusingCancel()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_DEFUSING_CANCEL);
+    }
+
+    function sendMessageBombDefused()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_DEFUSED);
+    }
+
+    function sendMessageBombExploded()
+    {
+        self.sendMessageAll(BombPlantMessage.MESSAGE_EXPLODED);
+    }
+
+    function sendMessageAll(type)
+    {
+        msg = BombPlantMessage.New(type);
+        rawMsg = Json.SaveToString(msg);
+        self.NetworkView.SendMessageAll(rawMsg);
+    }
+
+    function spawnBombExplodeVFX(position)
+    {
+        rotation = Vector3(-90.0, 0, 0);
+        Game.SpawnEffect(EffectEnum.GUNEXPLODE, position, rotation, 15.0);
+        Game.SpawnEffect(EffectEnum.GUNEXPLODE, position, rotation, 35.0);
+        Game.SpawnEffect(EffectEnum.GUNEXPLODE, position, rotation, 55.0);
+        Game.SpawnEffect(EffectEnum.GUNEXPLODE, position, rotation, 105.0);
+        Game.SpawnEffect(EffectEnum.SHIFTERTHUNDER, position, rotation, 5.0);
+        Game.SpawnEffect(EffectEnum.BOOM1, position, rotation, 3.0);
+        Game.SpawnEffect(EffectEnum.BOOM2, position, rotation, 15.0);
+        Game.SpawnEffect(EffectEnum.BOOM4, position, rotation, 7.0);
+        Game.SpawnEffect(EffectEnum.BOOM5, position, rotation, 3.0);
+    }
+
+    function updatePlantRegionVisualsOnFrame()
+    {
+        if (self._bombState != BombStateEnum.PLANTED)
+        {
+            return;
+        }
+
+        percentage = 1 - self._explosionTimer.GetTime() / self.EXPLOSION_DELAY;
+
+        if (self._alphaValue >= self.ALPHA_VALUE_MAX)
+        {
+            self._alphaDirection = -1;
+        }
+        elif (self._alphaValue <= self.ALPHA_VALUE_MIN)
+        {
+            self._alphaDirection = 1;
+        }
+
+        self._alphaValue += self._alphaDirection * Math.Max(1, self.ALPHA_TWITCHING_STEP);
+        self.UpdateRegionColor(Utils.UpdateColorAlpha(self.MapObject.Color, self._alphaValue));
+        if (self._bombAshArea != null)
+        {
+            self._bombAshArea.Color = Utils.UpdateColorAlpha(self._bombAshArea.Color, Convert.ToInt(35 * percentage));
+        }
+    }
+
+    function showInteractionTooltip()
+    {
+        if (self.canPlantBomb() && self._ignoreCollisionMessageTimer.IsDone())
+        {
+            UI.SetLabelForTime(
+                UILabelTypeEnum.MIDDLECENTER, 
+                HTML.Color(
+                    "Hold [" + Input.GetKeyName(InputManager.BombInteraction) + "] to plant bomb.", 
+                    ColorEnum.Palegoldenrod
+                ), 
+                0.1
+            );
+        }
+        elif (self.canDefuseBomb() && self._ignoreCollisionMessageTimer.IsDone())
+        {
+            UI.SetLabelForTime(
+                UILabelTypeEnum.MIDDLECENTER, 
+                HTML.Color(
+                    "Hold [" + Input.GetKeyName(InputManager.BombInteraction) + "] to defuse bomb.", 
+                    ColorEnum.Palegoldenrod
+                ), 
+                0.1
+            );
+        }
+    }
+
+    function ignoreCollisionMessageFor(time)
+    {
+        self._ignoreCollisionMessageTimer.Reset(time);
+    }
+}
+
+component KillZone
+{
+    Name = "";
+    _myHuman = null;
+
+    function OnCollisionEnter(obj)
+    {
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = obj;
+    }
+
+    function OnCollisionExit(obj)
+    {
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = null;
+    }
+
+    function Trigger(reason)
+    {
+        if (self._myHuman != null)
+        {
+            self._myHuman.GetKilled(reason);
+        }
+    }
+}
+
+component HostageEscortZone
+{
+    function OnCollisionStay(obj)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        if (obj.Type == ObjectTypeEnum.Titan)
+        {
+            t = Main._hostages.Get(obj.ViewID, null);
+            if (t != null)
+            {
+                t.SetEscorted(true);
+            }
+        }
+    }
+
+    function OnCollisionExit(obj)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        if (obj.Type == ObjectTypeEnum.Titan)
+        {
+            t = Main._hostages.Get(obj.ViewID, null);
+            if (t != null)
+            {
+                t.SetEscorted(false);
+            }
+        }
+    }
+}
+
+class Shop
+{
+    Name = "";
+    Width = 300;
+    Height = 600;
+    _itemsList = List();
+    _itemsDict = Dict();
+    _inited = false;
+    _logger = Logger(1, "Shop");
+    _opened = false;
+
+    function ShowUI()
+    {
+        UI.ShowPopup("Shop");
+        self._opened = true;
+    }
+
+    function HideUI()
+    {
+        UI.HidePopup("Shop");
+        self._opened = false;
+    }
+
+    function ToggleUI()
+    {
+        if (self._opened)
+        {
+            UI.HidePopup("Shop");
+        }
+        else
+        {
+            UI.ShowPopup("Shop");
+        }
+
+        self._opened = !self._opened;
+    }
+
+    function RedrawShop()
+    {
+        UI.HidePopup("Shop");
+        self.InitShop();
+        UI.ShowPopup("Shop");
+    }
+
+    function OnButtonClick(btn)
+    {
+        if (!self._inited)
+        {
+            return;
+        }
+
+        if (btn == "Back")
+        {
+            self._opened = false;
+            return;
+        }
+
+        if (!self._itemsDict.Contains(btn))
+        {
+            return;
+        }
+
+        item = self._itemsDict.Get(btn, null);
+        if (item == null)
+        {
+            return;
+        }
+
+        itemPrice = item.GetPrice();
+
+        balance = PlayerProxy.GetBalance();
+        if (balance < itemPrice)
+        {
+            self._logger.Error(
+                "Not enough balance to purchase " + item.GetName() + ". " 
+                + "[" + PlayerProxy.GetBalance() + "/" + itemPrice + "]");
+            return;
+        }
+        
+        if (item.GetAmount() == 0)
+        {
+            return;
+        }
+
+        item.Purchase();
+        PlayerProxy.DecreaseBalance(item.GetPrice());
+        if (item.GetAmount() == 0)
+        {
+            self.RemoveItem(item);
+            self.RedrawShop();
+        }
+        self._logger.Info(item.GetName() + " purchased!");
+    }
+
+    function InitShop()
+    {
+        maxLabelLength = 0;
+
+        for (item in self._itemsList)
+        {
+            name = item.GetName();
+            price = Convert.ToString(item.GetPrice());
+            nLen = String.Length(name);
+            pLen = String.Length(price);
+            labelLength = nLen + pLen + 1;
+            maxLabelLength = Math.Max(maxLabelLength, labelLength);
+        }
+
+        UI.CreatePopup(
+            "Shop", 
+            "Shop", 
+            self.Width, 
+            Math.Clamp(self.Height + self._itemsList.Count * 55, self.Height, 700)
+        );
+
+        for (item in self._itemsList)
+        {
+            name = item.GetName();
+            buttonLabel = name;
+            if (item.GetPrice() > 0)
+            {
+                nameLen = String.Length(name);
+                price = Convert.ToString(item.GetPrice()) + "G";
+                priceLen = String.Length(price);
+
+                spacesToAdd = maxLabelLength - nameLen - priceLen;
+                padding = " ";
+
+                for (i in Range(0, spacesToAdd * 2, 1))
+                {
+                    padding = padding + " ";
+                }
+
+                buttonLabel = name + padding + price;
+            }
+
+            UI.AddPopupButton("Shop", item.GetName(), buttonLabel);
+        }
+
+        self._inited = true;
+    }
+
+    function AddItem(item)
+    {
+        self._itemsList.Add(item);
+        self._itemsDict.Set(item.GetName(), item);
+    }
+
+    function RemoveItem(item)
+    {
+        self._itemsList.Remove(item);
+        self._itemsDict.Remove(item.GetName());
+    }
+
+    function ClearItems()
+    {
+        self._itemsList.Clear();
+    }
+
+    function ShowInteractionTooltip()
+    {
+        UI.SetLabelForTime(
+            "MiddleCenter", 
+            HTML.Color(
+                "Press [" + Input.GetKeyName(InputManager.OpenShop) + "] to open shop.", 
+                ColorEnum.Palegoldenrod
+            ), 
+            0.1
+        );
+    }
+}
+
+component ShoppingZone
+{
+    _myHuman = null;
+    _shop = Shop();
+    _iPos = null;
+
+    function OnGameStart()
+    {
+        self._iPos = self.MapObject.Position;
+    }
+
+    function OnCollisionStay(obj)
+    {
+        if (Main._shoppingTimer.IsDone())
+        {
+            return;
+        }
+
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = obj;
+
+        if (!Game.IsEnding)
+		{
+            self._shop.ShowInteractionTooltip();
+		}
+    }
+
+    function OnCollisionExit(obj)
+    {        
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+        
+        self._shop.HideUI();
+        self._myHuman = null;
+    }
+
+    function OnTick()
+    {
+        if (Main._shoppingTimer.IsDone())
+        {
+            self.MapObject.Position = Vector3(0, -9999, 0);
+            return;
+        }
+        else
+        {
+            self.MapObject.Position = self._iPos;
+        }
+    }
+
+    function OnFrame()
+    {
+        if (Main._shoppingTimer.IsDone())
+        {
+            return;
+        }
+
+        if (self._myHuman == null)
+        {
+            return;
+        }
+
+        if (Network.MyPlayer.Status != PlayerStatusEnum.ALIVE)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(InputManager.OpenShop))
+        {
+            self._shop.ToggleUI();
+        }
+    }
+
+    function OnButtonClick(btn)
+    {
+        self._shop.OnButtonClick(btn);
+    }
+
+    function InitShop()
+    {
+        self._shop.InitShop();
+    }
+
+    function AddItem(item)
+    {
+        self._shop.AddItem(item);
+    }
+
+    function RemoveItem(item)
+    {
+        self._shop.RemoveItem(item);
+    }
+
+    function ClearItems()
+    {
+        self._shop.ClearItems();
+    }
+}
+
+component Ladder
+{
+    Mode = "Acceleration";
+    Vector = Vector3();
+    LockX = false;
+    LockY = false;
+    LockZ = false;
+
+    _myHuman = null;
+
+    function OnCollisionStay(obj)
+    {
+        if (obj == null || obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = obj;
+    }
+
+    function OnCollisionExit(obj)
+    {
+        if (obj != null && obj.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        if (!obj.IsMine)
+        {
+            return;
+        }
+
+        self._myHuman = null;
+    }
+
+    function OnFrame()
+    {
+        if (self._myHuman == null)
+        {
+            return;
+        }
+
+        newX = self._myHuman.Position.X;
+        newY = self._myHuman.Position.Y;
+        newZ = self._myHuman.Position.Z;
+
+        if (self.LockX)
+        {
+            newX = self.MapObject.Position.X;
+        }
+        if (self.LockY)
+        {
+            newY = self.MapObject.Position.Y;
+        }
+        if (self.LockZ)
+        {
+            newZ = self.MapObject.Position.Z; 
+        }
+
+        newPos = Vector3(newX, newY, newZ);
+
+        if (self.LockX || self.LockY || self.LockZ)
+        {
+            self._myHuman.Position = newPos;
+        }
+
+        self._myHuman.Position = self._myHuman.Position + self.Vector;
+    }
+}
+
+#######################
+# CUTSCENES
+#######################
+
+cutscene PreparationCutscene
+{
+    coroutine Start()
+    {
+        icon = "Kenny2";
+        name = "Jagerente";
+        dialogue = "Preparation time!" 
+        + String.Newline 
+        + "Press [" + Input.GetKeyName(InputManager.OpenShop) + "] to open shop.";
+        tip = TipsProvider.RandomTip();
+        if (tip != null)
+        {
+            dialogue += String.Newline
+                        + String.Newline
+                        + "Tip:"
+                        + String.Newline
+                        + TipsProvider.RandomTip();
+        }
+
+        Cutscene.ShowDialogue(icon, name, dialogue);
+
+        if (Main._preparationTimeLeft > 0)
+        {
+            wait Main._preparationTimeLeft;
+        }
+    }
+}
+
+cutscene Guide_BombPlant_Assault
+{
+    coroutine Start()
+    {
+        cameraRef = Map.FindMapObjectByName("Camera_Guide");
+        plantRef = Map.FindMapObjectByName("BombPlantRegion");
+        
+        startPosition = cameraRef.Position;
+        targetPosition = plantRef.Position;
+        
+        Camera.SetPosition(startPosition);
+        Camera.LookAt(targetPosition);
+        velocity = Vector3.GetRotationDirection(Camera.Rotation, Vector3.Back).Normalized * 5.0;
+	    Camera.SetVelocity(velocity);
+        Cutscene.ShowDialogue("Kenny2", "Jagerente", 
+            HTML.Color("Red", ColorEnum.RedTeam) + " team plant the bomb!"
+            + String.Newline
+            + HTML.Color("Blue", ColorEnum.BlueTeam) + " team defuse the bomb!"
+        );
+        wait 3.0;
+    }
+}
+
+cutscene Guide_Hostages_Assault
+{
+    coroutine Start()
+    {
+        cameraRef = Map.FindMapObjectByName("CameraRef_Hostages_Assault");
+        hostagesRef = Map.FindMapObjectByName("HostagesRef_Assault");
+        
+        startPosition = cameraRef.Position;
+        targetPosition = hostagesRef.Position;
+        
+        Camera.SetPosition(startPosition);
+        Camera.LookAt(targetPosition);
+        velocity = Vector3.GetRotationDirection(Camera.Rotation, Vector3.Forward).Normalized * 1.0;
+	    Camera.SetVelocity(velocity);
+        Cutscene.ShowDialogue("Kenny2", "Jagerente", 
+            HTML.Color("Red", ColorEnum.RedTeam) + " team escort hostages!"
+            + String.Newline
+            + HTML.Color("Blue", ColorEnum.BlueTeam) + " team protect hostages!"
+        );
+        wait 3.0;
+    }
+}
+
+cutscene BombPlantedCutscene
+{
+    coroutine Start()
+    {
+        icon = "Kenny2";
+        name = "Jagerente";
+        dialogue = "Bomb has been planted!"
+                + String.Newline
+                + "Is it defuse time or 'Door Stuck' moment?";
+
+        if (PlayerProxy.GetTeam() == TeamEnum.BLUE)
+        {
+            icon = "Ymir1";
+            name = "Blue Commander";
+            dialogue = "Bomb has been planted!"
+                    + String.Newline
+                    + "Push the site and cover each other. Defuse as soon as it's safe!";
+        }
+        elif (PlayerProxy.GetTeam() == TeamEnum.RED)
+        {
+            icon = "Titan14";
+            name = "Red Commander";
+            dialogue = "Bomb has been planted!"
+                    + String.Newline
+                    + "Secure positions and don't let them defuse it!";
+        }
+
+        Cutscene.ShowDialogue(icon, name, dialogue);
+        wait 3.0;
+    }
+}
+
+#######################
+# UTILS
+#######################
+
+extension InputManager
+{
+    SelectWeapon1 = null;
+    SelectWeapon2 = null;
+    ThrowFragGrenade = null;
+    AirDash = null;
+    AirDashDown = null;
+    OpenShop = null;
+    BombInteraction = null;
+    EscortHostage = null;
+    Zoom = null;
+    ThermalVision = null;
+
+    function InitKeybinds()
+    {
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT1, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT2, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT3, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT4, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT5, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT6, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT7, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_QUICKSELECT8, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_HOOKRIGHT, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_HOOKLEFT, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_EMOTEMENU, false);
+
+        self.SelectWeapon1 = KeyBindsEnum.INTERACTION_QUICKSELECT3;
+        self.SelectWeapon2 = KeyBindsEnum.INTERACTION_QUICKSELECT2;
+        self.ThrowFragGrenade = KeyBindsEnum.INTERACTION_INTERACT;
+        self.AirDash = KeyBindsEnum.HUMAN_JUMP;
+        self.AirDashDown = KeyBindsEnum.HUMAN_DODGE;
+        self.OpenShop = KeyBindsEnum.INTERACTION_ITEMMENU;
+        self.BombInteraction = KeyBindsEnum.INTERACTION_ITEMMENU;
+        self.EscortHostage = KeyBindsEnum.INTERACTION_ITEMMENU;
+        self.Zoom = KeyBindsEnum.HUMAN_ATTACKSPECIAL;
+        self.ThermalVision = KeyBindsEnum.INTERACTION_EMOTEMENU;
+    }
+}
+
+class GetDamageMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        dmg = msg.Get(GetDamageMessage.KEY_DAMAGE);
+
+        human = PlayerProxy.GetHuman();
+        if (human != null)
+        {
+            human.GetDamaged(sender.Name, dmg);
+        }
+    }
+}
+
+class ThrowGrenadeMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        position = msg.Get(ThrowGrenadeMessage.KEY_POSITION);
+        direction = msg.Get(ThrowGrenadeMessage.KEY_DIRECTION);
+        velocity = msg.Get(ThrowGrenadeMessage.KEY_VELOCITY);
+        force = msg.Get(ThrowGrenadeMessage.KEY_FORCE);
+        
+        fgCopy = Map.CopyMapObject(Main._fragGrenadeRef, true);
+        fgCopy.Position = position;
+        
+        
+        rb = fgCopy.GetComponent("Rigidbody");
+        rb.SetVelocity(velocity);
+        rb.AddForceWithMode(direction * force, Main.FragGrenadeForceMode);
+
+        fgEr = fgCopy.GetChild("FragGrenade_ExplosionRegion");
+        fgZone = fgEr.GetComponent("FragGrenadeZone");
+        fgZone.Owner = sender;
+        fgZone.Activate(Main.FragGrenadeDamage, Main.FragGrenadeDelay / 100.0);
+    }
+}
+
+class HostageEscortRequestMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        id = msg.Get(HostageEscortRequestMessage.KEY_HOSTAGE_ID);
+        h = Main._hostages.Get(id, null);
+        if (h != null)
+        {
+            h.SetEscorter(sender);
+        }
+    }
+}
+
+class SyncRoomDataMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        k = msg.Get(SyncRoomDataMessage.KEY_KEY);
+        v = msg.Get(SyncRoomDataMessage.KEY_VALUE);
+        RoomStorage.Set(k, v);
+    }
+}
+
+class SyncAllRoomDataMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        data = msg.Get(SyncAllRoomDataMessage.KEY_DATA);
+        for (k in data.Keys)
+        {
+            RoomStorage.Set(k, data.Get(k, null));
+        }
+    }
+}
+
+class RoundEndMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        reason = msg.Get(RoundEndMessage.KEY_REASON);
+        winner = msg.Get(RoundEndMessage.KEY_WINNER);
+
+        if (winner == RoundEndMessage.WINNER_RED || winner == RoundEndMessage.WINNER_BLUE)
+        {
+            if (Network.IsMasterClient)
+            {
+                RoundManager.IncreaseRoundsWon(winner);
+            }
+        }
+
+        if (PlayerProxy.GetStatus() != PlayerStatusEnum.SPECTATING)
+        {
+            if (reason == RoundEndMessage.REASON_DRAW)
+            {
+                reward = Main.RoundLostReward;
+                PlayerProxy.IncreaseBalance(reward);
+                message = "Income for losing.";
+                Game.Print(Main.BuildRewardMessage(reward, message));
+            }
+            elif (reason == RoundEndMessage.REASON_BOMB_DETONATE)
+            {
+                if (winner == PlayerProxy.GetTeam())
+                {
+                    reward = Main.RoundWonReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Bomb detonate. Round won.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+                else
+                {
+                    reward = Main.RoundLostReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Income for losing.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+            }
+            elif (reason == RoundEndMessage.REASON_BOMB_DEFUSE)
+            {
+                if (winner == PlayerProxy.GetTeam())
+                {
+                    reward = Main.BombDefuseTeamReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Bomb has been defused. Round won.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+                else
+                {
+                    reward = Main.RoundLostReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Income for losing.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+            }
+            elif (reason == RoundEndMessage.REASON_TEAM_ELIMINATE)
+            {
+                if (winner == PlayerProxy.GetTeam())
+                {
+                    reward = Main.RoundWonReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Enemy team eliminated.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+                else
+                {
+                    reward = Main.RoundLostReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Income for losing.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+            }
+            elif (reason == RoundEndMessage.REASON_TIME_LEFT)
+            {
+                if (winner == PlayerProxy.GetTeam())
+                {
+                    reward = Main.RoundWonReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Round won.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+                else
+                {
+                    reward = Main.RoundLostReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Income for losing.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+            }
+            elif (reason == RoundEndMessage.REASON_HOSTAGES_ESCORTED)
+            {
+                if (winner == PlayerProxy.GetTeam())
+                {
+                    reward = Main.RoundWonReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "All hostages escorted.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+                else
+                {
+                    reward = Main.RoundLostReward;
+                    PlayerProxy.IncreaseBalance(reward);
+                    message = "Income for losing.";
+                    Game.Print(Main.BuildRewardMessage(reward, message));
+                }
+            }
+
+        }
+
+        icon = "Kenny2";
+        name = "Jagerente";
+        text = self.buildRoundEndCutsceneMessage(reason, winner);
+        Cutscene.ShowDialogue(icon, name, text);
+    }
+
+    function buildRoundEndCutsceneMessage(reason, winner)
+    {
+        if (reason == RoundEndMessage.REASON_TIME_LEFT)
+        {
+            return HTML.Color(
+                "Blue team wins by running out the clock!" 
+                + String.Newline 
+                + "Did everyone just go AFK?", 
+                ColorEnum.BlueTeam
+            );
+        }
+        elif (reason == RoundEndMessage.REASON_TEAM_ELIMINATE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return HTML.Color(
+                    "Blue team eliminates all opponents!",
+                    ColorEnum.BlueTeam
+                );
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color(
+                    "Red team clears them out!",
+                    ColorEnum.RedTeam
+                );
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_DRAW)
+        {
+            return "DRAW GAME!"
+                + String.Newline
+                + "Wait, is that even possible?...";
+        }
+        elif (reason == RoundEndMessage.REASON_BOMB_DETONATE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return HTML.Color("The bomb explodes. Blue team wins!..." 
+                + String.Newline 
+                + "Wait, what?!.", 
+                ColorEnum.BlueTeam);
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color(
+                    "Bomb detonated, Red team takes the win!" 
+                    + String.Newline 
+                    + HTML.Italic("~ Do not tell them about Defuse Kit"), 
+                    ColorEnum.RedTeam
+                );
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_BOMB_DEFUSE)
+        {
+            if (winner == RoundEndMessage.WINNER_BLUE)
+            {
+                return HTML.Color("Blue team defuses the bomb!", ColorEnum.BlueTeam);
+            }
+            elif (winner == RoundEndMessage.WINNER_RED)
+            {
+                return HTML.Color(
+                    "Blue team defuses the bomb!"
+                    + String.Newline
+                    + "Wait, why the hell Red team won?!", 
+                    ColorEnum.RedTeam
+                );
+            }
+        }
+        elif (reason == RoundEndMessage.REASON_HOSTAGES_ESCORTED)
+        {
+            return HTML.Color("All hostages escorted!", ColorEnum.RedTeam);
+        }
+    }
+}
+
+extension Router
+{
+    _handlers = Dict();
+
+    function RegisterHandler(topic, handler)
+    {
+        self._handlers.Set(topic, handler);
+    }
+
+    function Route(sender, msg)
+    {
+        msg = Json.LoadFromString(msg);
+        topic = msg.Get("topic");
+
+        h = self._handlers.Get(topic, null);
+        if (h == null)
+        {
+            return;
+        }
+
+        h.Handle(sender, msg);
+    }
+}
+
+extension Dispatcher
+{
+    function Send(p, msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessage(p, raw);
+    }
+
+    function SendOthers(msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessageOthers(raw);
+    }
+
+    function SendAll(msg)
+    {
+        raw = Json.SaveToString(msg);
+        Network.SendMessageAll(raw);
+    }
+}
+
+extension RoomStorage
+{
+    function Get(k, d)
+    {
+        return RoomData.GetProperty(k, d);
+    }
+
+    function Set(k, v)
+    {
+        RoomData.SetProperty(k, v);
+        if (Network.IsMasterClient)
+        {
+            msg = SyncRoomDataMessage.New(k, v);
+            Dispatcher.SendOthers(msg);
+        }
+    }
+}
+
+extension RoomDataSyncer
+{
+    function GetRoomData()
+    {
+        data = Dict();
+        roundsRedKey = "rounds:" + TeamEnum.RED;
+        data.Set(roundsRedKey, RoomStorage.Get(roundsRedKey, 0));
+        roundsBlueKey = "rounds:" + TeamEnum.BLUE;
+        data.Set(roundsBlueKey, RoomStorage.Get(roundsBlueKey, 0));
+        return data;
+    }
+
+    function SyncRoomData(p)
+    {
+        msg = SyncAllRoomDataMessage.New(self.GetRoomData());
+        Dispatcher.Send(p, msg);
+    }
+
+    function SyncRoomDataOthers()
+    {
+        msg = SyncAllRoomDataMessage.New(self.GetRoomData());
+        Dispatcher.SendOthers(msg);
+    }
+}
+
+extension RoundManager
+{
+    function GetRoundsWon(team)
+    {
+        return RoomStorage.Get("rounds:" + team, 0);
+    }
+
+    function SetRoundsWon(team, value)
+    {
+        RoomStorage.Set("rounds:" + team, value);
+    }
+
+    function GetRoundsCount()
+    {
+        return self.GetRoundsWon(TeamEnum.RED) + self.GetRoundsWon(TeamEnum.BLUE);
+    }
+
+    function IncreaseRoundsWon(team)
+    {
+        self.SetRoundsWon(team, self.GetRoundsWon(team) + 1);
+    }
+}
+
+extension HTML
+{
+    function Color(str, color)
+    {
+        return "<color=#" + color + ">" + str + "</color>";
+    }
+
+    function Size(str, size)
+    {
+        return "<size=" + size + ">" + str + "</size>";
+    }
+
+    function Bold(str)
+    {
+        return "<b>" + str + "</b>";
+    }
+
+    function Italic(str)
+    {
+        return "<i>" + str + "</i>";
+    }
+}
+
+class Timer
+{
+    _time = 0.0;
+
+    function Init(time)
+    {
+        self.Reset(time);
+    }
+
+    function String(decimals)
+    {
+        return String.FormatFloat(self._time, decimals);
+    }
+
+    function GetTime()
+    {
+        return self._time;
+    }
+
+    function IsDone()
+    {
+        return self._time <= 0.0;
+    }
+
+    function Reset(time)
+    {
+        self._time = time;
+    }
+
+    function UpdateOnFrame()
+    {
+        self.update(Time.FrameTime);
+    }
+
+    function UpdateOnTick()
+    {
+        self.update(Time.TickTime);
+    }
+
+    function update(val)
+    {
+        self._time -= val;
+    }
+}
+
+extension PositionLocker
+{
+    _lockPos = null;
+
+    function SetPosition(pos)
+    {
+        self._lockPos = pos;
+    }
+
+    function UpdateLock()
+    {
+        if (
+            self._lockPos != null
+            && Network.MyPlayer.Status == PlayerStatusEnum.ALIVE 
+            && Network.MyPlayer.Character != null
+        )
+        {
+            Network.MyPlayer.Character.Position = Vector3(
+                self._lockPos.X,
+                Network.MyPlayer.Character.Position.Y,
+                self._lockPos.Z
+            );
+        }
+    }
+}
+
+extension APGSoundSequence
+{
+    _index = 0;
+
+    function GetSound()
+    {
+        sound = PlayerSoundEnum.APGSHOT4;
+        if (self._index == 0)
+        {
+            sound = PlayerSoundEnum.APGSHOT1;
+        }
+        elif (self._index == 1)
+        {
+            sound = PlayerSoundEnum.APGSHOT2;
+        }
+        elif (self._index == 2)
+        {
+            sound = PlayerSoundEnum.APGSHOT3;
+        }
+
+        if (self._index > 3)
+        {
+            self._index = 0;
+        }
+        else
+        {
+            self._index += 1;
+        }
+
+        return sound;
+    }
+}
+
+extension VectorE
+{
+    function UpdatedX(vec, x)
+    {
+        return Vector3(x, vec.Y, vec.Z);
+    }
+
+    function UpdatedY(vec, y)
+    {
+        return Vector3(vec.X, y, vec.Z);
+    }
+
+    function UpdatedZ(vec, z)
+    {
+        return Vector3(vec.X, vec.Y, z);
+    }
+
+    function UpdatedXZ(vec, x, z)
+    {
+        return Vector3(x, vec.Y, z);
+    }
+}
+
+extension Utils
+{
+    /* 
+        @Arguments(
+            @Argument(
+                Name("color"),
+                Type("Color")
+            ),
+            @Argument(
+                Name("alpha"),
+                Type("integer")
+            )
+        )
+    */
+    function UpdateColorAlpha(color, alpha)
+    {
+        return Color(color.R, color.G, color.B, alpha);
+    }
+
+    /* 
+        @Arguments(
+            @Argument(
+                Name("player"),
+                Type("Player")
+            )
+        )
+    */
+    function PlayerString(player)
+    {
+        return "Player " + player.ID;
+    }
+}
+
+class Logger
+{
+    LogLevel = 0;
+    Prefix = "";
+    
+    _traceColor = "e8e8e8";
+    _debugColor = "00FFFF";
+    _errorColor = "FF0000";
+    _infoColor = "0000FF";
+
+    _tracePrefix = "[TRACE]";
+    _debugPrefix = "[DEBUG]";
+    _errorPrefix = "[ERR]";
+    _infoPrefix = "[INF]";
+
+    /*
+        @Arguments(
+            @Argument(
+                Name("logLevel"),
+                Type("integer"),
+                Description("-1 - trace; 0 - debug; 1 - error; 2 - info")
+            ),
+            @Argument(
+                Name("prefix"),
+                Type("string"),
+                Description("Leave empty to not use")
+            )
+        )
+    */
+    function Init(logLevel, prefix)
+    {
+        self.LogLevel = logLevel;
+        self.Prefix = prefix;
+    }
+    
+    /* 
+        @Arguments(
+            @Argument(
+                Name("msg"),
+                Type("string")
+            )
+        )
+    */
+    function Trace(msg)
+    {
+        if (self.LogLevel > -1)
+        {
+            return;
+        }
+
+        logLevelPrefix = HTML.Color(self._tracePrefix, self._traceColor);
+        prefix = logLevelPrefix;
+        if (self.Prefix != "")
+        {
+            prefix = logLevelPrefix + self.Prefix;
+        }
+        msg = prefix + " " + msg;
+        Game.Print(msg);
+    }
+
+    /* 
+        @Arguments(
+            @Argument(
+                Name("msg"),
+                Type("string")
+            )
+        )
+    */
+    function Debug(msg)
+    {
+        if (self.LogLevel > 0)
+        {
+            return;
+        }
+
+        logLevelPrefix = HTML.Color(self._debugPrefix, self._debugColor);
+        prefix = logLevelPrefix;
+        if (self.Prefix != "")
+        {
+            prefix = logLevelPrefix + self.Prefix;
+        }
+        msg = prefix + " " + msg;
+        Game.Print(msg);
+    }
+
+
+    /* 
+        @Arguments(
+            @Argument(
+                Name("msg"),
+                Type("string")
+            )
+        )
+    */
+    function Error(msg)
+    {
+        if (self.LogLevel > 1)
+        {
+            return;
+        }
+
+        logLevelPrefix = HTML.Color(self._errorPrefix, self._errorColor);
+        prefix = logLevelPrefix;
+        if (self.Prefix != "")
+        {
+            prefix = logLevelPrefix + self.Prefix;
+        }
+        msg = prefix + " " + msg;
+        Game.Print(msg);
+    }
+
+    /* 
+        @Arguments(
+            @Argument(
+                Name("msg"),
+                Type("string")
+            )
+        )
+    */
+    function Info(msg)
+    {
+        if (self.LogLevel > 2)
+        {
+            return;
+        }
+
+        logLevelPrefix = HTML.Color(self._infoPrefix, self._infoColor);
+        if (self.Prefix != "")
+        {
+            prefix = logLevelPrefix + self.Prefix;
+        }
+        prefix = logLevelPrefix;
+        msg = prefix + " " + msg;
+        Game.Print(msg);
+    }
+}
+
+extension MCLogger
+{
+    Log = Logger(-1, "[MCLOG]");
+
+    function Info(msg)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        self.Log.Info(msg);
+    }
+
+    function Debug(msg)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        self.Log.Debug(msg);
+    }
+
+    function Trace(msg)
+    {
+        if (!Network.IsMasterClient)
+        {
+            return;
+        }
+
+        self.Log.Trace(msg);
+    }
+}
+
+extension GameModules
+{
+    function ForceFPV()
+    {
+        Camera.SetCameraMode("FPS");
+        Camera.FollowDistance = 0.0;
+    }
+
+    function DisableGas(player)
+    {
+        player.CurrentGas = 0.0;
+    }
+
+    function CustomPlayerSpeed(player, speed, dodgeSpeed)
+    {
+        if (player.State == PlayerStateEnum.GROUNDDODGE)
+        {
+            player.Speed = dodgeSpeed;
+        }
+        else
+        {
+            player.Speed = speed;
+        }
+    }
+}
+
+extension TipsProvider
+{
+    _list = List();
+
+    function InitList()
+    {
+        self._list.Add("Gravity Slash is the blades' passive ability. Hold ["
+                    + Input.GetKeyName(KeyBindsEnum.HUMAN_ATTACKDEFAULT)
+                    + "] while airborne near enemies to start gravitating towards the nearest one.");
+        self._list.Add("Press ["
+                 + Input.GetKeyName(KeyBindsEnum.GENERAL_CHANGECHARACTER)
+                 + "] to switch teams.");
+        self._list.Add("Buying armor is essential for survival.");
+        self._list.Add("Always buy a defuse kit to speed up bomb defusal.");
+        self._list.Add("Each weapon has a custom range, different from the base game. Learn the distances for better effectiveness.");
+        self._list.Add("This mode features Air Movement. Always stay in motion.");
+        self._list.Add("All important information can be found on the left side of the screen.");
+        self._list.Add("Each weapon has custom specials and addons. Keep an eye on the left side of the screen.");
+    }
+
+    function RandomTip()
+    {
+        if (self._list.Count < 1)
+        {
+            return null;
+        }
+
+        i = Random.RandomInt(0, self._list.Count - 1);
+
+        return self._list.Get(i);
+    }
+}
+
+#######################
+# ENUMS
+#######################
+
+#######################
+# INGAME
+#######################
+
+extension TeamEnum
+{
+    RED = "Red";
+    BLUE = "Blue";
+    NONE = "None";
+    TITAN = "Titan";
+    HUMAN = "Human";
+}
+
+extension WeaponEnum
+{
+    BLADES = "Blades";
+    APG = "APG";
+    AHSS = "AHSS";
+    TS = "Thunderspears";
+}
+
+extension TitanTypeEnum
+{
+    DEFAULT = "Default";
+    DUMMY = "Dummy";
+    NORMAL = "Normal";
+    ABNORMAL = "Abnormal";
+    PUNK = "Punk";
+    CRAWLER = "Crawler";
+}
+
+extension CollideWithEnum {
+    ENTITIES = "Entities";
+    CHARACTERS = "Characters";
+    TITANS = "Titans";
+    HUMANS = "Humans";
+    PROJECTILES = "Projectiles";
+    HITBOXES = "Hitboxes";
+    MAP_OBJECTS = "MapObjects";
+    ALL = "All";
+}
+
+extension SpecialEnum
+{
+    POTATO = "Potato";
+    ESCAPE = "Escape";
+    DANCE = "Dance";
+    DISTRACT = "Distract";
+    SMELL = "Smell";
+    SUPPLY = "Supply";
+    SMOKEBOMB = "SmokeBomb";
+    CARRY = "Carry";
+    SWITCHBACK = "Switchback";
+    CONFUSE = "Confuse";
+    AHSSTWINSHOT = "AHSSTwinShot";
+    DOWNSTRIKE = "DownStrike";
+    SPIN1 = "Spin1";
+    SPIN2 = "Spin2";
+    SPIN3 = "Spin3";
+    BLADETHROW = "BladeThrow";
+    EREN = "Eren";
+    ANNIE = "Annie";
+    STOCK = "Stock";
+    NONE = "None";
+
+    _list = List();
+
+    function Init()
+    {
+        self._list.Add(self.POTATO);
+        self._list.Add(self.ESCAPE);
+        self._list.Add(self.DANCE);
+        self._list.Add(self.DISTRACT);
+        self._list.Add(self.SMELL);
+        self._list.Add(self.SUPPLY);
+        self._list.Add(self.SMOKEBOMB);
+        self._list.Add(self.CARRY);
+        self._list.Add(self.SWITCHBACK);
+        self._list.Add(self.CONFUSE);
+        self._list.Add(self.AHSSTWINSHOT);
+        self._list.Add(self.DOWNSTRIKE);
+        self._list.Add(self.SPIN1);
+        self._list.Add(self.SPIN2);
+        self._list.Add(self.SPIN3);
+        self._list.Add(self.BLADETHROW);
+        self._list.Add(self.EREN);
+        self._list.Add(self.ANNIE);
+        self._list.Add(self.STOCK);
+        self._list.Add(self.NONE);
+    }
+
+    function GetList()
+    {
+        return self._list;
+    }
+}
+
+extension EffectEnum
+{
+    THUNDERSPEAREXPLODE = "ThunderspearExplode";
+    GASBURST = "GasBurst";
+    GROUNDSHATTER = "GroundShatter";
+    BLOOD1 = "Blood1";
+    BLOOD2 = "Blood2";
+    PUNCHHIT = "PunchHit";
+    GUNEXPLODE = "GunExplode";
+    CRITICALHIT = "CriticalHit";
+    TITANSPAWN = "TitanSpawn";
+    TITANDIE1 = "TitanDie1";
+    TITANDIE2 = "TitanDie2";
+    BOOM1 = "Boom1";
+    BOOM2 = "Boom2";
+    BOOM3 = "Boom3";
+    BOOM4 = "Boom4";
+    BOOM5 = "Boom5";
+    BOOM6 = "Boom6";
+    BOOM7 = "Boom7";
+    SPLASH = "Splash";
+    TITANBITE = "Bite";
+    SHIFTERTHUNDER = "ShifterThunder";
+    BLADETHROWHIT = "BladeThrowHit";
+    APGTRAIL = "APGTrail";
+    SINGLESPLASH = "Splash";
+    SPLASH1 = "Splash1";
+    SPLASH2 = "Splash2";
+    SPLASH3 = "Splash3";
+    WATERWAKE = "WaterWake";
+
+    _list = List();
+
+    function Init()
+    {
+        self._list.Add(self.THUNDERSPEAREXPLODE);
+        self._list.Add(self.GASBURST);
+        self._list.Add(self.GROUNDSHATTER);
+        self._list.Add(self.BLOOD1);
+        self._list.Add(self.BLOOD2);
+        self._list.Add(self.PUNCHHIT);
+        self._list.Add(self.GUNEXPLODE);
+        self._list.Add(self.CRITICALHIT);
+        self._list.Add(self.TITANSPAWN);
+        self._list.Add(self.TITANDIE1);
+        self._list.Add(self.TITANDIE2);
+        self._list.Add(self.BOOM1);
+        self._list.Add(self.BOOM2);
+        self._list.Add(self.BOOM3);
+        self._list.Add(self.BOOM4);
+        self._list.Add(self.BOOM5);
+        self._list.Add(self.BOOM6);
+        self._list.Add(self.BOOM7);
+        self._list.Add(self.SPLASH);
+        self._list.Add(self.TITANBITE);
+        self._list.Add(self.SHIFTERTHUNDER);
+        self._list.Add(self.BLADETHROWHIT);
+        self._list.Add(self.APGTRAIL);
+        self._list.Add(self.SINGLESPLASH);
+        self._list.Add(self.SPLASH1);
+        self._list.Add(self.SPLASH2);
+        self._list.Add(self.SPLASH3);
+        self._list.Add(self.WATERWAKE);
+    }
+
+    function GetList()
+    {
+        return self._list;
+    }
+}
+
+extension ProjectileEnum
+{
+    THUNDERSPEAR = "Thunderspear";
+    CANNONBALL = "CannonBall";
+    FLARE = "Flare";
+    BLADETHROW = "BladeThrow";
+    SMOKEBOMB = "SmokeBomb";
+    ROCK1 = "Rock1";
+}
+
+extension PlayerSoundEnum
+{
+    BLADEBREAK = "BladeBreak";
+    BLADEHIT = "BladeHit";
+    OLDBLADEHIT = "OldBladeHit";
+    NAPEHIT = "NapeHit";
+    LIMBHIT = "LimbHit";
+    OLDNAPEHIT = "OldNapeHit";
+    BLADERELOADAIR = "BladeReloadAir";
+    BLADERELOADGROUND = "BladeReloadGround";
+    GUNRELOAD = "GunReload";
+    BLADESWING1 = "BladeSwing1";
+    BLADESWING2 = "BladeSwing2";
+    BLADESWING3 = "BladeSwing3";
+    BLADESWING4 = "BladeSwing4";
+    OLDBLADESWING = "OldBladeSwing";
+    DODGE = "Dodge";
+    FLARELAUNCH = "FlareLaunch";
+    THUNDERSPEARLAUNCH = "ThunderspearLaunch";
+    GASBURST = "GasBurst";
+    HOOKLAUNCH = "HookLaunch";
+    OLDHOOKLAUNCH = "OldHookLaunch";
+    HOOKRETRACTLEFT = "HookRetractLeft";
+    HOOKRETRACTRIGHT = "HookRetractRight";
+    HOOKIMPACT = "HookImpact";
+    HOOKIMPACTLOUD = "HookImpactLoud";
+    GASSTART = "GasStart";
+    GASLOOP = "GasLoop";
+    GASEND = "GasEnd";
+    REELIN = "ReelIn";
+    REELOUT = "ReelOut";
+    CRASHLAND = "CrashLand";
+    JUMP = "Jump";
+    LAND = "Land";
+    NOGAS = "NoGas";
+    REFILL = "Refill";
+    SLIDE = "Slide";
+    FOOTSTEP1 = "Footstep1";
+    FOOTSTEP2 = "Footstep2";
+    DEATH1 = "Death1";
+    DEATH2 = "Death2";
+    DEATH3 = "Death3";
+    DEATH4 = "Death4";
+    DEATH5 = "Death5";
+    CHECKPOINT = "Checkpoint";
+    GUNEXPLODE = "GunExplode";
+    GUNEXPLODELOUD = "GunExplodeLoud";
+    WATERSPLASH = "WaterSplash";
+    SWITCHBACK = "Switchback";
+    APGSHOT1 = "APGShot1";
+    APGSHOT2 = "APGShot2";
+    APGSHOT3 = "APGShot3";
+    APGSHOT4 = "APGShot4";
+    BLADENAPE1VAR1 = "BladeNape1Var1";
+    BLADENAPE1VAR2 = "BladeNape1Var2";
+    BLADENAPE1VAR3 = "BladeNape1Var3";
+    BLADENAPE2VAR1 = "BladeNape2Var1";
+    BLADENAPE2VAR2 = "BladeNape2Var2";
+    BLADENAPE2VAR3 = "BladeNape2Var3";
+    BLADENAPE3VAR1 = "BladeNape3Var1";
+    BLADENAPE3VAR2 = "BladeNape3Var2";
+    BLADENAPE3VAR3 = "BladeNape3Var3";
+    BLADENAPE4VAR1 = "BladeNape4Var1";
+    BLADENAPE4VAR2 = "BladeNape4Var2";
+    BLADENAPE4VAR3 = "BladeNape4Var3";
+    AHSSGUNSHOT1 = "AHSSGunShot1";
+    AHSSGUNSHOT2 = "AHSSGunShot2";
+    AHSSGUNSHOT3 = "AHSSGunShot3";
+    AHSSGUNSHOT4 = "AHSSGunShot4";
+    AHSSGUNSHOTDOUBLE1 = "AHSSGunShotDouble1";
+    AHSSGUNSHOTDOUBLE2 = "AHSSGunShotDouble2";
+    AHSSNAPE1VAR1 = "AHSSNape1Var1";
+    AHSSNAPE1VAR2 = "AHSSNape1Var2";
+    AHSSNAPE2VAR1 = "AHSSNape2Var1";
+    AHSSNAPE2VAR2 = "AHSSNape2Var2";
+    AHSSNAPE3VAR1 = "AHSSNape3Var1";
+    AHSSNAPE3VAR2 = "AHSSNape3Var2";
+    TSLAUNCH1 = "TSLaunch1";
+    TSLAUNCH2 = "TSLaunch2";
+}
+
+extension PlayerStatusEnum
+{
+    ALIVE = "Alive";
+    DEAD = "Dead";
+    SPECTATING = "Spectating";
+}
+
+extension KeyBindsEnum
+{
+    GENERAL_FORWARD = "General/Forward";
+    GENERAL_BACK = "General/Back";
+    GENERAL_LEFT = "General/Left";
+    GENERAL_RIGHT = "General/Right";
+    GENERAL_UP = "General/Up";
+    GENERAL_DOWN = "General/Down";
+    GENERAL_AUTORUN = "General/Autorun";
+    GENERAL_PAUSE = "General/Pause";
+    GENERAL_HIDEUI = "General/HideUI";
+    GENERAL_RESTARTGAME = "General/RestartGame";
+    GENERAL_CHANGECHARACTER = "General/ChangeCharacter";
+    GENERAL_CHAT = "General/Chat";
+    GENERAL_PUSHTOTALK = "General/PushToTalk";
+    GENERAL_CHANGECAMERA = "General/ChangeCamera";
+    GENERAL_MINIMAPMAXIMIZE = "General/MinimapMaximize";
+    GENERAL_SPECTATEPREVIOUSPLAYER = "General/SpectatePreviousPlayer";
+    GENERAL_SPECTATENEXTPLAYER = "General/SpectateNextPlayer";
+    GENERAL_SKIPCUTSCENE = "General/SkipCutscene";
+    GENERAL_TOGGLESCOREBOARD = "General/ToggleScoreboard";
+    GENERAL_TAPSCOREBOARD = "General/TapScoreboard";
+    GENERAL_TAPSCOREBOARDTOOLTIP = "General/TapScoreboardTooltip";
+    GENERAL_HIDECURSOR = "General/HideCursor";
+    HUMAN_ATTACKDEFAULT = "Human/AttackDefault";
+    HUMAN_ATTACKSPECIAL = "Human/AttackSpecial";
+    HUMAN_HOOKLEFT = "Human/HookLeft";
+    HUMAN_HOOKRIGHT = "Human/HookRight";
+    HUMAN_HOOKBOTH = "Human/HookBoth";
+    HUMAN_DASH = "Human/Dash";
+    HUMAN_REELIN = "Human/ReelIn";
+    HUMAN_REELOUT = "Human/ReelOut";
+    HUMAN_DODGE = "Human/Dodge";
+    HUMAN_FLARE1 = "Human/Flare1";
+    HUMAN_FLARE2 = "Human/Flare2";
+    HUMAN_FLARE3 = "Human/Flare3";
+    HUMAN_JUMP = "Human/Jump";
+    HUMAN_RELOAD = "Human/Reload";
+    HUMAN_SALUTE = "Human/Salute";
+    HUMAN_HORSEMOUNT = "Human/HorseMount";
+    HUMAN_HORSEWALK = "Human/HorseWalk";
+    HUMAN_HORSEJUMP = "Human/HorseJump";
+    HUMAN_NAPELOCK = "Human/NapeLock";
+    HUMAN_DASHDOUBLETAP = "Human/DashDoubleTap";
+    HUMAN_AUTOUSEGAS = "Human/AutoUseGas";
+    HUMAN_AUTOUSEGASTOOLTIP = "Human/AutoUseGasTooltip";
+    HUMAN_REELOUTSCROLLSMOOTHING = "Human/ReelOutScrollSmoothing";
+    HUMAN_REELOUTSCROLLSMOOTHINGTOOLTIP = "Human/ReelOutScrollSmoothingTooltip";
+    HUMAN_SWAPTSATTACKSPECIAL = "Human/SwapTSAttackSpecial";
+    HUMAN_SWAPTSATTACKSPECIALTOOLTIP = "Human/SwapTSAttackSpecialTooltip";
+    HUMAN_AUTOREFILLGAS = "Human/AutoRefillGas";
+    HUMAN_REELINHOLDING = "Human/ReelInHolding";
+    HUMAN_REELINHOLDINGTOOLTIP = "Human/ReelInHoldingTooltip";
+    TITAN_COVERNAPE = "Titan/CoverNape";
+    TITAN_KICK = "Titan/Kick";
+    TITAN_JUMP = "Titan/Jump";
+    TITAN_SIT = "Titan/Sit";
+    TITAN_WALK = "Titan/Walk";
+    TITAN_SPRINT = "Titan/Sprint";
+    INTERACTION_INTERACT = "Interaction/Interact";
+    INTERACTION_INTERACT2 = "Interaction/Interact2";
+    INTERACTION_INTERACT3 = "Interaction/Interact3";
+    INTERACTION_ITEMMENU = "Interaction/ItemMenu";
+    INTERACTION_EMOTEMENU = "Interaction/EmoteMenu";
+    INTERACTION_MENUNEXT = "Interaction/MenuNext";
+    INTERACTION_QUICKSELECT1 = "Interaction/QuickSelect1";
+    INTERACTION_QUICKSELECT2 = "Interaction/QuickSelect2";
+    INTERACTION_QUICKSELECT3 = "Interaction/QuickSelect3";
+    INTERACTION_QUICKSELECT4 = "Interaction/QuickSelect4";
+    INTERACTION_QUICKSELECT5 = "Interaction/QuickSelect5";
+    INTERACTION_QUICKSELECT6 = "Interaction/QuickSelect6";
+    INTERACTION_QUICKSELECT7 = "Interaction/QuickSelect7";
+    INTERACTION_QUICKSELECT8 = "Interaction/QuickSelect8";
+    INTERACTION_QUICKSELECT9 = "Interaction/QuickSelect9";
+    INTERACTION_FUNCTION1 = "Interaction/Function1";
+    INTERACTION_FUNCTION2 = "Interaction/Function2";
+    INTERACTION_FUNCTION3 = "Interaction/Function3";
+    INTERACTION_FUNCTION4 = "Interaction/Function4";
+}
+
+extension ObjectTypeEnum
+{
+    HUMAN = "Human";
+    Titan = "Titan";
+}
+
+extension ForceModeEnum
+{
+    FORCE = "Force";
+    ACCELERATION = "Acceleration";
+    IMPULSE = "Impulse";
+    VELOCITYCHANGE = "VelocityChange";
+}
+
+extension PlayerStateEnum
+{
+    IDLE = "Idle";
+    ATTACK = "Attack";
+    GROUNDDODGE = "GroundDodge";
+    AIRDODGE = "AirDodge";
+    RELOAD = "Reload";
+    REFILL = "Refill";
+    DIE = "Die";
+    GRAB = "Grab";
+    EMOTEACTION = "EmoteAction";
+    SPECIALATTACK = "SpecialAttack";
+    SPECIALACTION = "SpecialAction";
+    SLIDE = "Slide";
+    RUN = "Run";
+    LAND = "Land";
+    MOUNTINGHORSE = "MountingHorse";
+    STUN = "Stun";
+    WALLSLIDE = "WallSlide";
+}
+
+extension UILabelTypeEnum
+{
+    TOPCENTER = "TopCenter";
+    TOPLEFT = "TopLeft";
+    TOPRIGHT = "TopRight";
+    MIDDLECENTER = "MiddleCenter";
+    MIDDLELEFT = "MiddleLeft";
+    MIDDLERIGHT = "MiddleRight";
+    BOTTOMLEFT = "BottomLeft";
+    BOTTOMRIGHT = "BottomRight";
+}
+
+extension OutlineModeEnum
+{
+    OUTLINEALL = "OutlineAll";
+    OUTLINEVISIBLE = "OutlineVisible";
+    OUTLINEHIDDEN = "OutlineHidden";
+    OUTLINEANDSILHOUETTE = "OutlineAndSilhouette";
+    SILHOUETTEONLY = "SilhouetteOnly";
+    OUTLINEANDLIGHTENCOLOR = "OutlineAndLightenColor";
+}
+
+#######################
+# CUSTOM
+#######################
+
+extension MapEnum
+{
+    DE_DUST = "de_dust";
+    ASSAULT = "assault";
+}
+
+extension GameModeEnum
+{
+    BOMB_PLANT = "Bomb Plant";
+    HOSTAGE = "Hostage";
+    TEAM_DEATHMATCH = "Team Deathmatch";
+    DEATHMATCH = "Deathmatch";
+}
+
+extension CustomWeaponEnum
+{
+    DEADLY_BLADES = "Deadly Blades";
+    USP_S = "USP-S";
+    MAGNUM = "Magnum";
+    SAWED_OFF = "Sawed-Off";
+    MAG_7 = "MAG-7";
+    SMG = "SMG";
+    AWP = "AWP";
+    RPG = "RPG";
+}
+
+extension CustomSpecialEnum
+{
+    ZOOM = "ZOOM";
+    SMOKE = "SMOKE";
+}
+
+extension ItemSlotEnum
+{
+    WEAPON_PRIMARY = 0;
+    WEAPON_SECONDARY = 1;
+    DEFUSE_KIT = 6;
+    BOMB = 5;
+}
+
+extension BombStateEnum
+{
+    NONE = 0;
+    PLANTED = 1;
+    DEFUSED = 2;
+    EXPLODED = 3;
+}
+
+extension PlayerCustomStateEnum
+{
+    NONE = 0;
+    DEFUSING = 1;
+    PLANTING = 2;
+}
+
+extension ColorEnum
+{
+    White = "FFFFFF";
+    Black = "000000";
+    Red = "ff0000";
+    Palegoldenrod = "dcdcaa";
+    Darkkhaki = "D8BD75";
+    DarkkhakiGreen = "93B464";
+    Yellowgreen = "B9EF61";
+    RedTeam = "c45353";
+    RedTeamDead = "734E4E";
+    BlueTeam = "5397c6";
+    BlueTeamDead = "4E6779";
+    Green = "00ff00";
+    Gold = "fbca22";
+    Khaki = "FEFE8B";
+    PastelBlue = "8BD3E6";
+    PastelRed = "FF6D6A";
+    PastelYellow = "E9EC6B";
+    PastelOrange = "EFBE7D";
+    PastelPurple = "B1A2CA";
+    PastelCream = "FDFFB6";
+    FAC = "FFAACC";
+}
+
+#######################
+# MESSAGES
+#######################
+
+extension BaseMessage
+{
+    KEY_TOPIC = "topic";
+}
+
+extension GetDamageMessage
+{
+    TOPIC = "get_damage";
+    
+    KEY_DAMAGE = "damage";
+
+    function New(dmg)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_DAMAGE, dmg);
+        return msg;
+    }
+}
+
+extension BombPlantMessage
+{
+    TOPIC = "bomb_plant";
+
+    KEY_TYPE = "type";
+
+    MESSAGE_PLANTING = "planting:start";
+    MESSAGE_PLANTING_CANCEL = "planting:cancel";
+    MESSAGE_PLANTED = "planting:end";
+
+    MESSAGE_DEFUSING = "defusing:start";
+    MESSAGE_DEFUSING_CANCEL = "defusing:cancel";
+    MESSAGE_DEFUSED = "defusing:end";
+
+    MESSAGE_EXPLODED = "exploded";
+
+    function New(t)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_TYPE, t);
+        return msg;
+    }
+}
+
+extension RoundEndMessage
+{
+    TOPIC = "round_end";
+    
+    KEY_REASON = "reason";
+    KEY_WINNER = "winner";
+    
+    REASON_DRAW = "draw";
+    REASON_BOMB_DETONATE = "bomb_detonate";
+    REASON_BOMB_DEFUSE = "bomb_defuse";
+    REASON_TEAM_ELIMINATE = "team_eliminate";
+    REASON_TIME_LEFT = "time_left";
+    REASON_HOSTAGES_ESCORTED = "hostages_escorted";
+
+    WINNER_RED = TeamEnum.RED;
+    WINNER_BLUE = TeamEnum.BLUE;
+    WINNER_NOBODY = "none";
+
+    function New(reason, winner)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_REASON, reason);
+        msg.Set(self.KEY_WINNER, winner);
+        return msg;
+    }
+}
+
+extension ThrowGrenadeMessage
+{
+    TOPIC = "throw_grenade";
+    
+    KEY_POSITION = "position";
+    KEY_DIRECTION = "direction";
+    KEY_VELOCITY = "velocity";
+    KEY_FORCE = "force";
+
+    function New(pos, dir, vel, force)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_POSITION, pos);
+        msg.Set(self.KEY_DIRECTION, dir);
+        msg.Set(self.KEY_VELOCITY, vel);
+        msg.Set(self.KEY_FORCE, force);
+        return msg;
+    }
+}
+
+extension HostageEscortRequestMessage
+{
+    TOPIC = "hostage:escort";
+    
+    KEY_HOSTAGE_ID = "hostage_id";
+
+    function New(id)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_HOSTAGE_ID, id);
+        return msg;
+    }
+}
+
+extension SyncRoomDataMessage
+{
+    TOPIC = "room_data:sync";
+
+    KEY_KEY = "key";
+    KEY_VALUE = "value";
+
+    function New(k, v)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_KEY, k);
+        msg.Set(self.KEY_VALUE, v);
+        return msg;
+    }
+}
+
+extension SyncAllRoomDataMessage
+{
+    TOPIC = "room_data:sync:all";
+
+    KEY_DATA = "data";
+
+    function New(data)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_DATA, data);
+        return msg;
+    }
+}
