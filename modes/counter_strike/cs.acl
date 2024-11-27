@@ -55,6 +55,19 @@ class Main
     # Shop Settings
     StartBalance = 400;
     StartBalanceTooltip = "Player's starting balance.";
+
+    EnableArmor = true;
+    EnableDefuseKit = true;
+    EnableFragGrenade = true;
+    EnableSawedOff = true;
+    EnableUSPS = true;
+    EnableMagnum = true;
+    EnableSMG = true;
+    EnableMAG7 = true;
+    EnableAWP = true;
+    EnableRPG = true;
+    EnableDeadlyBlades = true;
+
     ArmorPrice = 1600;
     ArmorValue = 1000;
     DefuseKitPrice = 400;
@@ -350,6 +363,29 @@ class Main
         }
     }
 
+    function OnSecond()
+    {
+        text = "Counter Strike Custom Logic" 
+                + String.Newline 
+                + "- " + HTML.Color("Jagerente", ColorEnum.White);
+
+        if (self.Map == MapEnum.DE_DUST)
+        {
+            text += String.Newline
+                + "Original Map"
+                + String.Newline
+                + "- " + HTML.Color("Dimenshion", ColorEnum.White);
+        }
+        elif (self.Map == MapEnum.ASSAULT)
+        {
+            text += String.Newline 
+                + "Original Map"
+                + String.Newline
+                + "- " + HTML.Color("cowcowtony", ColorEnum.White);
+        }
+
+        UI.SetLabel(UILabelTypeEnum.MIDDLERIGHT, HTML.Color(text, ColorEnum.PastelCream));
+    }
 
     function OnFrame()
     {
@@ -762,32 +798,96 @@ class Main
         self._shoppingItems.Clear();
         if (self.GameMode == GameModeEnum.DEATHMATCH)
         {
-            self._shoppingItems.Add(ArmorShoppingItem(0, self.ArmorValue));
-            self._shoppingItems.Add(FragGrenadeShoppingItem(0));
-            self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, 0));
-            self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, 0));
+            if (self.EnableArmor)
+            {
+                self._shoppingItems.Add(ArmorShoppingItem(0, self.ArmorValue));
+            }
+            if (self.EnableFragGrenade)
+            {
+                self._shoppingItems.Add(FragGrenadeShoppingItem(0));
+            }
+            if (self.EnableUSPS)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, 0));
+            }
+            if (self.EnableMagnum)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, 0));
+            }
+            if (self.EnableSawedOff)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, 0));
+            }
+            if (self.EnableMAG7)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, 0));
+            }
+            if (self.EnableSMG)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, 0));
+            }
+            if (self.EnableAWP)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, 0));
+            }
+            if (self.EnableRPG)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, 0));
+            }
+            if (self.EnableDeadlyBlades)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Deadly Blades", CustomWeaponEnum.DEADLY_BLADES, 0));
+            }
         }
         else 
         {
-            self._shoppingItems.Add(ArmorShoppingItem(self.ArmorPrice, self.ArmorValue));
+            if (self.EnableArmor)
+            {
+                self._shoppingItems.Add(ArmorShoppingItem(self.ArmorPrice, self.ArmorValue));
+            }
             if (self.GameMode == GameModeEnum.BOMB_PLANT && PlayerProxy.GetTeam() == TeamEnum.BLUE)
             {
-                self._shoppingItems.Add(DefuseKitShoppingItem(self.DefuseKitPrice));
+                if (self.EnableDefuseKit)
+                {
+                    self._shoppingItems.Add(DefuseKitShoppingItem(self.DefuseKitPrice));
+                }
             }
-            self._shoppingItems.Add(FragGrenadeShoppingItem(self.FragGrenadePrice));
-            self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, self.USPSPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, self.MagnumPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, self.SawedOffPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, self.MAG7Price));
-            self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, self.SMGPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, self.AWPPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, self.RPGPrice));
-            self._shoppingItems.Add(WeaponShoppingItem("Deadly Blades", CustomWeaponEnum.DEADLY_BLADES, self.DeadlyBladesPrice));
+            if (self.EnableFragGrenade)
+            {
+                self._shoppingItems.Add(FragGrenadeShoppingItem(self.FragGrenadePrice));
+            }
+            if (self.EnableUSPS)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("USP-S", CustomWeaponEnum.USP_S, self.USPSPrice));
+            }
+            if (self.EnableMagnum)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Magnum", CustomWeaponEnum.MAGNUM, self.MagnumPrice));
+            }
+            if (self.EnableSawedOff)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Sawed Off", CustomWeaponEnum.SAWED_OFF, self.SawedOffPrice));
+            }
+            if (self.EnableMAG7)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("MAG-7", CustomWeaponEnum.MAG_7, self.MAG7Price));
+            }
+            if (self.EnableSMG)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("SMG", CustomWeaponEnum.SMG, self.SMGPrice));
+            }
+            if (self.EnableAWP)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("AWP", CustomWeaponEnum.AWP, self.AWPPrice));
+            }
+            if (self.EnableRPG)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("RPG", CustomWeaponEnum.RPG, self.RPGPrice));
+            }
+            if (self.EnableDeadlyBlades)
+            {
+                self._shoppingItems.Add(WeaponShoppingItem("Deadly Blades", CustomWeaponEnum.DEADLY_BLADES, self.DeadlyBladesPrice));
+            }
         }
 
         self._shoppingRegions.Clear();
@@ -1321,7 +1421,32 @@ class Main
                         weaponLabel += " " + infoStr;
                     }
                 }
-                weaponLabel += " | Ammo: " + PlayerProxy._lastRounds + "/" + PlayerProxy._lastAmmo;
+
+                rounds = 0;
+                ammo = 0;
+                if (secondaryWeapon._distance > 0 && !secondaryWeapon._isAutomatic)
+                {
+                    if (PlayerProxy._lastRounds != null)
+                    {
+                        rounds = PlayerProxy._lastRounds / 2;
+                    }
+                    if (PlayerProxy._lastAmmo != null)
+                    {
+                        ammo = PlayerProxy._lastAmmo / 2;
+                    }
+                }
+                else 
+                {
+                    if (PlayerProxy._lastRounds != null)
+                    {
+                        rounds = PlayerProxy._lastRounds;
+                    }
+                    if (PlayerProxy._lastAmmo != null)
+                    {
+                        ammo = PlayerProxy._lastAmmo;
+                    }
+                }
+                weaponLabel += " | Ammo: " + rounds + "/" + PlayerProxy._lastAmmo;
             }
 
             for (addon in secondaryWeapon.GetAddons())
@@ -1598,6 +1723,17 @@ extension PlayerProxy
         {
             self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));
             self.SetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY, null);
+        }
+
+        w = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY);
+        if (w != null)
+        {
+            w.Reset();
+        }
+        w = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY);
+        if (w != null)
+        {
+            w.Reset();
         }
         self.RemoveDefuseKit();
         self.RemoveBomb();
@@ -1950,6 +2086,7 @@ extension PlayerProxy
             return;
         }
 
+        weapon.Reset();
         self.SetWeaponInSlot(weapon.GetSlot(), weapon);
 
         if (!self.IsAlive())
@@ -2125,6 +2262,21 @@ extension PlayerProxy
         {
             self._lastAmmo = human.CurrentAmmoLeft;
         }
+    }
+}
+
+extension SoundManager
+{
+    function Play(name)
+    {
+        char = PlayerProxy.GetHuman();
+        if (char == null)
+        {
+            return;
+        }
+
+        char.StopSound(name);
+        char.PlaySound(name);
     }
 }
 
@@ -2511,7 +2663,7 @@ class BunnyHopAbility
             reversedVelocity = Vector3(self._landingVelocity.X, velY, self._landingVelocity.Z);
             h.Velocity = reversedVelocity;
             self._bunnyHopTimer.Reset(0.0); 
-            h.PlaySound(PlayerSoundEnum.JUMP);
+            SoundManager.Play(PlayerSoundEnum.JUMP);
         }
     }
 }
@@ -2707,7 +2859,8 @@ class Weapon
     _distance = -1;
     _radius = -1;
     _isAutomatic = false;
-    _shotDelayTimer = Timer(0.2);
+    _shotDelay = 0.1;
+    _shotDelayTimer = Timer(0.1);
     _killReward = 0;
     _slot = 0;
     _special = null;
@@ -2744,10 +2897,23 @@ class Weapon
         }
         self._radius = radius;
         self._isAutomatic = isAutomatic;
-        self._shotDelayTimer = Timer(0.3);
+        self._shotDelayTimer = Timer(self._shotDelay);
         self._killReward = killReward;
         self._slot = slot;
         self._special = special;
+    }
+
+    function Reset()
+    {
+        if (self._special != null)
+        {
+            self._special.Reset();
+        }
+
+        for (a in self._addons)
+        {
+            a.Reset();
+        }
     }
 
     function OnTickHandler()
@@ -2804,18 +2970,18 @@ class Weapon
 
             if (self._id == CustomWeaponEnum.AWP)
             {
-                human.PlaySound(PlayerSoundEnum.TSLAUNCH1);
-                human.PlaySound(PlayerSoundEnum.SLIDE);
-                human.PlaySound(PlayerSoundEnum.HOOKIMPACTLOUD);
+                SoundManager.Play(PlayerSoundEnum.TSLAUNCH1);
+                SoundManager.Play(PlayerSoundEnum.SLIDE);
+                SoundManager.Play(PlayerSoundEnum.HOOKIMPACTLOUD);
             }
             elif (self._id == CustomWeaponEnum.MAG_7)
             {
-                human.PlaySound(PlayerSoundEnum.AHSSGUNSHOTDOUBLE1);
+                SoundManager.Play(PlayerSoundEnum.AHSSGUNSHOTDOUBLE1);
             }
             elif (self._id == CustomWeaponEnum.MAGNUM)
             {
-                human.PlaySound(PlayerSoundEnum.NOGAS);
-                human.PlaySound(PlayerSoundEnum.GUNEXPLODE);
+                SoundManager.Play(PlayerSoundEnum.NOGAS);
+                SoundManager.Play(PlayerSoundEnum.GUNEXPLODE);
             }
 
             human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
@@ -2878,14 +3044,14 @@ class Weapon
                 return;
             }
 
-            self._shotDelayTimer.Reset(0.3);
+            self._shotDelayTimer.Reset(self._shotDelay);
             human = PlayerProxy.GetHuman();
             if (human.CurrentAmmoRound <= 0)
             {
                 return;
             }
 
-            human.PlaySound(APGSoundSequence.GetSound());
+            SoundManager.Play(APGSoundSequence.GetSound());
             human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
 
             position = Camera.Position;
@@ -3118,6 +3284,12 @@ class SmokeSpecial
         self._cdTimer = Timer(0.0);
     }
 
+    function Reset()
+    {
+        self._durationTimer.Reset(self._duration);
+        self._cdTimer.Reset(0.0);
+    }
+
     function GetName()
     {
         return self._name;
@@ -3238,6 +3410,12 @@ class GravitySlashWeaponAddon
         self._uses = uses;
         self._cooldown = cooldown;
         self._cdTimer.Reset(cooldown);
+    }
+
+    function Reset()
+    {
+        self._cdTimer.Reset(self._cooldown);
+        self._uses = self._maxUses;
     }
 
     function GetName()
@@ -3379,8 +3557,9 @@ class ThermalVisionWeaponAddon
     _name = "Thermal Vision";
     _radius = 64;
     _cd = 75.0;
-    _cdTimer = Timer(0.0);
+    _startCD = 0.0;
     _duration = 15.0;
+    _cdTimer = Timer(0.0);
     _durationTimer = Timer(0.0);
 
     function Init(radius, startCD, cd, duration)
@@ -3392,6 +3571,12 @@ class ThermalVisionWeaponAddon
         }
         self._cd = cd;
         self._duration = duration;
+    }
+
+    function Reset()
+    {
+        self._durationTimer.Reset(0.0);
+        self._cdTimer.Reset(self._startCD);
     }
 
     function GetName()
@@ -3633,6 +3818,8 @@ component BombPlant
     _explosionTimer = Timer(self.EXPLOSION_DELAY);
     _ignoreCollisionMessageTimer = Timer(0);
     _plantedSoundTimer = Timer(self.PLANTED_SOUND_DELAY);
+    _plantingSoundPlayed = false;
+    _defusingSoundPlayed = false;
 
     _alphaDirection = 1; 
     _alphaValue = 115; 
@@ -3767,8 +3954,8 @@ component BombPlant
         newPos = Vector3(player.Character.Position.X, player.Character.Position.Y + 0.83, player.Character.Position.Z);
         self.MapObject.Position = newPos;
         self.UpdateRegionColor(self.PLANT_COLOR_PLANTED);
-        player.Character.PlaySound(PlayerSoundEnum.CHECKPOINT);
-        player.Character.PlaySound(PlayerSoundEnum.THUNDERSPEARLAUNCH);
+        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+        SoundManager.Play(PlayerSoundEnum.THUNDERSPEARLAUNCH);
         if (Network.IsMasterClient)
         {
             startPos = Vector3(newPos.X, newPos.Y+5.0, newPos.Z);
@@ -3970,11 +4157,17 @@ component BombPlant
             self._plantingTimer.UpdateOnFrame();
             text = HTML.Color("Planting Bomb: " + self._plantingTimer.String(2), ColorEnum.Darkkhaki);
             UI.SetLabelForTime("MiddleCenter", text, 0.1);
+            if (!self._plantingSoundPlayed)
+            {
+                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                self._plantingSoundPlayed = true;
+            }
         }
         else
         {
             self._myState = PlayerCustomStateEnum.NONE;
             self.sendMessageBombPlanted();
+            self._plantingSoundPlayed = false;
         }
     }
 
@@ -3990,11 +4183,18 @@ component BombPlant
             self._defuseTimer.UpdateOnFrame();
             text = HTML.Color("Defusing Bomb: " + self._defuseTimer.String(2), ColorEnum.Darkkhaki);
             UI.SetLabelForTime("MiddleCenter", text, 0.1);
+
+            if (!self._defusingSoundPlayed)
+            {
+                SoundManager.Play(PlayerSoundEnum.REELIN);
+                self._defusingSoundPlayed = true;
+            }
         }
         else
         {
             self._myState = PlayerCustomStateEnum.NONE;
             self.sendMessageBombDefused();
+            self._defusingSoundPlayed = false;
         }
     }
 
@@ -4007,6 +4207,7 @@ component BombPlant
         text = HTML.Color("Cancelled planting!", ColorEnum.Red);
         UI.SetLabelForTime("MiddleCenter", text, infoTime);
         self.sendMessageBombPlantingCancel();
+        self._plantingSoundPlayed = false;
     }
     
     function handleDefusingCancel()
@@ -4018,6 +4219,7 @@ component BombPlant
         text = HTML.Color("Cancelled defusing!", ColorEnum.Red);
         UI.SetLabelForTime("MiddleCenter", text, infoTime);
         self.sendMessageBombDefusingCancel();
+        self._defusingSoundPlayed = false;
     }
 
     function updateExplosionTimerOnFrame()
@@ -4052,7 +4254,7 @@ component BombPlant
             }
 
             self._plantedSoundTimer.Reset(delay);
-            Network.MyPlayer.Character.PlaySound(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
         }
     }
 
@@ -5942,6 +6144,83 @@ extension PlayerStateEnum
     MOUNTINGHORSE = "MountingHorse";
     STUN = "Stun";
     WALLSLIDE = "WallSlide";
+}
+
+extension HumanAnimationEnum
+{
+    HORSEMOUNT = "Armature|horse_geton";
+    HORSEDISMOUNT = "Armature|horse_getoff";
+    HORSEIDLE = "Armature|horse_idle";
+    HORSERUN = "Armature|horse_run";
+    IDLEF = "Armature|idle_F";
+    IDLEM = "Armature|idle_M";
+    IDLEAHSSM = "Armature|idle_AHSS_F";
+    IDLEAHSSF = "Armature|idle_AHSS_M";
+    IDLETSF = "Armature|idle_TS_F";
+    IDLETSM = "Armature|idle_TS_M";
+    JUMP = "Armature|jump";
+    RUN = "Armature|run";
+    RUNTS = "Armature|run_TS";
+    RUNBUFFED = "Armature|run_sasha";
+    DODGE = "Armature|dodge";
+    LAND = "Armature|dash_land";
+    SLIDE = "Armature|slide";
+    GRABBED = "Armature|grabbed";
+    DASH = "Armature|dash";
+    REFILL = "Armature|resupply";
+    TOROOF = "Armature|toRoof";
+    WALLRUN = "Armature|wallrun";
+    ONWALL = "Armature|onWall";
+    CHANGEBLADE = "Armature|changeBlade";
+    CHANGEBLADEAIR = "Armature|changeBlade_air";
+    AHSSHOOKFORWARDBOTH = "Armature|AHSS_hook_both";
+    AHSSHOOKFORWARDL = "Armature|AHSS_hook_L";
+    AHSSHOOKFORWARDR = "Armature|AHSS_hook_R";
+    AHSSSHOOTR = "Armature|AHSS_shoot_R";
+    AHSSSHOOTL = "Armature|AHSS_shoot_L";
+    AHSSSHOOTBOTH = "Armature|AHSS_shooth_both";
+    AHSSSHOOTRAIR = "Armature|AHSS_shoot_air_R";
+    AHSSSHOOTLAIR = "Armature|AHSS_shoot_air_L";
+    AHSSSHOOTBOTHAIR = "Armature|AHSS_shooth_air_both";
+    AHSSGUNRELOADBOTH = "Armature|AHSS_reload_both";
+    AHSSGUNRELOADBOTHAIR = "Armature|AHSS_reload_air_both";
+    TSSHOOTR = "Armature|TS_shoot_R";
+    TSSHOOTL = "Armature|TS_shoot_L";
+    TSSHOOTRAIR = "Armature|TS_shoot_air_R";
+    TSSHOOTLAIR = "Armature|TS_shoot_air_L";
+    AIRHOOKLJUST = "Armature|air_hook_l_just";
+    AIRHOOKRJUST = "Armature|air_hook_r_just";
+    AIRHOOKL = "Armature|air_hook_l";
+    AIRHOOKR = "Armature|air_hook_r";
+    AIRHOOK = "Armature|air_hook";
+    AIRRELEASE = "Armature|air_release";
+    AIRFALL = "Armature|air_fall";
+    AIRRISE = "Armature|air_rise";
+    AIR2 = "Armature|air2";
+    AIR2RIGHT = "Armature|air2_right";
+    AIR2LEFT = "Armature|air2_left";
+    AIR2BACKWARD = "Armature|air2_backward";
+    ATTACK1HOOKL1 = "Armature|attack1_hook_l1";
+    ATTACK1HOOKL2 = "Armature|attack1_hook_l2";
+    ATTACK1HOOKR1 = "Armature|attack1_hook_r1";
+    ATTACK1HOOKR2 = "Armature|attack1_hook_r2";
+    ATTACK1 = "Armature|attack1";
+    ATTACK2 = "Armature|attack2";
+    ATTACK4 = "Armature|attack4";
+    SPECIALARMIN = "Armature|special_armin";
+    SPECIALMARCO0 = "Armature|special_marco_0";
+    SPECIALMARCO1 = "Armature|special_marco_1";
+    SPECIALSASHA = "Armature|special_sasha";
+    SPECIALMIKASA1 = "Armature|attack_3_1";
+    SPECIALMIKASA2 = "Armature|attack_3_2";
+    SPECIALLEVI = "Armature|special_levi";
+    SPECIALPETRA = "Armature|special_petra";
+    SPECIALJEAN = "Armature|grabbed_jean";
+    SPECIALSHIFTER = "Armature|special_shift_0";
+    EMOTESALUTE = "Armature|emote_salute";
+    EMOTENO = "Armature|emote_no";
+    EMOTEYES = "Armature|emote_yes";
+    EMOTEWAVE = "Armature|emote_wave";
 }
 
 extension UILabelTypeEnum
