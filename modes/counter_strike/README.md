@@ -2,7 +2,7 @@
 
 | Author    | Version |
 |-----------|---------|
-| Jagerente | v1.0.0  |
+| Jagerente | v1.0.1  |
 
 ## Features
 
@@ -100,6 +100,8 @@ Win Conditions:
 |-------------------------------|------------------------------------------------------------------------------|
 | Mode/Game mode                | `cs`                                                                         |
 | Misc/PVP                      | `FFA` for `Deathmatch` <br/> `Team` for `Bomb Plant/Hostage/Team Deathmatch` |
+| Mode/Map                      | Must be equal to the map you are playing.                                    |
+| Mode/Game Mode                | Do not forget to update Misc/PVP as well.                                    |
 | Misc/Realism Mode             | On                                                                           |
 | Misc/Allow Blades/AHSS/TS/APG | On                                                                           |
 | Misc/Allow player titans      | Off                                                                          |
