@@ -1,0 +1,206 @@
+component Activatable
+{
+    Active = false;
+
+    _active = false;
+
+    function Initialize()
+    {
+        self._active = self.Active;
+    }
+
+    function Reset()
+    {
+        self.Initialize();
+    }
+
+    function OnGameStart()
+    {
+        self.Initialize();
+    }
+
+    function Activate()
+    {
+        self._active = true;
+    }
+
+    function Deactivate()
+    {
+        self._active = false;
+    }
+
+    function Toggle()
+    {
+        self._active = !self._active;
+    }
+
+    # @return bool
+    function IsActive()
+    {
+        return self._active;
+    }
+}
+
+component RegionButton
+{
+    DeactivateDelay = 0.0;
+    Reverse = false;
+
+    # @type Activatable
+    _activatable = null;
+    _timer = Timer(0.0);
+
+    function Initialize()
+    {
+        self._activatable = self.MapObject.GetComponent("Activatable");
+    }
+
+    function OnGameStart()
+    {
+        self.Initialize();
+    }
+
+    function OnCollisionStay(obj)
+    {
+        if ((obj.Type != "Human" && obj.Type != "Titan" && obj.Type != "Shifter") || !obj.IsMine)
+        {
+            return;
+        }
+
+        self._timer.Reset(self.DeactivateDelay + 0.25);
+    }
+
+    function OnCollisionExit(obj)
+    {
+        if ((obj.Type != "Human" && obj.Type != "Titan" && obj.Type != "Shifter") || !obj.IsMine)
+        {
+            return;
+        }
+
+        self._timer.Reset(self.DeactivateDelay);
+    }
+
+    function OnTick()
+    {
+        self._timer.UpdateOnTick();
+        if (self._timer.IsDone())
+        {
+            if (self.Reverse)
+            {
+                self._activatable.Activate();
+            }
+            else
+            {
+                self._activatable.Deactivate();
+            }
+        }
+        else
+        {
+            if (self.Reverse)
+            {
+                self._activatable.Deactivate();
+            }
+            else
+            {
+                self._activatable.Activate();
+            }
+        }
+    }
+
+    function IsActive()
+    {
+        return self._activatable.IsActive();
+    }
+}
+
+component ActiveControl
+{
+    ActivatableID = 0;
+
+    # @type Activatable
+    _activatable = null;
+
+    function Initialize()
+    {
+        obj = Map.FindMapObjectByID(self.ActivatableID);
+        if (obj != null)
+        {
+            self._activatable = obj.GetComponent("Activatable");
+        }
+    }
+
+    function OnGameStart()
+    {
+        self.Initialize();
+    }
+
+    function OnTick()
+    {
+        if (self._activatable == null)
+        {
+            return;
+        }
+
+        self.MapObject.Active = self._activatable.IsActive();
+    }
+}
+
+class Timer
+{
+    _time = 0.0;
+    _lastInitialTime = 0.0;
+
+    # @param time float
+    function Init(time)
+    {
+        self.Reset(time);
+    }
+
+    # @param decimals int
+    # @return string
+    function String(decimals)
+    {
+        return String.FormatFloat(self._time, decimals);
+    }
+
+    # @return float
+    function GetTime()
+    {
+        return self._time;
+    }
+    
+    # @return float
+    function GetInitialTime()
+    {
+        return self._lastInitialTime;
+    }
+
+    # @return bool
+    function IsDone()
+    {
+        return self._time <= 0.0;
+    }
+
+    # @param time float
+    function Reset(time)
+    {
+        self._time = time;
+        self._lastInitialTime = time;
+    }
+
+    function UpdateOnFrame()
+    {
+        self.update(Time.FrameTime);
+    }
+
+    function UpdateOnTick()
+    {
+        self.update(Time.TickTime);
+    }
+
+    # @param val float
+    function update(val)
+    {
+        self._time -= val;
+    }
+}
