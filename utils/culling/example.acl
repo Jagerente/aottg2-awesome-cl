@@ -41,10 +41,90 @@ component Activatable
     }
 }
 
+component DistanceButton
+{
+    ActivatableID = 0;
+    ActivatableIDTooltip = "Leave 0 to use the Activatable component from the same object.";
+    DeactivateDelay = 0.0;
+    DeactivateDelayTooltip = "Time after which Activatable will be deactivated on deactivation trigger.";
+    Distance = 100.0;
+    DistanceTooltip = "Maximum distance from the player to trigger the component's activation/deactivation.";
+    Reverse = false;
+    ReverseTooltip = "If true, the activation behavior is reversed, activating the component when it would normally deactivate.";
+
+    # @type Activatable
+    _activatable = null;
+    # @type Timer
+    _timer = null;
+
+    function Initialize()
+    {
+        self._timer = Timer(0.0);
+        if (self.ActivatableID <= 0)
+        {
+            self._activatable = self.MapObject.GetComponent("Activatable");
+        }
+        else 
+        {
+            obj = Map.FindMapObjectByID(self.ActivatableID);
+            self._activatable = obj.GetComponent("Activatable");
+        }
+    }
+    
+    function OnGameStart()
+    {
+        self.Initialize();
+    }
+
+    function OnTick()
+    {
+        c = Network.MyPlayer.Character;
+        if (c != null)
+        {
+            d = Vector3.Distance(c.Position, self.MapObject.Position);
+            if (d <= self.Distance)
+            {
+                self._timer.Reset(self.DeactivateDelay + 0.25);
+            }
+        }
+
+        self._timer.UpdateOnTick();
+        if (self._timer.IsDone())
+        {
+            if (self.Reverse)
+            {
+                self._activatable.Activate();
+            }
+            else
+            {
+                self._activatable.Deactivate();
+            }
+        }
+        else
+        {
+            if (self.Reverse)
+            {
+                self._activatable.Deactivate();
+            }
+            else
+            {
+                self._activatable.Activate();
+            }
+        }
+    }
+
+    function IsActive()
+    {
+        return self._activatable.IsActive();
+    }
+}
+
 component RegionButton
 {
     DeactivateDelay = 0.0;
+    DeactivateDelayTooltip = "Time after which Activatable will be deactivated on deactivation trigger.";
     Reverse = false;
+    ReverseTooltip = "If true, the activation behavior is reversed, activating the component when it would normally deactivate.";
 
     # @type Activatable
     _activatable = null;
@@ -116,17 +196,38 @@ component RegionButton
 component ActiveControl
 {
     ActivatableID = 0;
+    ActivatableIDTooltip = "Leave 0 to use the Activatable component from the same object.";
+    Reverse = false;
+    ReverseTooltip = "If true, the activation behavior is reversed, activating the component when it would normally deactivate.";
 
     # @type Activatable
     _activatable = null;
+    _activated = false;
+    _deactivatableList = List();
 
     function Initialize()
     {
         obj = Map.FindMapObjectByID(self.ActivatableID);
-        if (obj != null)
+        self._activatable = obj.GetComponent("Activatable");
+        isActive = self._activatable.IsActive() != self.Reverse;
+
+        self._RegisterDeactivatableComponents();
+
+        if (!isActive)
         {
-            self._activatable = obj.GetComponent("Activatable");
+            self._Deactivate();
         }
+
+        self._activated = isActive;
+    }
+
+    # Registers components with OnDeactivate() callback to call when ActiveControl will deactivate all MapObjects components.
+    function _RegisterDeactivatableComponents()
+    {
+        # Example
+        # self._deactivatableList.Add("ComponentName1");
+        # self._deactivatableList.Add("ComponentName2");
+        # self._deactivatableList.Add("ComponentName3");
     }
 
     function OnGameStart()
@@ -136,12 +237,43 @@ component ActiveControl
 
     function OnTick()
     {
-        if (self._activatable == null)
+        isActive = self._activatable == null || (self._activatable.IsActive() != self.Reverse);
+        if (self._activated == isActive)
         {
             return;
         }
 
-        self.MapObject.Active = self._activatable.IsActive();
+        self._activated = isActive;
+
+        self.MapObject.Active = self._activated;
+        if (!self._activated)
+        {
+            self._Deactivate();
+        }
+        else
+        {
+            self._Activate();
+        }
+    }
+
+    function _Activate()
+    {
+        self.MapObject.SetComponentsEnabled(true);
+    }
+
+    function _Deactivate()
+    {
+        self.MapObject.SetComponentsEnabled(false);
+        self.MapObject.SetComponentEnabled("ActiveControl", true);
+
+        for (k in self._deactivatableList)
+        {
+            comp = self.MapObject.GetComponent(k);
+            if (comp != null)
+            {
+                comp.OnDeactivate();
+            }
+        }
     }
 }
 
