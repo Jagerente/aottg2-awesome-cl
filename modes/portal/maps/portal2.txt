@@ -4633,7 +4633,7 @@ Scene,Geometry/Cube1,8131,0,1,1,1,0,Cube1,3999.501,15,67.73854,0,0,90,5,5,5,Phys
 Scene,Geometry/Cylinder1,8132,0,1,1,1,0,Cylinder1,3973.589,14.67992,53.85159,0,0,44.99998,0.3,3,0.3,Physical,Entities,Default,Basic|255/255/255/255|Misc/Glass1|1/1|0/0,;
 Scene,Geometry/Cylinder1,8133,0,1,1,1,0,Cylinder1,3975.627,11.50078,53.85257,0,0,0,0.3,1,0.3,Physical,Entities,Default,Basic|255/255/255/255|Misc/Glass1|1/1|0/0,;
 Scene,Geometry/Cube1,8134,0,1,1,1,0,Cube1,3975.691,12.55742,53.86954,0,0,0,1,1,1,Physical,Entities,Default,Basic|55/55/55/255|Misc/Glass1|1/1|0/0,;
-Scene,Geometry/Sphere1,8135,0,0,1,0,0,WheatleyRef 1-7-0,3975.627,9.98947,53.85257,0,0,0,1,1,1,None,Entities,Default,Basic|255/255/255/255|Misc/Glass1|0/1|0/0,WheatleyRef|ActivatableID:12135|LockPositionID:8157|Follow:true|ResetGroup:Cutscene_Level_1_7_0|Movable:true|Mass:1|Gravity:0/-20/0|FreezeRotation:false|Interpolate:true;
+Scene,Geometry/Sphere1,8135,0,0,1,0,0,WheatleyRef 1-7-0,3975.627,9.98947,53.85257,0,0,0,1,1,1,None,Entities,Default,Basic|255/255/255/255|Misc/Glass1|0/1|0/0,WheatleyRef|ActivatableID:12135|LockPositionID:8157|Follow:true|ResetGroup:Cutscene_Level_1_7_0|Movable:true|Controllable:false|Mass:1|Gravity:0/-20/0|FreezeRotation:false|Interpolate:true;
 Scene,Geometry/Cube1,8136,0,1,1,1,0,Cube1,4004.501,5,62.73854,0,0,90,5,5,5,Physical,Entities,Default,Reflective|255/255/255/255|Stone/Stone13|1/0.3|0/0|255/255/255/255,PortalSurfaceable|;
 Scene,Geometry/Cube1,8137,0,1,1,1,0,Cube1,4004.501,10,62.73854,0,0,90,5,5,5,Physical,Entities,Default,Reflective|255/255/255/255|Stone/Stone13|1/0.3|0/0|255/255/255/255,PortalSurfaceable|;
 Scene,Geometry/Cube1,8138,0,1,1,1,0,Cube1,4004.501,15,62.73854,0,0,90,5,5,5,Physical,Entities,Default,Reflective|255/255/255/255|Stone/Stone13|1/0.3|0/0|255/255/255/255,PortalSurfaceable|;
@@ -4648,7 +4648,7 @@ Scene,Geometry/Cube1,9376,0,1,1,1,0,Cube1,3972.905,-1080,263.1304,0,0,0,15,55,5,
 Scene,Geometry/Cube1,8151,0,1,1,1,0,Cube1,3969.501,15,62.73854,0,0,90,5,5,5,Physical,Entities,Default,Reflective|255/255/255/255|Stone/Stone13|1/0.3|0/0|255/255/255/255,PortalSurfaceable|;
 Scene,Geometry/Cube1a,8152,8153,1,1,1,0,Cube1a,3980.469,3.675156,48.00356,90,0,0,2,1,2,Physical,Entities,Default,Basic|255/255/255/255|Misc/Glass1|1/1|0/0,;
 Scene,Geometry/Cylinder1,8153,8155,1,1,1,0,Cylinder1,3980.556,3.675156,48.23257,90,0,0,0.1,1,0.1,Physical,Entities,Default,Basic|255/255/255/255|Misc/Glass1|1/1|0/0,;
-Scene,Geometry/Sphere1,8155,0,1,0,0,0,SecretLocker_1_7_1,3980.556,3.675156,49.67058,0,0,0,1,1,1,None,Entities,Default,Basic|255/255/255/255|Misc/Glass1|0/1|0/0,Slider|ButtonID:8155|SlideVector:0/0/2|AnimationDuration:0.25,Activatable|Active:false|ResetGroup:Cutscene_Level_1_7_1,WheatleyPositionLocker|ActivatableID:8155;
+Scene,Geometry/Sphere1,8155,0,1,0,0,0,SecretLocker_1_7_1,3980.556,3.675156,49.67058,0,0,0,1,1,1,Region,Entities,Default,Transparent|255/255/255/255|Misc/Glass1|0/1|0/0,Slider|ButtonID:8155|Reverse:false|SlideVector:0/0/2|RotationVector:0/0/0|AnimationDuration:0.25|ChangeRotation:false,Activatable|Active:false|ResetGroup:Cutscene_Level_1_7_1,WheatleyPositionLocker|ActivatableID:8155;
 Scene,Geometry/Sphere1,8157,0,0,1,0,0,WheatleyRefPos 1-7-0,3975.627,9.98947,53.85257,0,0,0,0.5,0.5,0.5,None,Entities,Default,Basic|255/255/255/255|Misc/Glass1|0/1|0/0,;
 Scene,Geometry/Cube1,8158,0,1,1,1,0,Cube1,3984.501,0,42.73854,0,0,0,5,5,5,Physical,Entities,Default,Basic|200/200/200/255|Metal/Metal4|0.5/0.5|0/0,;
 Scene,Geometry/Cube1,8159,0,1,1,1,0,Cube1,3984.501,0,47.73855,0,0,0,5,5,5,Physical,Entities,Default,Basic|200/200/200/255|Metal/Metal4|0.5/0.5|0/0,;
@@ -4867,7 +4867,7 @@ Scene,Geometry/Cube1,8583,0,1,1,1,0,Cube1,4012.396,9.088529,37.4595,0,270,0,2,0.
 Scene,Geometry/Cylinder1,8584,8155,1,1,1,0,Cylinder1,4041.719,0,37.76553,0,0,0,0.5,15,0.5,None,Entities,Default,Basic|255/255/255/255|Misc/Glass1|1/1|0/0,;
 Scene,Geometry/Cube1,8469,0,1,1,1,0,Cube1,4064.5,5,17.73856,0,0,0,5,5,5,Physical,Entities,Default,Basic|200/200/200/255|Metal/Metal4|0.5/0.5|0/0,;
 Scene,Geometry/Cube1,8470,0,1,1,1,0,Cube1,4064.5,5,12.73855,0,0,0,5,5,5,Physical,Entities,Default,Basic|200/200/200/255|Metal/Metal4|0.5/0.5|0/0,;
-Scene,General/HumanReference,8471,0,0,1,0,0,Level 1-7-0,3939.501,2.496638,42.73854,0,90,0,1,1,1,None,Entities,Default,Default|255/255/255/255,TeleportReference|;
+Scene,General/HumanReference,8471,0,0,1,0,0,Level 1-7-0,3939.501,2.496638,42.73854,0,90,0,1,1,1,None,Entities,Default,Default|255/255/255/255,TeleportReference|Group:Campaign;
 Scene,Geometry/Cube1,8472,0,1,1,0,0,Cutscene_Level_1_7_0,3949.501,5,42.73854,0,0,0,5,5,5,Region,Humans,Default,Basic|100/100/100/255|Misc/Dev1|5/5|0/0,CutscenePlayer|CutsceneID:Cutscene_Level_1_7_0|Full:false|ActivatableID:0,Activatable|Active:false|ResetGroup:Cutscene_Level_1_7_0;
 Scene,Geometry/Cube1,8440,0,1,1,1,0,Cube1,4019.501,20,42.73854,0,0,0,55,5,5,Physical,Entities,Default,Basic|200/200/200/255|Metal/Metal4|5.5/0.5|0/0,;
 Scene,Geometry/Tube1,8607,0,1,1,1,0,Tube1,4064.5,5,47.73855,90,180,0,4.5,95,4.5,Physical,Entities,Default,Transparent|0/0/0/255|Misc/Glass1|2/10|0/0,;
