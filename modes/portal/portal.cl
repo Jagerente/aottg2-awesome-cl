@@ -111,6 +111,7 @@ class Main {
         }
         if (character.IsMine)
         {
+            InputManager.OnSpawn();
             PlayerProxy.OnSpawn();
         }
     }
@@ -124,6 +125,7 @@ class Main {
 
         if (victim.IsMine)
         {
+            InputManager.OnDie();
             PlayerProxy.OnDie();
             self._respawnTimer.Reset(self.RespawnTime);
             ResetManager.ResetAll();
@@ -7073,6 +7075,34 @@ extension InputManager
         self.ZoomIn = KeyBindsEnum.HUMAN_REELOUT;
         self.ZoomOut = KeyBindsEnum.HUMAN_REELIN;
     }
+
+    function OnSpawn()
+    {
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_RELOAD, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION1, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION2, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION3, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION4, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, false);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_CHANGECAMERA, false);
+    }
+
+    function OnDie()
+    {
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_RELOAD, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_CHANGECAMERA, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_FORWARD, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_BACK, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_LEFT, true);
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_RIGHT, true);
+    }
 }
 
 extension TeleportGUI
@@ -11181,6 +11211,7 @@ cutscene Cutscene_Level_1_7_1
     _activatable = null;
     # @type MapObject
     _wheatley = null;
+    # @type Movable
     _wheatleyMovable = null;
     _secretPanelActivatable = null;
     _secretLockerActivatable = null;
