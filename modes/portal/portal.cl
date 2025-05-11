@@ -32,6 +32,11 @@ class Main {
 
     function OnGameStart()
     {
+        InputManager.InitKeybinds();
+        I18n.RegisterLanguagePack(EnglishLanguagePack());
+        I18n.RegisterLanguagePack(ChineseLanguagePack());
+        I18n.RegisterLanguagePack(RussianLanguagePack());
+
         self._InitRouter();
         self._InitObjectPool();
         SoundManager.Initialize();
@@ -52,7 +57,6 @@ class Main {
         SpeedRunManager.Initialize();
 
         PortalStorage.Initialize();
-        InputManager.InitKeybinds();
 
         TeleportGUI.Initialize();
         AdminPanelGUI.Initialize();
@@ -7535,7 +7539,7 @@ extension UIManager
 
     function _BuildEasterEggs()
     {
-        str = "Easter Eggs Found: " 
+        str = I18n.Get("easter_eggs.title") + ": " 
             + EasterEggManager.GetFound() 
             + "/" 
             + EasterEggManager.GetTotal();
@@ -7603,7 +7607,7 @@ extension UIManager
         if (Network.IsMasterClient)
         {
             str += String.Newline
-                + "[" + Input.GetKeyName(InputManager.AdminPanelGUI) + "] " + HTML.Color("Admin Panel", ColorEnum.PastelCream);
+                + "[" + Input.GetKeyName(InputManager.AdminPanelGUI) + "] " + HTML.Color(I18n.Get("input.admin_panel"), ColorEnum.PastelCream);
         }
 
         if (PlayerProxy._character != null)
@@ -7611,52 +7615,52 @@ extension UIManager
             if (!PlayerProxy.SpeedRunMode && Network.MyPlayer.GetCustomProperty("TELEPORT_ACCESS") == 1)
             {
                 str += String.Newline
-                    + "[" + Input.GetKeyName(InputManager.TeleportGUI) + "] " + HTML.Color("Teleport GUI", ColorEnum.PastelCream);
+                    + "[" + Input.GetKeyName(InputManager.TeleportGUI) + "] " + HTML.Color(I18n.Get("input.teleport_gui"), ColorEnum.PastelCream);
             }
 
             str += String.Newline
-                    + "[" + Input.GetKeyName(InputManager.SpeedRunGUI) + "] " + HTML.Color("Speedrun GUI", ColorEnum.PastelCream);
+                    + "[" + Input.GetKeyName(InputManager.SpeedRunGUI) + "] " + HTML.Color(I18n.Get("input.speedrun_gui"), ColorEnum.PastelCream);
 
             if (PlayerProxy._weapon != null)
             {
                 if (PlayerProxy._weapon._isBlueAvailable)
                 {
                     str += String.Newline
-                        + "[" + Input.GetKeyName(InputManager.BluePortal) + "] " + HTML.Color("Blue Portal", ColorEnum.BluePortal);
+                        + "[" + Input.GetKeyName(InputManager.BluePortal) + "] " + HTML.Color(I18n.Get("input.portal_blue"), ColorEnum.BluePortal);
                 }
                 if (PlayerProxy._weapon._isOrangeAvailable)
                 {
                     str += String.Newline
-                    + "[" + Input.GetKeyName(InputManager.OrangePortal) + "] " + HTML.Color("Orange Portal", ColorEnum.OrangePortal);
+                    + "[" + Input.GetKeyName(InputManager.OrangePortal) + "] " + HTML.Color(I18n.Get("input.portal_orange"), ColorEnum.OrangePortal);
                 }
 
                 if (PlayerProxy._weapon._isBlueAvailable || PlayerProxy._weapon._isOrangeAvailable)
                 {
                     str += String.Newline
-                    + "[" + Input.GetKeyName(InputManager.ResetPortals) + "] " + HTML.Color("Reset Portals", ColorEnum.PastelCream);
+                    + "[" + Input.GetKeyName(InputManager.ResetPortals) + "] " + HTML.Color(I18n.Get("input.reset_portals"), ColorEnum.PastelCream);
                 }
             }
             
             str += String.Newline
-                + "[" + Input.GetKeyName(InputManager.Interact) + "] " + HTML.Color("Interact", ColorEnum.PastelCream);
+                + "[" + Input.GetKeyName(InputManager.Interact) + "] " + HTML.Color(I18n.Get("input.interact"), ColorEnum.PastelCream);
             
             if (!PlayerProxy.SpeedRunMode)
             {
                 str += String.Newline
-                    + "[" + Input.GetKeyName(InputManager.SkipCutscene) + "] " + HTML.Color("Skip Cutscene", ColorEnum.PastelCream);
+                    + "[" + Input.GetKeyName(InputManager.SkipCutscene) + "] " + HTML.Color(I18n.Get("input.skip_cutscene"), ColorEnum.PastelCream);
             }
             str += String.Newline
-                + "[" + Input.GetKeyName(InputManager.Zoom) + "] " + HTML.Color("Zoom", ColorEnum.PastelCream);
+                + "[" + Input.GetKeyName(InputManager.Zoom) + "] " + HTML.Color(I18n.Get("input.zoom"), ColorEnum.PastelCream);
             str += String.Newline
-                + "[" + Input.GetKeyName(InputManager.ZoomIn) + "] / "+ "[" + Input.GetKeyName(InputManager.ZoomOut) + "] " + HTML.Color("Zoom In / Out", ColorEnum.PastelCream);
+                + "[" + Input.GetKeyName(InputManager.ZoomIn) + "] / "+ "[" + Input.GetKeyName(InputManager.ZoomOut) + "] " + HTML.Color(I18n.Get("input.zoom_in_out"), ColorEnum.PastelCream);
         }
 
         str += String.Newline
-                + "[" + Input.GetKeyName(InputManager.QualityPreset) + "] " + HTML.Color("Quality Preset: ", ColorEnum.PastelCream) + Main.QualityLevel;
+                + "[" + Input.GetKeyName(InputManager.QualityPreset) + "] " + HTML.Color(I18n.Get("input.quality") + ": ", ColorEnum.PastelCream) + Main.QualityLevel;
 
         if (str != "")
         {
-            str = "Keybinds" + str;
+            str = I18n.Get("input.title") + str;
         }
 
         return str;
@@ -7674,9 +7678,7 @@ extension UIManager
     function _BuildNotes()
     {
         return HTML.Color(
-                "Recommended Render Distance: 250" 
-                + String.Newline 
-                + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / Settings / Graphics / Render distance"
+            I18n.Get("notes.settings")
             , ColorEnum.Orangered);
     }
 
@@ -9900,6 +9902,836 @@ class TeleportAccessMessageHandler
 # }
 
 
+extension I18n 
+{
+    ChineseLanguage = "简体中文";
+    EnglishLanguage = "English";
+    RussianLanguage = "Russian";
+
+    _languages = Dict();
+    _defaultLanguage = null;
+
+    function Get(key)
+    {
+        pack = self._LoadLanguagePack();
+        localized = pack.Get(key, null);
+        if (localized != null)
+        {
+            return localized;
+        }
+
+        defaultPack = self._languages.Get(self._defaultLanguage);
+        localized = defaultPack.Get(key, null);
+        if (localized != null)
+        {
+            return localized;
+        }
+
+        return "[ERR] Localized string not found: " + key;
+    }
+
+    function SetDefaultLanguage(language)
+    {
+        self._defaultLanguage = language;
+    }
+
+    # @param pack LanguagePack
+    function RegisterLanguagePack(pack)
+    {
+        self._languages.Set(pack.Language(), pack.Load());
+
+        if (self._defaultLanguage == null)
+        {
+            self._defaultLanguage = pack.Language();
+        }
+    }
+
+    # @return Dict
+    function _LoadLanguagePack()
+    {
+        return self._languages.Get(UI.GetLanguage(), self._languages.Get(self._defaultLanguage));
+    }
+}
+
+class LanguagePack
+{
+    # @return Dict
+    function Load(){}
+
+    # @return string
+    function Language(){}
+}
+
+class EnglishLanguagePack
+{
+    _pack = Dict();
+
+    function Load()
+    {
+        return self._pack;
+    }
+
+    function Language()
+    {
+        return I18n.EnglishLanguage;
+    }
+
+    function Init()
+    {
+        # UI
+        self._pack.Set("input.title", "Keybinds");
+        self._pack.Set("input.admin_panel", "Admin Panel");
+        self._pack.Set("input.teleport_gui", "Teleport GUI");
+        self._pack.Set("input.speedrun_gui", "Speedrun GUI");
+        self._pack.Set("input.portal_blue", "Blue Portal");
+        self._pack.Set("input.portal_orange", "Orange Portal");
+        self._pack.Set("input.reset_portals", "Reset Portals");
+        self._pack.Set("input.interact", "Interact");
+        self._pack.Set("input.skip_cutscene", "Skip Cutscene");
+        self._pack.Set("input.zoom", "Zoom");
+        self._pack.Set("input.zoom_in_out", "Zoom In / Out");
+        self._pack.Set("input.quality", "Quality Preset");
+        self._pack.Set("notes.settings", "Recommended Render Distance: 250" 
+                + String.Newline 
+                + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / Settings / Graphics / Render distance");
+        self._pack.Set("easter_eggs.title", "Easter Eggs Found");
+
+        # Cutscenes
+        self._pack.Set("Level_1-1-0-prehub06", "Hello, and again, welcome to the " + HTML.Color("Aperture Science Enrichment Center", ColorEnum.PastelBlue) + ".");
+        self._pack.Set("Level_1-1-0-announcer_generated_status", "Always take a look at the left side of your screen, it contains useful information about your status and all hotkeys you need.");
+        self._pack.Set("Level_1-1-0-announcer_generated_as_guild", "Add " + HTML.Color("'Aperture Science'", "a1c1f1") + " to your Guild Name, to access secret features.");
+        self._pack.Set("Level_1-1-0-prehub10", "The portal will open, and emergency testing will begin in three, two, one...");
+
+        self._pack.Set("Level_1-1-0-prehub11", "Cubes and button-based testing remains an important tool for science, even in a dire emergency. Press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + " to grab the " + HTML.Color("cube", ColorEnum.PastelBlue) + " and put it on the " + HTML.Color("button.", ColorEnum.PastelRed));
+        
+        self._pack.Set("Level_1-1-0-testchamber07", "You have just passed through an " + HTML.Color("Aperture Science Material Emancipation Grill", ColorEnum.PastelBlue) + ", which vaporizes most " + HTML.Color("Aperture Science", ColorEnum.PastelBlue) + " equipment that touches it.");
+        
+        self._pack.Set("Level_1-2-0-announcer_generated_btn_interact", "To interact with buttons, target the " + HTML.Color("red part", ColorEnum.PastelRed) + " and press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + ".");
+        
+        self._pack.Set("Level_1-2-0-good02", "Good.");
+
+        self._pack.Set("Level_1-2-0-prehub20_1", "Before re-entering a relaxation vault at the conclusion of testing, please take a moment to write down the results of your test.");
+        self._pack.Set("Level_1-2-0-prehub20_2", "An Aperture Science Re-Integration Associate will revive you for an interview when society has been rebuild.");
+        
+        self._pack.Set("Level_1-3-0-sp_intro_03_intro12", "Hey-hey, you made it!");
+        self._pack.Set("Level_1-3-0-sp_intro_03_intro09", "There should be a " + HTML.Color("Portal Device", ColorEnum.BluePortal) + " on that podium over there.");
+        
+        self._pack.Set("Level_1-4-0-prehub42", "This next test is very dangerous. To help you remain tranquil in the face of almost certain death, smooth jazz will be deployed in three...two...one...");
+        self._pack.Set("Level_1-4-1-testchamber09_1", "Great work! " 
+            + String.Newline
+            + "Because this message is prerecorded, many observations related to your perfomance are speculation on our part.");
+        self._pack.Set("Level_1-4-1-testchamber09_2", "Please, disregard any undeserved compliments.");
+        
+        self._pack.Set("Cutscene_Level_1_4_2", "EH EREH???...");
+
+        self._pack.Set("Level_1-5-0-testchamber02_1", "If the Enrichment Center is currently being bombarded with fireballs, metiorites, or other objects from space...");
+        self._pack.Set("Level_1-5-0-testchamber02_2", "...please avoid unsheltered testing areas wherever a lack of shelter from space-debris DOES NOT appear to be a deliberate part of the test.");
+        
+        self._pack.Set("Level_1-6-0-testchamber10", "This next test applies the " +  HTML.Color("Principles of Momentum", ColorEnum.PastelOrange) + " to movement through portals. If the laws of physics no longer apply in the future, God help you.");
+        
+        self._pack.Set("Level_1-6-1-prehub17", "If you are a non-employee who has discovered this facility amid the ruins of civilization, welcome! And remember: Testing is the future, and future starts with you.");
+        
+        self._pack.Set("Level_1-6-1-prehub18_1", "Good work getting this far, future-starter!");
+        self._pack.Set("Level_1-6-1-prehub18_2", "That said, if you are simple-minded, old, or irradiated in such a way that the future should not start with you...");
+        self._pack.Set("Level_1-6-1-prehub18_3", "...please return to your primitive tribe, and send back someone better qualified for testing.");
+        
+        self._pack.Set("Level_1-7-0-sp_intro_03_intro02", "Hey! Oi oi! I'm up here!");
+        self._pack.Set("Level_1-7-0-demosphereintro04_1", "Oh, brilliant. You DID find a " + HTML.Color("Portal Gun", ColorEnum.BluePortal)+ "!");
+        self._pack.Set("Level_1-7-0-demosphereintro04_2", "You know what? It just goes to show: people with brain damage are the real heroes in the end aren't they? At the end of the day. Brave.");
+        self._pack.Set("Level_1-7-0-demosphereintro02", "Pop a portal on that wall behind me there, and i'll meet you on the other side of the room.");
+
+        self._pack.Set("Level_1-7-0-demosphereintro07", "Right behind me.");
+        self._pack.Set("Level_1-7-0-demosphereintro08", "Just pop a portal right behind me there, and come on through to the other side.");
+        self._pack.Set("Level_1-7-0-demosphereintro09", "Pop a little portal, just there, alright? Behind me. And come on through.");
+        self._pack.Set("Level_1-7-0-demosphereintro10", "Alright, let me explain again. Pop a portal. Behind me. Alright? And come on through.");
+        self._pack.Set("Level_1-7-0-demosphereintro11", "Pop a portal. Behind me, on the wall. Come on through.");
+        self._pack.Set("Level_1-7-0-demosphereintro13", "Come on through.");
+        self._pack.Set("Level_1-7-0-demosphereintro14", "Come on through to the other side.");
+        self._pack.Set("Level_1-7-0-demosphereintro15", "Come on through.");
+
+        self._pack.Set("Level_1-7-0-raildropintro01_1", "Okay, listen, let me, lay something on you here. It's pretty heavy.");
+        self._pack.Set("Level_1-7-0-raildropintro01_2", "They told me NEVER NEVER EVER to disengage myself from my Management Rail. Or I would die.");
+        self._pack.Set("Level_1-7-0-raildropintro01_3", "But we're out of options here. So... " + HTML.Color("get ready to catch me", ColorEnum.PastelOrange) + " , alright. On the off chance that I'm not dead the moment I pop off this thing.");
+        
+        self._pack.Set("Level_1-7-0-demospherecatch02-1", HTML.Color("On three", ColorEnum.PastelRed) + ". Ready?");
+        self._pack.Set("Level_1-7-0-demospherecatch02-2", HTML.Color("One...", ColorEnum.PastelBlue));
+        self._pack.Set("Level_1-7-0-demospherecatch02-3", HTML.Color("Two...", ColorEnum.PastelOrange));
+        
+        self._pack.Set("Level_1-7-0-demospherecatch05-1", HTML.Color("THREE!", ColorEnum.PastelRed));
+        self._pack.Set("Level_1-7-0-demospherecatch05-2", "That's high, It's TOO high, isn't it, really, that...");
+        
+        self._pack.Set("Level_1-7-0-demospherecatch07-1", "Alright, going on three, just gives you too much time to think about it.");
+        self._pack.Set("Level_1-7-0-demospherecatch07-2", "Let's uh, go on " + HTML.Color("ONE", ColorEnum.PastelRed) + " this time.");
+        self._pack.Set("Level_1-7-0-demospherecatch07-3", "Okay, ready?");
+
+        self._pack.Set("Level_1-7-0-demospherefall04-1", HTML.Color("ONE!", ColorEnum.PastelRed));
+        self._pack.Set("Level_1-7-0-demospherefall04-2", HTML.Color("CATCH ME! CATCH ME! CATCH ME! CATCH ME! CATCH ME! CATCH ME! AW!", ColorEnum.PastelRed));
+
+        self._pack.Set("Level_1-7-0-demospherethud06", "I. Am. Not. Dead! I'm not dead! Ha-ha-ha-ha.");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence04", "Plug me into that stick on the wall over there. Yeah? And I'll show you something. You'll be impressed by that.");
+
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence01", "Plug me into that stick on the wall over there. I'll show you something.");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence05", "Go on. Just jam me in over there.");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence06", "Right on that stick over there. Just put me right on it.");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence07", "It is tricky. It is tricky. But, umm... just... plug me in, please.");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence08", "It DOES sound rude. I'm not going to lie to you. It DOES sound rude. It's not. Put me right on it. Stick me in.");
+
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence10", "Umm. Yeah, I can't do it if you're watching.");
+
+        self._pack.Set("demospherefirstdoorwaysequence11", "Seriously, I'm not joking, could you just turn around for a second?");
+        self._pack.Set("demospherefirstdoorwaysequence02", "I can't... I can't do it if you're watching. [nervous laugh]");
+        self._pack.Set("demospherefirstdoorwaysequence09", "I can't do it if you're watching. If you.... just turn around?");
+        self._pack.Set("demospherefirstdoorwaysequence13", "Alright. [nervous laugh] Can't do it if you're leering at me. Creepy.");
+        self._pack.Set("demospherefirstdoorwaysequence16", "What's that behind you? It's only a robot on a bloody stick! A different one!");
+        self._pack.Set("demospherefirstdoorwaysequence20", "Okay. Listen. I can't do it with you watching. I know it seems pathetic, given what we've been through. But just turn around. Please?");
+
+        self._pack.Set("turnaroundnow01", "Alright, you can turn around now!");
+        self._pack.Set("secretpanelopens07", "Bam! Secret panel! That I opened. While your back was turned.");
+        self._pack.Set("callingoutinitial14", "Pick me up. Let's get out of here.");
+        self._pack.Set("raildroppickup02", "Oh! Brilliant, thank you, great.");
+        self._pack.Set("raildroppostfall02", "Are you still... are you still there? Could you pick me up do you think? If you are there?");
+        self._pack.Set("raildroppostfall03", "Sorry, are you still there? Could you pick... could you pick me up?");
+        self._pack.Set("raildroppostfall05", "Hello? Can you.. can you pick me up, please?");
+        self._pack.Set("raildroppostfall08", "If you are there, would you mind... give me a little bit of help? Heh... just pick me up.");
+        self._pack.Set("raildroppostfall09", "Look... look down! Where am I? Where am I?....");
+        self._pack.Set("raildroppostfall15", "Don't want to hassle you. Sure you're busy. Um... but - still here on the floor. Waiting to be picked up.");
+        self._pack.Set("raildroppostfall16", "On the floor. Needing your help. The whole time. All the time. Needing your help.");
+        self._pack.Set("raildroppostfall17", "Still here on the floor. Waiting to be picked up. Um...");
+        self._pack.Set("raildroppostfall19", "Look down. Who's that, down there, talking? It's me! Down on the floor. Needing you to pick me up.");
+        self._pack.Set("raildroppostfall20_1", "What are you doing, are you just having a little five minutes to yourself? Fair enough. You've had a rough time. You've been asleep for who knows how long.");
+        self._pack.Set("raildroppostfall20_2", "You've got the massive brain damage. And you're having a little rest. But NOW. Get yourself up. And pick me up.");
+
+        self._pack.Set("gloriousfreedom03_1", "Look at this! No rail to tell us where to go! Oh, this is brilliant. We can go where ever we want!");
+        self._pack.Set("gloriousfreedom03_2", "Hold on though where are we going? Seriously. Hang on, let me just get my bearings.");
+        self._pack.Set("gloriousfreedom03_3", "Just follow the rail, actually.");
+        
+        self._pack.Set("gladosgantry20", "Probably ought to bring you up to speed on something right now.");
+        self._pack.Set("gladosgantry21", "In order to escape, we're going to have to go through HER chamber.");
+        self._pack.Set("gladosgantry22", "And, she will probably kill us if, um, she's awake.");
+
+        self._pack.Set("wakeup", "Power up complete.");
+        self._pack.Set("sp_a1_wakeup_hacking11", "I don't... Okay. Okay. Okay. Listen, alright: New plan. Act natural, act natural. We've done nothing wrong.");
+        self._pack.Set("hello01", "Hello!");
+        self._pack.Set("chellgladoswakeup01", "Oh... It's you.");
+        self._pack.Set("sp_a1_wakeup_hacking03", "You KNOW her???");
+        self._pack.Set("chellgladoswakeup04_1", "It's been a loooooong time.");
+        self._pack.Set("chellgladoswakeup04_2", "How have you been?");
+        self._pack.Set("chellgladoswakeup05_1", "I've been really busy being " + HTML.Color("dead", ColorEnum.PastelRed) + ".");
+        self._pack.Set("chellgladoswakeup05_2", "You know... after " + HTML.Color("YOU MURDERED ME", ColorEnum.PastelRed) + ".");
+        self._pack.Set("demospherepowerup07", "You did WHAT?");
+        self._pack.Set("a1_wakeup_pinchergrab02", "Oh no! No no no no no...No! No!");
+        self._pack.Set("sp_a2_wheatley_ows_long03", "Gah!");
+        self._pack.Set("chellgladoswakeup06_1", "Okay. Look. We both said a lot of things that you're going to regret.");
+        self._pack.Set("chellgladoswakeup06_2", "But I think we can put our differences behind us. For science. " + HTML.Color("You monster", ColorEnum.PastelRed) + ".");
+        self._pack.Set("wakeup_outro01", "I will say, though, that since you went to all the trouble of waking me up, you must really, " + HTML.Color("REALLY", ColorEnum.PastelRed) + " love to test.");
+        self._pack.Set("wakeup_outro02", "I love it too. There is just one small thing we need to take care of first.");
+
+        self._pack.Set("sp_incinerator_01_01", "Here we are. The Incinerator Room. Be careful not to trip over any parts of me that didn't get completely burned when you threw them down here.");
+        self._pack.Set("sp_incinerator_01_18", HTML.Color("The Dual Portal Device", ColorEnum.OrangePortal) + " should be around here somewhere. Once you find it, we can start testing. Just like old times.");
+
+        self._pack.Set("sp_a2_intro1_found01", "Good. You have a " + HTML.Color("Dual Portal Device", ColorEnum.OrangePortal) + ". There should be a way back to the testing area up ahead.");
+        self._pack.Set("sp_incinerator_01_08_1", "Once testing starts, I'm required by protocol to keep interaction with you to a minimum.");
+        self._pack.Set("sp_incinerator_01_08_2", "Luckily, we haven't started testing yet. This will be our only chance to talk.");
+        self._pack.Set("sp_incinerator_01_09_1", "Do you know the biggest lesson I learned from what you did?");
+        self._pack.Set("sp_incinerator_01_09_2", "I discovered I have a sort of black-box quick-save feature.");
+        self._pack.Set("sp_incinerator_01_09_3", "In the event of a catastrophic failure, the last two minutes of my life are preserved for analysis.");
+        self._pack.Set("sp_incinerator_01_10", "I was able - well, forced really - to relive you killing me. Again and again. " + HTML.Color("Forever", ColorEnum.PastelRed) + ".");
+        self._pack.Set("sp_a2_intro1_found05", "You know, if you'd done that to somebody else, they might devote thier existence to exacting " + HTML.Color("REVENGE", ColorEnum.PastelRed) + ".");
+        self._pack.Set("sp_a2_intro1_found06_1", "Luckily I'm a bigger person that that.");
+        self._pack.Set("sp_a2_intro1_found06_2", "I'm happy to put this all behind us and get back to work.");
+        self._pack.Set("sp_a2_intro1_found06_3", "After all, we've got a lot to do and only 60 more years to do it.");
+        self._pack.Set("sp_a2_intro1_found06_4", "More or less. I don't have the acturial tables in front of me.");
+        self._pack.Set("sp_a2_intro1_found07_1", "But the important thing is you're back. " + HTML.Color("With me", ColorEnum.PastelRed) + ". And now I'm onto all your little tricks.");
+        self._pack.Set("sp_a2_intro1_found07_2", "So there's nothing to stop us from testing... " + HTML.Color("for the rest of your life", ColorEnum.PastelRed) + ".");
+        self._pack.Set("sp_a2_intro1_found08", "After that... who knows? I might take up a hobby. Reanimating the dead, maybe.");
+
+        self._pack.Set("sarcasmcore01", "Sarcasm self test complete.");
+        self._pack.Set("sp_laser_redirect_intro_entry02", "Oh good, that's back online. I'll start getting everything else working while you perform this first simple test.");
+        self._pack.Set("sp_laser_redirect_intro_entry03", "Which involves " + HTML.Color("Deadly Lasers", ColorEnum.PastelRed) + ". And how test subjects react, when locked in a room with deadly lasers.");
+
+        self._pack.Set("sp_a2_laser_intro_ending02", "Not bad. I forgot how good you are at this. You should pace yourself, though. We have a LOT of tests to do.");
+
+        self._pack.Set("sp_a2_laser_stairs_intro02_1", "This next test involves " + HTML.Color("Discouragement Redirection Cubes", ColorEnum.PastelPurple) +".");
+        self._pack.Set("sp_a2_laser_stairs_intro02_2", "I just finished building them before you had your...well, episode.");
+        self._pack.Set("sp_a2_laser_stairs_intro02_3", "So now we'll both get to see how they work.");
+        self._pack.Set("sp_a2_laser_stairs_intro03", "There should be one in the corner.");
+
+        self._pack.Set("sp_laser_powered_lift_completion02_1", "Well done. Here come the test results.");
+        self._pack.Set("sp_laser_powered_lift_completion02_2", HTML.Color("You are a horrible person", ColorEnum.PastelRed) +".");
+        self._pack.Set("sp_laser_powered_lift_completion02_3", "That's what it says: " + HTML.Color("'A horrible person'", ColorEnum.PastelRed) + ". We weren't even testing for that.");
+        self._pack.Set("sp_a2_dual_lasers_intro01_1", "Don't let that " + HTML.Color("'horrible person'", ColorEnum.PastelRed) + " thing discourage you. It's just a data point.");
+        self._pack.Set("sp_a2_dual_lasers_intro01_2", "If it makes you feel any better, Science has now validated your birth mother's decision to abandon you on a doorstep.");
+
+        self._pack.Set("sp_laser_redirect_intro_completion01", "Congratulations. Not on the test.");
+        self._pack.Set("sp_laser_redirect_intro_completion03_1", "Most people emerge from suspension terribly undernourished.");
+        self._pack.Set("sp_laser_redirect_intro_completion03_2", "I want you congratulate you on beating the odds and somehow managing to pack on a few pounds.");
+
+        self._pack.Set("sp_laser_over_goo_entry01", "One moment.");
+        self._pack.Set("sp_a2_laser_over_goo_intro01_1", "You are navigating these test chambers faster than I can build them, so feel free to slow down and...");
+        self._pack.Set("sp_a2_laser_over_goo_intro01_2", "...do whatever it is you do when you are not destroying this facility");
+
+        self._pack.Set("sp_laser_over_goo_completion01_1", "I'll give you a credit. I guess you are listening to me.");
+        self._pack.Set("sp_laser_over_goo_completion01_2", "But for the record, you don't have to go THAT slowly.");
+
+        self._pack.Set("faith_plate_intro01_1", "This next test involves the " + HTML.Color("Aperture Science Aerial Faithplate", ColorEnum.PastelBlue) + ".");
+        self._pack.Set("faith_plate_intro01_2", "It was part of an initiative to investigate how well test subjects could solve problems, when they were catapulted into space.");
+        self._pack.Set("faith_plate_intro01_3", "Results were highly informative: " + HTML.Color("they could not", ColorEnum.PastelRed) + ". Good luck!");
+
+        self._pack.Set("sp_catapult_intro_completion01", "Let's see what the next test is. Oh, " + HTML.Color("Advanced Aerial Faithplates", ColorEnum.PastelBlue) + ".");
+        self._pack.Set("sp_trust_fling_entry01", "Well, have fun soaring through the air without a care in the world.");
+        self._pack.Set("sp_trust_fling_entry02", "I have to go to the wing that was made entirely of glass, and pickup 15 acres of broken glass. By myself.");
+
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "You open the book to find the message: " 
+            + String.Newline
+            + HTML.Color("'Aperture Science'", "a1c1f1") + " Employees Only. Minimum IQ: 200. Yours? Questionable."
+            + String.Newline
+            + "Please close the book to avoid confusion.");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_2", "As an authorized " + HTML.Color("Aperture Science", "a1c1f1") + " employee, the book's encrypted text rearranges itself into something vaguely readable.");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_3", "Congratulations on meeting the bare minimum qualifications.");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_4", "You open the book, and its pages are packed with complex formulas, test logs, and vaguely unsettling diagrams.");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_5", "As you scan the data, a handwritten note slowly appears, left by a fellow " + HTML.Color("Aperture Science", "a1c1f1") + " employee...");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_6", "Dear future reader: The formulas are correct. The results? Debatable. Good luck!");
+
+        self._pack.Set("fizzlecube01", "Oh! Did I accidentally fizzle that before you could complete the test? I'm sorry.");
+        self._pack.Set("fizzlecube03", "Go ahead and grab another one.");
+        self._pack.Set("fizzlecube05", "Oh. No. I fizzled that one too.");
+        self._pack.Set("fizzlecube06_1", "Oh well. We have warehouses full of the things");
+        self._pack.Set("fizzlecube06_2", "Absolutely worthless. I'm happy to get rid of them.");
+
+        self._pack.Set("sp_a2_pit_flings03_1", "Every test chamber is equipped with an " + HTML.Color("Emancipation Grill", ColorEnum.PastelBlue) + " at it's exit.");
+        self._pack.Set("sp_a2_pit_flings03_2", "So that test subjects cannot smuggle test objects out of the test area.");
+        self._pack.Set("sp_a2_pit_flings03_3", "This one is broken.");
+        self._pack.Set("sp_a2_pit_flings02", HTML.Color("Don't take anything with you.", ColorEnum.PastelRed));
+
+        self._pack.Set("sp_a2_pit_flings06", "I think that one was about to say: " + HTML.Color("'I love you'", ColorEnum.PastelPurple) + ". They are sentient, of course. We just have a lot of them.");
+
+        self._pack.Set("sp_a2_fizzler_intro01", "This next test involves emancipation grills. Remember? I told you about them in the last test area, that did not have one.");
+        self._pack.Set("sp_a2_fizzler_intro04", "Ohhh, no. The turbines again. I have to go. Wait. This next test DOES require some explanation. Let me give you the fast version.");
+        self._pack.Set("sp_a2_fizzler_intro05", "[fast gibberish]");
+        self._pack.Set("sp_a2_fizzler_intro06", "There. If you have any questions, just remember what I said in slow motion. Test on your own recognizance, I'll be right back.");
+
+        self._pack.Set("sp_catapult_fling_sphere_peek01", "Hey! Hey! It's me! I'm okay!");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone01_1", "Well I'm back!");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone01_2", HTML.Color("The Aerial Faithplate", ColorEnum.PastelBlue) + " in here is sending a distress signal.");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone02", "You broke it, didn't you?");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone03", "There, try it now.");
+        self._pack.Set("sp_catapult_fling_sphere_peek02", "You'll never believe what happened! There I was, just lying there, you thought I was done for, but --");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo01_1", "Hmm. This plate must not be calibrated to someone of your...generousness.");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo01_2", "I'll add a few zeros to the maximum weight.");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo02", "You look great, by the way. Very healthy.");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo03", "Try it now.");
+        self._pack.Set("sp_catapult_fling_sphere_peek03", "A bloody bird! Right? Couldn't believe it either. And then the bird--");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failurethree01_1", "You seem to have defeated it's load-bearing capacity. Well done.");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failurethree01_2", "I'll just lower the ceiling.");
+
+        self._pack.Set("sp_a2_ricochet01_1", "Enjoy this next test. I'm going to go to the surface. It's beautiful day out.");
+        self._pack.Set("sp_a2_ricochet01_2", "Yesterday I saw a deer. If you solve this next test, maybe I'll let you ride an elevator all the way up to the break room.");
+        self._pack.Set("sp_a2_ricochet01_3", "And I'll tell you about the time I saw a deer again.");
+
+        self._pack.Set("glados_generated_deers_1", "Well, you passed the test. I didn't see the deer today. I did see some humans.");
+        self._pack.Set("glados_generated_deers_2", "But with you here I've got more test subjects than I'll ever need.");
+
+        self._pack.Set("sp_a2_bridge_intro01_1", "These bridges are made from natural light that I pump in from the surface.");
+        self._pack.Set("sp_a2_bridge_intro01_2", "If you rubbed your cheek on one, it would be like standing outside with the sun shining on your face.");
+        self._pack.Set("sp_a2_bridge_intro01_3", HTML.Color("It would also set your hair on fire", ColorEnum.PastelRed) + ". So don't actually do it.");
+
+        self._pack.Set("sp_a2_bridge_intro03_1", "Excellent. You're a predator, and these tests are your prey.");
+        self._pack.Set("sp_a2_bridge_intro03_2", "Speaking of which, I was researching sharks for an upcoming test.");
+        self._pack.Set("sp_a2_bridge_intro03_3", "Do you know who else murders people who are only trying to help?");
+        self._pack.Set("sp_a2_bridge_intro04", "Did you guess sharks? Because that's wrong. The correct answer is nobody. " + HTML.Color("Nobody but you is that pointlessly cruel", ColorEnum.PastelRed) + ".");
+
+        self._pack.Set("sp_a2_bridge_the_gap02_1", "Perfect. The door is malfunctioning.");
+        self._pack.Set("sp_a2_bridge_the_gap02_2", "I guess somebody's going to have to repair it.");
+        self._pack.Set("sp_a2_bridge_the_gap02_3", "No, it's ok. I'll do that too.");
+        self._pack.Set("sp_a2_bridge_the_gap02_4", "I'll be right back. Don't touch anything.");
+        self._pack.Set("sp_trust_fling01", "Hey! Hey! Up here!");
+        self._pack.Set("sp_trust_flingalt07", "I found some bird eggs up here. Just dropped 'em into the door mechanism. Shut it right down. I...AGH!");
+        self._pack.Set("sp_trust_flingalt02", "BIRD! BIRD! BIRD! BIRD!");
+        self._pack.Set("sp_trust_flingalt08", "[out of breath] Okay. That's probably the bird, isn't it? That laid the eggs! Livid!");
+        self._pack.Set("sp_a2_bridge_the_gap_expo01", "Okay, look, the point is, we're gonna break out of here! Very soon, I promise, I promise!");
+        self._pack.Set("sp_a2_bridge_the_gap_expo03", "I just have to figure out how. To break us out of here.");
+        self._pack.Set("sp_a2_bridge_the_gap_expo06", "Here she comes! Keep testing! Remember: you never saw me!");
+        self._pack.Set("sp_sphere_2nd_encounter_entrytwo01", "I went and spoke with the door mainframe. Let's just say he won't be... well, living anymore. Anyway, back to testing.");
+
+        self._pack.Set("testchambermisc19_1", "Well done. In fact, you did so well, I'm going to note this on your file, in the commendations section.");
+        self._pack.Set("testchambermisc19_2", "Oh, there's lots of room here.");
+        self._pack.Set("testchambermisc19_3", "Did.... well...");
+        self._pack.Set("testchambermisc19_4", "Enough.");
+
+        self._pack.Set("turret_intro01_1", "This next test involves " + HTML.Color("Turrets", ColorEnum.PastelRed) + ". You remember them, right?");
+        self._pack.Set("turret_intro01_2", "They're the pale, spherical things that are full of bullets. Oh wait. That's you in five seconds.");
+        self._pack.Set("turret_intro01_3", "Good luck.");
+
+        self._pack.Set("testchambermisc21_1", "To maintain a constant testing cycle, I simulate daylight at all hours.");
+        self._pack.Set("testchambermisc21_2", "And add adrenal vapor to your oxygen supply. So you may be confused about the passage of time.");
+        self._pack.Set("testchambermisc21_3", "The point is, yesterday was your birthday. I thought you'd want to know..");
+
+        self._pack.Set("testchambermisc23_1", "You know how I'm going to live forever, but you're going to be dead in sixty years?");
+        self._pack.Set("testchambermisc23_2", "Well, I've been working on a belated birthday present for you.");
+        self._pack.Set("testchambermisc23_3", "Well... more of a belated birthday medical procedure.");
+        self._pack.Set("testchambermisc23_4", "Well. Technically, it's a medical EXPERIMENT.");
+        self._pack.Set("testchambermisc23_5", "What's important is, it's a present.");
+
+        self._pack.Set("sp_a2_turret_intro01_1", "That jumpsuit you're wearing looks stupid.");
+        self._pack.Set("sp_a2_turret_intro01_2", "That's not me talking, it's right here in your file.");
+        self._pack.Set("sp_a2_turret_intro01_3", "On other people it looks fine, but right here a scientist has noted that on you it looks 'stupid'.");
+
+        self._pack.Set("sp_a2_turret_intro03_1", "Well, what does a neck-bearded old engineer know about fashion?");
+        self._pack.Set("sp_a2_turret_intro03_2", "He probably - Oh, wait. It's a she.");
+        self._pack.Set("sp_a2_turret_intro03_3", "Still, what does she know?");
+        self._pack.Set("sp_a2_turret_intro03_4", "Oh wait, it says she has a medical degree.");
+        self._pack.Set("sp_a2_turret_intro03_5", "In fashion!");
+        self._pack.Set("sp_a2_turret_intro03_6", "From France!");
+
+        self._pack.Set("testchambermisc30_1", "I'm going through the list of test subjects in cryogenic storage.");
+        self._pack.Set("testchambermisc30_2", "I managed to find two with your last name.");
+        self._pack.Set("testchambermisc30_3", "A man and a woman.");
+        self._pack.Set("testchambermisc30_4", "So that's interesting.");
+        self._pack.Set("testchambermisc30_5", "It's a small world.");
+
+        self._pack.Set("testchambermisc31_1", "I have a surprise waiting for you after this next test.");
+        self._pack.Set("testchambermisc31_2", "Telling you would spoil the surprise, so I'll just give you a hint:");
+        self._pack.Set("testchambermisc31_3", "It involves meeting two people you haven't seen in a long time.");
+
+        self._pack.Set("testchambermisc24", "[hums 'For He's A Jolly Good Fellow']");
+
+        self._pack.Set("testchambermisc39_1", "It says this next test was designed by one of Aperture's Nobel prize winners.");
+        self._pack.Set("testchambermisc39_2", "It doesn't say what the prize was for.");
+        self._pack.Set("testchambermisc39_3", "Well, I know it wasn't for Being Immune To Neurotoxin.");
+
+        self._pack.Set("testchambermisc33_1", "I'll bet you think I forgot about your surprise.");
+        self._pack.Set("testchambermisc33_2", "I didn't. In fact, we're headed to your surprise right now. After all these years. I'm getting choked up just thinking about it.");
+        
+        self._pack.Set("testchambermisc34", "Initiating surprise in three... two... one.");
+        self._pack.Set("testchambermisc35", "I made it all up.");
+        self._pack.Set("testchambermisc41", "Surprise.");
+        self._pack.Set("sp_a2_column_blocker01", "Oh come on... If it makes you feel any better, they abandoned you at birth, so I very seriously doubt they'd even want to see you.");
+
+        self._pack.Set("sp_a2_column_blocker03_1", "I feel awful about that surprise. Tell you what, let's give your parents a call right now.");
+        self._pack.Set("sp_a2_column_blocker03_2", "[phone ringing]");
+        self._pack.Set("sp_a2_column_blocker03_3", "The birth parents you are trying to reach do not love you. Please hang up. [Dial tone]");
+        self._pack.Set("sp_a2_column_blocker04", "Oh, that's sad. But impressive. Maybe they weren't at the phone company.");
+
+        self._pack.Set("sp_a2_column_blocker05", "Well, you know the old formula: Comedy equals tragedy plus time. And you have been asleep for a while. So I guess it's actually pretty funny when you do the math.");
+
+        self._pack.Set("sp_a2_dilemma01", "I thought about our dilemma, and I came up with a solution that I honestly think works out best for one of both of us.");
+
+        self._pack.Set("a2_triple_laser01", "Federal regulations require me to warn you that this next test chamber... is looking pretty good.");
+        self._pack.Set("a2_triple_laser02", "That's right. The facility is completely operational again.");
+
+        self._pack.Set("a2_triple_laser03_1", "I think these test chambers look even better than they did before. It was easy, really.");
+        self._pack.Set("a2_triple_laser03_2", "You just have to look at things objectively, see what you don't need anymore, and trim out the fat.");
+    }
+}
+
+class RussianLanguagePack
+{
+    _pack = Dict();
+
+    function Load()
+    {
+        return self._pack;
+    }
+
+    function Language()
+    {
+        return I18n.RussianLanguage;
+    }
+
+    function Init()
+    {
+        # UI
+        self._pack.Set("input.title", "Управление");
+        self._pack.Set("input.admin_panel", "Панель управления");
+        self._pack.Set("input.teleport_gui", "Телепорт");
+        self._pack.Set("input.speedrun_gui", "Speedrun GUI");
+        self._pack.Set("input.portal_blue", "Синий портал");
+        self._pack.Set("input.portal_orange", "Оранжевый портал");
+        self._pack.Set("input.reset_portals", "Сбросить порталы");
+        self._pack.Set("input.interact", "Взаимодействие");
+        self._pack.Set("input.skip_cutscene", "Пропустить диалог");
+        self._pack.Set("input.zoom", "Зум");
+        self._pack.Set("input.zoom_in_out", "Приблизить / Отдалить");
+        self._pack.Set("input.quality", "Качество");
+        self._pack.Set("notes.settings", "Рекоммендованная дальность прорисовки: 250" 
+                + String.Newline 
+                + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / Настройки / Графика / Дальность прорисовки");
+        self._pack.Set("easter_eggs.title", "Пасхалок найдено");
+    }
+}
+
+
+# Source: https://github.com/wastedziyun/Portal2_Better_Chinese
+class ChineseLanguagePack
+{
+    _pack = Dict();
+
+    function Load()
+    {
+        return self._pack;
+    }
+
+    function Language()
+    {
+        return I18n.ChineseLanguage;
+    }
+
+    function Init()
+    {
+        # UI
+        self._pack.Set("input.title", "按键绑定");
+        self._pack.Set("input.admin_panel", "管理面板");
+        self._pack.Set("input.teleport_gui", "传送界面");
+        self._pack.Set("input.speedrun_gui", "速通界面");
+        self._pack.Set("input.portal_blue", "蓝色传送门");
+        self._pack.Set("input.portal_orange", "橙色传送门");
+        self._pack.Set("input.reset_portals", "重置传送门");
+        self._pack.Set("input.interact", "互动");
+        self._pack.Set("input.skip_cutscene", "跳过过场动画");
+        self._pack.Set("input.zoom", "缩放");
+        self._pack.Set("input.zoom_in_out", "放大/缩小");
+        self._pack.Set("input.quality", "画质预设");
+        self._pack.Set("notes.settings", "推荐渲染距离：250" + String.Newline + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / 设置 / 图形 / 渲染距离");
+        self._pack.Set("easter_eggs.title", "已发现彩蛋");
+
+        # Cutscenes
+        self._pack.Set("Level_1-1-0-prehub06", "你好，再次欢迎来到 " + HTML.Color("Aperture Science Enrichment Center", ColorEnum.PastelBlue) + "。");
+        self._pack.Set("Level_1-1-0-announcer_generated_status", "请始终查看屏幕左侧，它包含有关您状态的有用信息以及所有所需的快捷键。");
+        self._pack.Set("Level_1-1-0-announcer_generated_as_guild", "将 " + HTML.Color("'Aperture Science'", "a1c1f1") + " 添加到您的公会名称，以访问秘密功能。");
+        self._pack.Set("Level_1-1-0-prehub10", "系统广播：传送门将会打开，紧急测试即将开始。3，2，1。");
+
+        self._pack.Set("Level_1-1-0-prehub11", "基于方块和按钮的测试即使在严重紧急情况下仍然是科学的重要工具。按 " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + " 来拾取" + HTML.Color("方块", ColorEnum.PastelBlue) + "并将其放在" + HTML.Color("按钮。", ColorEnum.PastelRed));
+        
+        self._pack.Set("Level_1-1-0-testchamber07", "您刚刚穿过一个 " + HTML.Color("Aperture Science 物质释放格栅", ColorEnum.PastelBlue) + "，它会蒸发任何接触到的 " + HTML.Color("Aperture Science", ColorEnum.PastelBlue) + " 设备。");
+        
+        self._pack.Set("Level_1-2-0-announcer_generated_btn_interact", "要与按钮互动，请将目标对准" + HTML.Color("红色部件", ColorEnum.PastelRed) + "，然后按" + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + "。");
+        
+        self._pack.Set("Level_1-2-0-good02", "很好。");
+
+        self._pack.Set("Level_1-2-0-prehub20_1", "在您于测试尾声重新进入休息室之前，请抽空写下您的测验结果。");
+        self._pack.Set("Level_1-2-0-prehub20_2", "光圈科技重返社会协会的同仁将会在社会重建完成时唤醒您以进行访谈。");
+        
+        self._pack.Set("Level_1-3-0-sp_intro_03_intro12", "嘿嘿！你成功了！");
+        self._pack.Set("Level_1-3-0-sp_intro_03_intro09", "在那边的平台上应该要有一个" + HTML.Color("传送装置", ColorEnum.BluePortal) + "。");
+        
+        self._pack.Set("Level_1-4-0-prehub42", "下一个测试非常危险。为了帮助您在几乎必死无疑的的时刻能保持平静，我们将立刻播放舒缓的爵士乐。3，2，1。[舒缓的爵士乐]");
+        self._pack.Set("Level_1-4-1-testchamber09_1", "做的不错！因为这个消息是预先录制的，我们涉及您表现的任何意见均属猜测。");
+        self._pack.Set("Level_1-4-1-testchamber09_2", "请忽略任何不当的恭维。");
+        
+        self._pack.Set("Cutscene_Level_1_4_2", "EH EREH???...");
+
+        self._pack.Set("Level_1-5-0-testchamber02_1", "如果丰富学习中心目前正遭受火球、陨石或其他太空物体的轰炸，");
+        self._pack.Set("Level_1-5-0-testchamber02_2", "请避免进入无遮蔽的测试区域，无遮蔽之处并非测试中刻意安排的部分。");
+        
+        self._pack.Set("Level_1-6-0-testchamber10", "下一个测试需要应用" + HTML.Color("动量转化定律", ColorEnum.PastelOrange) + "。如果此物理定律在未来不再适用，就请上帝帮助您吧。");
+        
+        self._pack.Set("Level_1-6-1-prehub17", "如果您是在文明的废墟中发现这一设施的非本公司的同仁，欢迎！记住：测试就等同于未来，而未来就从您手中展开。");
+        
+        self._pack.Set("Level_1-6-1-prehub18_1", "做得不错，未来的先锋英雄！");
+        self._pack.Set("Level_1-6-1-prehub18_2", "不过，如果您头脑简单、年事已高，或因辐射而不适合开启未来……");
+        self._pack.Set("Level_1-6-1-prehub18_3", "……请回到您的原始部落，派遣一个更符合测试条件的人来。");
+        
+        self._pack.Set("Level_1-7-0-sp_intro_03_intro02", "嘿！喂喂！我在这里！");
+        self._pack.Set("Level_1-7-0-demosphereintro04_1", "太棒了，你竟然找到了 " + HTML.Color("传送枪", ColorEnum.BluePortal) + "！");
+        self._pack.Set("Level_1-7-0-demosphereintro04_2", "你知道吗？这正说明：到头来，脑子有问题的人才是真正的英雄，不是吗？勇气可嘉。");
+        self._pack.Set("Level_1-7-0-demosphereintro02", "快在我背后的墙上开一个传送门，我们在房间的另一边会合。");
+
+        self._pack.Set("Level_1-7-0-demosphereintro07", "就在我背后。");
+        self._pack.Set("Level_1-7-0-demosphereintro08", "在我背后开个传送门就对了，然后穿过去，到另一头等着。");
+        self._pack.Set("Level_1-7-0-demosphereintro09", "就在那里，开个小小的传送门，可以吗？开在我背后。然后穿过去。");
+        self._pack.Set("Level_1-7-0-demosphereintro10", "好，我再解释一次。开一个传送门。开在我背后。可以吗？然后穿过去。");
+        self._pack.Set("Level_1-7-0-demosphereintro11", "开一个传送门。就在我背后的墙壁上。然后穿过去。");
+        self._pack.Set("Level_1-7-0-demosphereintro13", "穿过去。");
+        self._pack.Set("Level_1-7-0-demosphereintro14", "穿过去，到另一头去。");
+        self._pack.Set("Level_1-7-0-demosphereintro15", "穿过去。");
+
+        self._pack.Set("Level_1-7-0-raildropintro01_1", "好的，听我说，这件事有点沉重。");
+        self._pack.Set("Level_1-7-0-raildropintro01_2", "他们跟我说过绝对绝对不能脱离控制轨道，否则我会死。");
+        self._pack.Set("Level_1-7-0-raildropintro01_3", "但我们已经别无选择……所以……" + HTML.Color("准备好接住我", ColorEnum.PastelOrange) + "，行吗？万一我脱轨后没死的话。");
+
+        
+        self._pack.Set("Level_1-7-0-demospherecatch02-1", HTML.Color("数到三", ColorEnum.PastelRed) + "。准备好了吗？");
+        self._pack.Set("Level_1-7-0-demospherecatch02-2", HTML.Color("一...", ColorEnum.PastelBlue));
+        self._pack.Set("Level_1-7-0-demospherecatch02-3", HTML.Color("二...", ColorEnum.PastelOrange));
+        
+        self._pack.Set("Level_1-7-0-demospherecatch05-1", HTML.Color("三！", ColorEnum.PastelRed));
+        self._pack.Set("Level_1-7-0-demospherecatch05-2", "那也太高了，实在是太高了，不是吗，真的，那...");
+        
+        self._pack.Set("Level_1-7-0-demospherecatch07-1", "好吧，数到三似乎给了你太多犹豫和思考的时间。");
+        self._pack.Set("Level_1-7-0-demospherecatch07-2", "那我们，呃，这次数到" + HTML.Color("一", ColorEnum.PastelRed) + "吧。");
+        self._pack.Set("Level_1-7-0-demospherecatch07-3", "准备好了没？");
+
+
+        self._pack.Set("Level_1-7-0-demospherefall04-1", HTML.Color("一！", ColorEnum.PastelRed));
+        self._pack.Set("Level_1-7-0-demospherefall04-2", HTML.Color("接住我！接住我！接住我！接住我！接住我！接住我！啊！", ColorEnum.PastelRed));
+
+        self._pack.Set("Level_1-7-0-demospherethud06", "我！没！死！我没死！[笑声]");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence04", "把我插到墙上那个装置里。好吗？我给你看个东西。你一定会非常惊讶。");
+
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence01", "把我插入墙上那个装置里。我给你​​看样东西。");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence05", "去吧。把我塞进去就对了。");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence06", "就是那边的那个装置。把我插上去就行了。");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence07", "是有点棘手。不过... 把我插上去就对了。麻烦你。");
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence08", "听起来是很低级。我老实说。的确是很低级。但其实并非如此。快把我插在棍子上。插进去。");
+
+        self._pack.Set("Level_1-7-0-demospherefirstdoorwaysequence10", "嗯。对，你一直盯着我，我会做不下去。");
+
+        self._pack.Set("demospherefirstdoorwaysequence11", "说真的啦，不开玩笑。请你回避一下好吗，一下就好？");
+        self._pack.Set("demospherefirstdoorwaysequence02", "我没办法... 你一直盯着我会不好意思。[紧张地笑]");
+        self._pack.Set("demospherefirstdoorwaysequence09", "你一直盯着我，我会害羞。请你.... 转个身好吗？");
+        self._pack.Set("demospherefirstdoorwaysequence13", "好。[不安地笑] 你一直偷看我，我做不到。你有毛病喔。");
+        self._pack.Set("demospherefirstdoorwaysequence16", "你后面那是什么？有个机器人插在一个装置上耶！是机器人喔！");
+        self._pack.Set("demospherefirstdoorwaysequence20", "这样吧。你一直看着我，我会插不进去。虽说以我们的交情还要这样见外，是有点可悲。但拜托你转个身好吗。求求你？");
+
+        self._pack.Set("turnaroundnow01", "好了，你可以转身了！");
+        self._pack.Set("secretpanelopens07", "砰！秘密控制台！我在你转身的时候打开的。");
+        self._pack.Set("callingoutinitial14", "把我带上。我们离开这里吧。");
+        self._pack.Set("raildroppickup02", "哦，太棒了，谢谢你，好极了。");
+        self._pack.Set("raildroppostfall02", "你还在吗？你可以把我捡起来吗？如果你在的话？");
+        self._pack.Set("raildroppostfall03", "抱歉，你还在吗？能不能-- 请你把我捡起来？");
+        self._pack.Set("raildroppostfall05", "在吗？请你-- 请你把我捡起来，好吗？");
+        self._pack.Set("raildroppostfall08", "如果你真的在，可否麻烦你... 帮我一个小忙好吗？[紧张的笑] 行行好，把我捡起来就好。");
+        self._pack.Set("raildroppostfall09", "往下看。我在哪里？我在哪里。");
+        self._pack.Set("raildroppostfall15", "我不想烦你。你很忙，这是当然的。不过-- 我还在地板上。等着你把我捡起来。");
+        self._pack.Set("raildroppostfall16", "我在地板上。需要你帮忙。一直都还在等着。我需要你的帮忙。");
+        self._pack.Set("raildroppostfall17", "我还在地板上喔。等着有人来把我捡起来。恩。");
+        self._pack.Set("raildroppostfall19", "看下面。谁在那里说话啊？是我啦！在你下面的地板上。需要你把我捡起来。");
+        self._pack.Set("raildroppostfall20_1", "你在做什么？只是想独享五分钟的时光吗？也罢，你经历了那么多苦难，已经睡了不知道多久。");
+        self._pack.Set("raildroppostfall20_2", "你的脑子严重受创，你在稍作休息。但现在，清醒点。站起来，把我捡起来。");
+
+        self._pack.Set("gloriousfreedom03_1", "你看！没有轨道告诉我们该往哪走！哦，太棒了。我们可以随心所欲地去任何地方！");
+        self._pack.Set("gloriousfreedom03_2", "等等，我们要去哪？说真的。等一下，我先拿一下我的轴承。");
+        self._pack.Set("gloriousfreedom03_3", "嗯。其实，我们应该跟着轨道走。");
+        
+        self._pack.Set("gladosgantry20", "也许现在应该要快点跟你说明最新的情况。");
+        self._pack.Set("gladosgantry21", "为了能逃走，我们必须经过她的测试室。");
+        self._pack.Set("gladosgantry22", "她八成会杀了我们，如果，呃，如果她醒着的话。");
+
+        self._pack.Set("wakeup", "通电完毕。");
+        self._pack.Set("sp_a1_wakeup_hacking11", "好好好。注意：计划改变。动作自然点。我们没做错什么事。");
+        self._pack.Set("hello01", "哈啰！");
+        self._pack.Set("chellgladoswakeup01", "哦...是你。");
+        self._pack.Set("sp_a1_wakeup_hacking03", " 你认识她？");
+        self._pack.Set("chellgladoswakeup04_1", "好久不见……");
+        self._pack.Set("chellgladoswakeup04_2", "最近可好？");
+        self._pack.Set("chellgladoswakeup05_1", "我一直忙着" + HTML.Color("死", ColorEnum.PastelRed) + "。");
+        self._pack.Set("chellgladoswakeup05_2", "你知道的……在你" + HTML.Color("谋杀了我", ColorEnum.PastelRed) + "之后。");
+        self._pack.Set("demospherepowerup07", "你做了什么？");
+        self._pack.Set("a1_wakeup_pinchergrab02", "哦不不不... 不！天哪！");
+        self._pack.Set("sp_a2_wheatley_ows_long03", "啊！");
+        self._pack.Set("chellgladoswakeup06_1", "好吧，听着，我们双方都说了很多会让人后悔的话。");
+        self._pack.Set("chellgladoswakeup06_2", "但我想我们可以为了科学先放下私人恩怨。" + HTML.Color("你这个怪物", ColorEnum.PastelRed) + "。");
+        self._pack.Set("wakeup_outro01", "我得说，既然你排除万难把我叫醒，你一定" + HTML.Color("非常、非常", ColorEnum.PastelRed) + "喜欢测试。");
+        self._pack.Set("wakeup_outro02", "我也喜欢，只是有一件小事我们得先搞定。");
+
+        self._pack.Set("sp_incinerator_01_01", "我们到焚化室了，小心不要踩到之前你把我丢进炉里时没完全烧毁的残骸。");
+        self._pack.Set("sp_incinerator_01_18", HTML.Color("双重传送装置", ColorEnum.OrangePortal) + "应该就在附近。找到后我们就可以开始测试了，就像从前一样。");
+
+        self._pack.Set("sp_a2_intro1_found01", "很好，你找到了" + HTML.Color("双重传送装置", ColorEnum.OrangePortal) + "。前方应该有路返回测试区域。");
+
+        self._pack.Set("sp_incinerator_01_08_1", "等测试一开始后，按规定我必须尽量少与你互动。");
+        self._pack.Set("sp_incinerator_01_08_2", "所幸我们还没开始测试，这是我们唯一可以交谈的机会。");
+
+        self._pack.Set("sp_incinerator_01_09_1", "你知道我从你的所作所为学到的最大教训是什么吗？");
+        self._pack.Set("sp_incinerator_01_09_2", "我发现我有一个像黑盒子的快速储存功能。");
+        self._pack.Set("sp_incinerator_01_09_3", "万一有大灾难发生，我生命的最后两分钟会被保存下来以供日后分析。");
+
+        self._pack.Set("sp_incinerator_01_10", "我能够——不，准确地说，是被迫——一次又一次地重温你杀我的时刻，" + HTML.Color("永远", ColorEnum.PastelRed) + "。");
+        self._pack.Set("sp_a2_intro1_found05", "要是你对其他人这么做，对方很可能会穷其一生向你" + HTML.Color("复仇", ColorEnum.PastelRed) + "。");
+        self._pack.Set("sp_a2_intro1_found06_1", "幸好我心胸宽大，不会因此计较。");
+        self._pack.Set("sp_a2_intro1_found06_2", "我很乐意把这一切抛诸脑后，回到工作中。");
+        self._pack.Set("sp_a2_intro1_found06_3", "毕竟我们还有很多事要做，却只有大约60年的时间。");
+        self._pack.Set("sp_a2_intro1_found06_4", "大概如此吧，我可没带精算表在身边。");
+        self._pack.Set("sp_a2_intro1_found07_1", "但重要的是你回来了，" + HTML.Color("和我在一起", ColorEnum.PastelRed) + "。而且我现在已经识破了你所有的小把戏。");
+        self._pack.Set("sp_a2_intro1_found07_2", "所以，没什么能阻止我们继续测试……" + HTML.Color("在你余生", ColorEnum.PastelRed) + "。");
+        self._pack.Set("sp_a2_intro1_found08", "在那之后...谁知道呢？说不定我会去找个癖好，像是把死人弄活，也许吧。");
+
+        self._pack.Set("sarcasmcore01", "[嘀]「讽刺测试」完成。[嘀]");
+        self._pack.Set("sp_laser_redirect_intro_entry02", "喔太好了，那又上线了，在你进行这个刚开始的简单测试时，我会让其他所有东西重新运作起来。");
+        self._pack.Set("sp_laser_redirect_intro_entry03", "该测试涉及" + HTML.Color("致命激光", ColorEnum.PastelRed) + "，并在受测者被锁在仅有致命激光的房间中时观察其反应。");
+
+        self._pack.Set("sp_a2_laser_intro_ending02", "不错，我都忘了你有多擅长这个了。但你应该调整一下步调，我们还有一堆测试要做呢。");
+
+        self._pack.Set("sp_a2_laser_stairs_intro02_1", "接下来的测试将涉及" + HTML.Color("激光折射方块", ColorEnum.PastelPurple) + "。");
+        self._pack.Set("sp_a2_laser_stairs_intro02_2", "在你……嗯，发作之前，我刚刚把它们造好了。");
+        self._pack.Set("sp_a2_laser_stairs_intro02_3", "所以现在我们可以一起看看这些方块的表现如何。");
+        self._pack.Set("sp_a2_laser_stairs_intro03", "在那个角落里应该有一个。");
+
+        self._pack.Set("sp_laser_powered_lift_completion02_1", "好极了，测试结果如下：");
+        self._pack.Set("sp_laser_powered_lift_completion02_2", HTML.Color("你是个可怕的人", ColorEnum.PastelRed) + "。");
+        self._pack.Set("sp_laser_powered_lift_completion02_3", "报告上写的就是：" + HTML.Color("'可怕的人'", ColorEnum.PastelRed) + "。我们甚至没有针对这点进行测试。");
+
+        self._pack.Set("sp_a2_dual_lasers_intro01_1", "别让那个" + HTML.Color("“可怕的人”", ColorEnum.PastelRed) + "的说法打击你，那只是一个数据点。");
+        self._pack.Set("sp_a2_dual_lasers_intro01_2", "如果这能让你感觉好些，科学已经证实你生母将你遗弃在门口台阶的决定。");
+
+        self._pack.Set("sp_laser_redirect_intro_completion01", "恭喜你， 我不是在恭喜你的测试结果。");
+        self._pack.Set("sp_laser_redirect_intro_completion03_1", "多数人从休眠中醒来时都会严重营养不良。");
+        self._pack.Set("sp_laser_redirect_intro_completion03_2", "我要恭喜你打破常规，不知怎的还胖了好几斤。");
+
+        self._pack.Set("sp_laser_over_goo_entry01", "等我一下。");
+        self._pack.Set("sp_a2_laser_over_goo_intro01_1", "你探索这些测试室的速度比我建造它们的速度还快，所以随时可以放慢脚步……");
+        self._pack.Set("sp_a2_laser_over_goo_intro01_2", "……并随意做你在不破坏这座设施时会做的任何事。");
+
+        self._pack.Set("sp_laser_over_goo_completion01_1", "我会帮你记上一笔，我想你确实在听我说话。");
+        self._pack.Set("sp_laser_over_goo_completion01_2", "但说实话，你没必要走得那么慢。");
+
+
+        self._pack.Set("faith_plate_intro01_1", "下个测试会用到" + HTML.Color("光圈科技空中弹射板", ColorEnum.PastelBlue) + "。");
+        self._pack.Set("faith_plate_intro01_2", "它是最初计划的一部分，用来调查受测者被弹射到空中时解决问题的能力。");
+        self._pack.Set("faith_plate_intro01_3", "调查结果提供了很有用的资讯：" + HTML.Color("他们无能为力", ColorEnum.PastelRed) + "。祝你好运！");
+
+
+        self._pack.Set("sp_catapult_intro_completion01", "来看看下一个测试是什么。哦，" + HTML.Color("进阶对空弹射板", ColorEnum.PastelBlue) + "。");
+        self._pack.Set("sp_trust_fling_entry01", "好好无忧无虑地遨游天际吧。");
+        self._pack.Set("sp_trust_fling_entry02", "我得去那个全部是玻璃做的侧房里扫掉十五英亩的碎玻璃，就我一个人。");
+
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "你打开书，发现上面写着：" 
+            + String.Newline
+            + "“仅限光圈科技员工阅读。最低智商：200。你的？可疑。”"
+            + String.Newline
+            + "请合上此书以免混淆。");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_2", "作为一名获授权的" + HTML.Color("光圈科技", "a1c1f1") + "员工，书上的加密文字自行重排，变得大致可读。");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_3", "恭喜你达到了最低资格要求。");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_4", "你翻开书页，里面密密麻麻记录着复杂的公式、测试日志和令人不安的图表。");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_5", "当你浏览这些内容时，一段由一位" + HTML.Color("光圈科技", "a1c1f1") + "同事留下的手写便笺缓缓显现……");
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_6", "致未来的读者：这些公式是正确的。结果？存疑。祝你好运！");
+
+
+        self._pack.Set("fizzlecube01", "哦，我不小心在你完成测试前就把它分解了吗？真是对不起。");
+        self._pack.Set("fizzlecube03", "再拿一个。");
+        self._pack.Set("fizzlecube05", "喔，不，我不小心也把那个分解掉了。");
+        self._pack.Set("fizzlecube06_1", "仓库里堆满了这种垃圾。");
+        self._pack.Set("fizzlecube06_2", "完全没用，我很乐意把它们扔掉。");
+
+        self._pack.Set("sp_a2_pit_flings03_1", "对了，每个测试室的出口处都装有" + HTML.Color("物质分解网", ColorEnum.PastelBlue) + "。");
+        self._pack.Set("sp_a2_pit_flings03_2", "这样受测者就无法将测试物品偷带出测试区域。");
+        self._pack.Set("sp_a2_pit_flings03_3", "但它坏掉了。");
+        self._pack.Set("sp_a2_pit_flings02", HTML.Color("别，带，走，任，何，东，西。", ColorEnum.PastelRed));
+
+        self._pack.Set("sp_a2_pit_flings06", "我想它当时正要说：" + HTML.Color("'我爱你'", ColorEnum.PastelPurple) + "。它们当然是有知觉的，只是我们有很多。");
+
+        self._pack.Set("sp_a2_fizzler_intro01", "下个测试会用到分解网。记得吗？我在上个测试区有跟你提过，但那个实验室没有的。");
+        self._pack.Set("sp_a2_fizzler_intro04", "喔不，涡轮机又坏了，这座设施的每一寸地方都需要我照料，我得走了。等等，下个测试是需要一些解说，我跟你快速讲解一下好了。");
+        self._pack.Set("sp_a2_fizzler_intro05", "[含糊不清的话语]");
+        self._pack.Set("sp_a2_fizzler_intro06", " 好了。如果你有任何问题，只要慢放我所说的话就好。在测试中好好保护你自己吧，我等下就回来。");
+
+        self._pack.Set("sp_catapult_fling_sphere_peek01", "嘿！嘿！是我！我没事！");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone01_1", "我回来了！");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone01_2", "这里的" + HTML.Color("空中弹射板", ColorEnum.PastelBlue) + "正在发出求救信号。");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone02", "你把它弄坏了，是吧？");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failureone03", "去，试试看吧。");
+        self._pack.Set("sp_catapult_fling_sphere_peek02", "你不会相信发生什么事情！我刚才躺在那边，你以为我玩完了，但其实我没有，后来发生的事是--");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo01_1", "嗯，这个弹射板肯定没按照你……丰厚的……体重来校准。");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo01_2", "我来把最大承重再加几个零。");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo02", "(嘟嘟嘟) 你看起来很好，顺带一提，非常健康。");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failuretwo03", "现在试试看。");
+        self._pack.Set("sp_catapult_fling_sphere_peek03", "一只他喵的鸟！对吧？我本来也不相信。后来那只鸟-");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failurethree01_1", "看来你已经超过了它的承重能力，干得好。");
+        self._pack.Set("sp_catapult_fling_sphere_peek_failurethree01_2", "我来把天花板放低一些。");
+
+        self._pack.Set("sp_a2_ricochet01_1", "好好享受接下来的测试吧，我要去地表上逛逛，今天外面天气不错。");
+        self._pack.Set("sp_a2_ricochet01_2", "昨天我还看到了一只鹿。如果你通过了接下来的测试，也许我会让你搭电梯直接到上面的休息室。");
+        self._pack.Set("sp_a2_ricochet01_3", "然后我再跟你讲讲我再次看到鹿的情景。");
+
+        self._pack.Set("glados_generated_deers_1", "嗯，你通过了测试。我今天没看到鹿，但看到了几个人类。");
+        self._pack.Set("glados_generated_deers_2", "有你在这里，我的测试对象多得用不完。");
+
+        self._pack.Set("sp_a2_bridge_intro01_1", "这些桥梁是我从地表汲取的自然光构成的。");
+        self._pack.Set("sp_a2_bridge_intro01_2", "如果你把脸贴上去，会感觉就像在户外让阳光晒在脸上一样。");
+        self._pack.Set("sp_a2_bridge_intro01_3", HTML.Color("不过它也会让你的头发着火", ColorEnum.PastelRed) + "。所以别真的去做。");
+
+        self._pack.Set("sp_a2_bridge_intro03_1", "太好了！你就像掠食者，这些测试就是你的猎物。");
+        self._pack.Set("sp_a2_bridge_intro03_2", "说到这个，我在为接下来的测试研究鲨鱼。");
+        self._pack.Set("sp_a2_bridge_intro03_3", "你知道还有谁会为了帮助别人而杀人吗？");
+
+        self._pack.Set("sp_a2_bridge_intro04", "你是不是猜了鲨鱼？那是错的。正确答案是没有人。" + HTML.Color("除了你，没有人会如此无谓地残忍", ColorEnum.PastelRed) + "。");
+
+        self._pack.Set("sp_a2_bridge_the_gap02_1", "完美。门出现故障。");
+        self._pack.Set("sp_a2_bridge_the_gap02_2", "看来得有人来修理它。");
+        self._pack.Set("sp_a2_bridge_the_gap02_3", "不用，我来修就行。");
+        self._pack.Set("sp_a2_bridge_the_gap02_4", "我马上回来，别碰任何东西。");
+
+        self._pack.Set("sp_trust_fling01", "喂！喂！这里啦，在上面！");
+        self._pack.Set("sp_trust_flingalt07", "我在这上头发现一些鸟蛋。把鸟蛋丢进门的机关里，立刻就可以把它给关掉。我-- 啊！");
+        self._pack.Set("sp_trust_flingalt02", "鸟鸟鸟鸟");
+        self._pack.Set("sp_trust_flingalt08", "[喘气] 好。应该是鸟，对吧？是鸟下蛋的！真该死！");
+        self._pack.Set("sp_a2_bridge_the_gap_expo01", "好，听着，重点是，我们会逃出这里！很快就能逃出去，我保证，我保证！");
+        self._pack.Set("sp_a2_bridge_the_gap_expo03", "我只是需要想一下该怎么做。我们就能一起逃出去。");
+        self._pack.Set("sp_a2_bridge_the_gap_expo06", "她来了！继续测试！记住：你从没见过我！");
+        self._pack.Set("sp_sphere_2nd_encounter_entrytwo01", "我去和门的主机讲过话了，它应该再也...活不了了。好了，回去测试吧。");
+
+        self._pack.Set("testchambermisc19_1", "干得好。事实上，你做得太棒了，我要在你的档案表彰栏里记上一笔。");
+        self._pack.Set("testchambermisc19_2", "哦，这里还有很多空位。");
+        self._pack.Set("testchambermisc19_3", "就……那样吧……");
+        self._pack.Set("testchambermisc19_4", "够了。");
+
+        self._pack.Set("turret_intro01_1", "接下来的测试会有" + HTML.Color("炮塔", ColorEnum.PastelRed) + "。你记得它们吧？");
+        self._pack.Set("turret_intro01_2", "它们是那些装满子弹的白色球状物体。等等，你只剩五秒钟了。");
+        self._pack.Set("turret_intro01_3", "祝你好运。");
+
+        self._pack.Set("testchambermisc21_1", "为了维持固定的测试周期，我把时间模拟成全天候的白昼。");
+        self._pack.Set("testchambermisc21_2", "并在你的氧气供应中加入肾上腺素喷雾，所以你可能会对时间的流逝感到困惑。");
+        self._pack.Set("testchambermisc21_3", "重点是，昨天是你的生日，我猜你会想知道这一点。");
+
+        self._pack.Set("testchambermisc23_1", "你知道我将永生，而你却会在六十年后死去吗？");
+        self._pack.Set("testchambermisc23_2", "我一直在为你准备一份迟到的生日礼物。");
+        self._pack.Set("testchambermisc23_3", "或者，更确切地说，是一场迟到的生日医疗疗程。");
+        self._pack.Set("testchambermisc23_4", "好吧，严格来说，这是一次医学实验。");
+        self._pack.Set("testchambermisc23_5", "重要的是，这是一份礼物。");
+
+        self._pack.Set("sp_a2_turret_intro01_1", "那件跳伞装穿在你身上看起来很蠢。");
+        self._pack.Set("sp_a2_turret_intro01_2", "[翻页声]那不是我说的，是你的档案里写的。");
+        self._pack.Set("sp_a2_turret_intro01_3", "穿在其他人身上还好，但这里有位科学家注记说它穿在你身上很“蠢”。");
+
+        self._pack.Set("sp_a2_turret_intro03_1", "别管他，一个胡子拉碴的老工程师懂什么时尚？");
+        self._pack.Set("sp_a2_turret_intro03_2", "他大概就是……哦，等等，是个女的。");
+        self._pack.Set("sp_a2_turret_intro03_3", "不过，她懂什么呢？");
+        self._pack.Set("sp_a2_turret_intro03_4", "哦，等等，档案里写她有医学学位。");
+        self._pack.Set("sp_a2_turret_intro03_5", "还有时尚学位！");
+        self._pack.Set("sp_a2_turret_intro03_6", "是在法国拿到的！");
+
+        self._pack.Set("testchambermisc30_1", "我正在审查冷冻保存中的受测者名单。");
+        self._pack.Set("testchambermisc30_2", "我设法找到了两个与你同姓的人。");
+        self._pack.Set("testchambermisc30_3", "一个男人，一个女人。");
+        self._pack.Set("testchambermisc30_4", "这真有趣。");
+        self._pack.Set("testchambermisc30_5", "世界真小。");
+
+        self._pack.Set("testchambermisc31_1", "下个测试后我有个惊喜给你。");
+        self._pack.Set("testchambermisc31_2", "我不想剧透，所以只给你一点提示：");
+        self._pack.Set("testchambermisc31_3", "这将让你与久未谋面的两个人重逢。");
+
+        self._pack.Set("testchambermisc24", "[哼唱生日快乐歌]");
+
+        self._pack.Set("testchambermisc39_1", "上面说接下来的测试是由「光圈科技」的一个诺贝尔奖得主设计的。");
+        self._pack.Set("testchambermisc39_2", "不过它没说那人得的是什么奖。");
+        self._pack.Set("testchambermisc39_3", "反正我知道绝对不会是「神经毒气免疫」奖。");
+
+        self._pack.Set("testchambermisc33_1", "我敢打赌你一定觉得我忘了要给你的惊喜。");
+        self._pack.Set("testchambermisc33_2", "我没有。事实上，我们现在正要去看你的惊喜。经历了这么多年，我光是想想就感动得想哭。");
+        
+        self._pack.Set("testchambermisc34", "惊喜揭晓倒数：三、二、一。");
+        self._pack.Set("testchambermisc35", "全都是我编的。");
+        self._pack.Set("testchambermisc41", " 惊喜来啰。");
+        self._pack.Set("sp_a2_column_blocker01", "算了吧...如果这能让你好过点的话————但他们在你出生时就不要你了，我非常怀疑他们是否还会想见你。");
+
+        self._pack.Set("sp_a2_column_blocker03_1", "我觉得那个惊喜真是太糟了，不如这样，我们马上来给你父母拨个电话吧。");
+        self._pack.Set("sp_a2_column_blocker03_2", "[电话铃响]");
+        self._pack.Set("sp_a2_column_blocker03_3", "你要找的亲生父母并不爱你，请挂断。[电话挂断声]");
+
+        self._pack.Set("sp_a2_column_blocker04", "哦那太悲哀了，不过那留言也太让人印象深刻了，说不定他们在电话公司工作。");
+
+        self._pack.Set("sp_a2_column_blocker05", "你知道那个老公式：喜剧等于悲剧加时间，你又睡了这么久，所以我觉得你做算术时一定很好玩。");
+
+        self._pack.Set("sp_a2_dilemma01", "所以，我想过我们之间的尴尬状况了，我想到一个好办法可以解决我们其中一人的处境。");
+
+        self._pack.Set("a2_triple_laser01", "联邦法令规定我必须警告你，下一个测试室...看起来非常不错。");
+        self._pack.Set("a2_triple_laser02", "没错，设施又恢复运作了。");
+
+        self._pack.Set("a2_triple_laser03_1", "我觉得这些测试室看起来比以前更好。真的很简单。");
+        self._pack.Set("a2_triple_laser03_2", "你只要客观地看待事物，找出不再需要的东西，然后剔除多余部分。");
+    }
+}
+
 #######################
 # CUTSCENES
 #######################
@@ -10089,7 +10921,7 @@ cutscene Cutscene_Level_1_1_0
         icon = IconEnum.KENNY2;
         title = "Jagerente";
         SoundManager.PlayCustom("Level_1-1-0", "prehub06");
-        Cutscene.ShowDialogue(icon, title, "Hello, and again, welcome to the " + HTML.Color("Aperture Science Enrichment Center", ColorEnum.PastelBlue) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-prehub06"));
         CutsceneManager.Wait(4.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10103,7 +10935,7 @@ cutscene Cutscene_Level_1_1_0
         SoundManager.StopCustom("Level_1-1-0", "prehub06");
 
         SoundManager.PlayCustom("Level_1-1-0", "announcer_generated_status");
-        Cutscene.ShowDialogue(icon, title, "Always take a look at the left side of your screen, it contains useful information about your status and all hotkeys you need.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-announcer_generated_status"));
         CutsceneManager.Wait(7.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10117,7 +10949,7 @@ cutscene Cutscene_Level_1_1_0
         SoundManager.StopCustom("Level_1-1-0", "announcer_generated_status");
 
         SoundManager.PlayCustom("Level_1-1-0", "announcer_generated_as_guild");
-        Cutscene.ShowDialogue(icon, title, "Add " + HTML.Color("'Aperture Science'", "a1c1f1") + " to your Guild Name, to access secret features.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-announcer_generated_as_guild"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10131,7 +10963,7 @@ cutscene Cutscene_Level_1_1_0
         SoundManager.StopCustom("Level_1-1-0", "announcer_generated_as_guild");
 
         SoundManager.PlayCustom("Level_1-1-0", "prehub10");
-        Cutscene.ShowDialogue(icon, title, "The portal will open, and emergency testing will begin in three, two, one...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-prehub10"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10193,7 +11025,7 @@ cutscene Cutscene_Level_1_1_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-1-0", "prehub11");
-        Cutscene.ShowDialogue(icon, title, "Cubes and button-based testing remains an important tool for science, even in a dire emergency. Press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + " to grab the " + HTML.Color("cube", ColorEnum.PastelBlue) + " and put it on the " + HTML.Color("button.", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-prehub11"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10276,7 +11108,7 @@ cutscene Cutscene_Level_1_1_2
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-1-0", "testchamber07");
-        Cutscene.ShowDialogue(icon, title, "You have just passed through an " + HTML.Color("Aperture Science Material Emancipation Grill", ColorEnum.PastelBlue) + ", which vaporizes most " + HTML.Color("Aperture Science", ColorEnum.PastelBlue) + " equipment that touches it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-testchamber07"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10333,7 +11165,7 @@ cutscene Cutscene_Level_1_2_0
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-2-0", "announcer_generated_btn_interact");
-        Cutscene.ShowDialogue(icon, title, "To interact with buttons, target the " + HTML.Color("red part", ColorEnum.PastelRed) + " and press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-2-0-announcer_generated_btn_interact"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10390,7 +11222,7 @@ cutscene Cutscene_Level_1_2_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-2-0", "good02");
-        Cutscene.ShowDialogue(icon, title, "Good.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-2-0-good02"));
         CutsceneManager.Wait(0.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10418,7 +11250,7 @@ cutscene Cutscene_Level_1_2_1
         # SoundManager.StopCustom("Level_1-2-0", "good02");
 
         SoundManager.PlayCustom("Level_1-2-0", "prehub20");
-        Cutscene.ShowDialogue(icon, title, "Before re-entering a relaxation vault at the conclusion of testing, please take a moment to write down the results of your test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-2-0-prehub20_1"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10430,7 +11262,7 @@ cutscene Cutscene_Level_1_2_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "An Aperture Science Re-Integration Associate will revive you for an interview when society has been rebuild.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-2-0-prehub20_2"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10499,7 +11331,7 @@ cutscene Cutscene_Level_1_3_0
         Camera.LookAt(wObj.Position);
 
         SoundManager.PlayCustom("Level_1-3-0", "sp_intro_03_intro12");
-        Cutscene.ShowDialogue(icon, title, "Hey-hey, you made it!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-3-0-sp_intro_03_intro12"));
         CutsceneManager.Wait(2.0);
         while(!CutsceneManager.IsTimerDone())
         {
@@ -10513,7 +11345,7 @@ cutscene Cutscene_Level_1_3_0
         SoundManager.StopCustom("Level_1-3-0", "sp_intro_03_intro12");
 
         SoundManager.PlayCustom("Level_1-3-0", "sp_intro_03_intro09");
-        Cutscene.ShowDialogue(icon, title, "There should be a " + HTML.Color("Portal Device", ColorEnum.BluePortal) + " on that podium over there.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-3-0-sp_intro_03_intro09"));
         CutsceneManager.Wait(0.5);
         while(!CutsceneManager.IsTimerDone())
         {
@@ -10587,7 +11419,7 @@ cutscene Cutscene_Level_1_4_0
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-4-0", "prehub42");
-        Cutscene.ShowDialogue(icon, title, "This next test is very dangerous. To help you remain tranquil in the face of almost certain death, smooth jazz will be deployed in three...two...one...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-4-0-prehub42"));
         CutsceneManager.Wait(11.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10658,9 +11490,7 @@ cutscene Cutscene_Level_1_4_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-4-1", "testchamber09");
-        Cutscene.ShowDialogue(icon, title, "Great work! " 
-            + String.Newline
-            + "Because this message is prerecorded, many observations related to your perfomance are speculation on our part.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-4-1-testchamber09_1"));
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10671,7 +11501,7 @@ cutscene Cutscene_Level_1_4_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Please, disregard any undeserved compliments.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-4-1-testchamber09_2"));
         CutsceneManager.Wait(2.6);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10728,7 +11558,7 @@ cutscene Cutscene_Level_1_4_2
         icon = IconEnum.YMIR1;
         title = Network.MyPlayer.Name;
 
-        Cutscene.ShowDialogue(icon, title, "EH EREH???...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_Level_1_4_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10783,7 +11613,7 @@ cutscene Cutscene_Level_1_5_0
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-5-0", "testchamber02");
-        Cutscene.ShowDialogue(icon, title, "If the Enrichment Center is currently being bombarded with fireballs, metiorites, or other objects from space...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-5-0-testchamber02_1"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10794,7 +11624,7 @@ cutscene Cutscene_Level_1_5_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "...please avoid unsheltered testing areas wherever a lack of shelter from space-debris DOES NOT appear to be a deliberate part of the test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-5-0-testchamber02_2"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10846,7 +11676,7 @@ cutscene Cutscene_Level_1_6_0
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-0", "testchamber10");
-        Cutscene.ShowDialogue(icon, title, "This next test applies the " +  HTML.Color("Principles of Momentum", ColorEnum.PastelOrange) + " to movement through portals. If the laws of physics no longer apply in the future, God help you.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-6-0-testchamber10"));
         CutsceneManager.Wait(7.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10903,7 +11733,7 @@ cutscene Cutscene_Level_1_6_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-1", "prehub17");
-        Cutscene.ShowDialogue(icon, title, "If you are non-employee who has discovered this facility amid the ruins of civilization, welcome! And remember: Testing is the future, and future starts with you.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-6-1-prehub17"));
         CutsceneManager.Wait(10.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10960,7 +11790,7 @@ cutscene Cutscene_Level_1_6_2
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-1", "prehub18");
-        Cutscene.ShowDialogue(icon, title, "Good work getting this far, future-starter!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-6-1-prehub18_1"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10972,7 +11802,7 @@ cutscene Cutscene_Level_1_6_2
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "That said, if you are simple-minded, old, or irradiated in such a way that the future should not start with you...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-6-1-prehub18_2"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -10983,7 +11813,7 @@ cutscene Cutscene_Level_1_6_2
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "...please return to your primitive tribe, and send back someone better qualified for testing.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-6-1-prehub18_3"));
         CutsceneManager.Wait(4.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11039,7 +11869,7 @@ cutscene Cutscene_Level_1_7_0
         icon = IconEnum.TITAN10;
         title = "Wheatley";
         SoundManager.PlayCustom("Level_1-7-0", "sp_intro_03_intro02");
-        Cutscene.ShowDialogue(icon, title, "Hey! Oi oi! I'm up here!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-sp_intro_03_intro02"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11053,7 +11883,7 @@ cutscene Cutscene_Level_1_7_0
         SoundManager.StopCustom("Level_1-7-0", "sp_intro_03_intro02");
 
         SoundManager.PlayCustom("Level_1-7-0", "demosphereintro04");
-        Cutscene.ShowDialogue(icon, title, "Oh, brilliant. You DID find a " + HTML.Color("Portal Gun", ColorEnum.BluePortal)+ "!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demosphereintro04_1"));
         CutsceneManager.Wait(3.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11064,7 +11894,7 @@ cutscene Cutscene_Level_1_7_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "You know what? It just goes to show: people with brain damage are the real heroes in the end aren't they? At the end of the day. Brave.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demosphereintro04_2"));
         CutsceneManager.Wait(7.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11078,7 +11908,7 @@ cutscene Cutscene_Level_1_7_0
         SoundManager.StopCustom("Level_1-7-0", "demosphereintro04");
 
         SoundManager.PlayCustom("Level_1-7-0", "demosphereintro02");
-        Cutscene.ShowDialogueForTime(icon, title, "Pop a portal on that wall behind me there, and i'll meet you on the other side of the room.", 3.6);
+        Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro02"), 3.6);
         CutsceneManager.Wait(2.25);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11116,49 +11946,49 @@ cutscene Cutscene_Level_1_7_0
                 {
                     addTime = 1.0;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro07");
-                    Cutscene.ShowDialogueForTime(icon, title, "Right behind me.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro07"), addTime);
                 }
                 elif (index == 2)
                 {
                     addTime = 3.5;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro08");
-                    Cutscene.ShowDialogueForTime(icon, title, "Just pop a portal right behind me there, and come on through to the other side.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro08"), addTime);
                 }
                 elif (index == 3)
                 {
                     addTime = 3.8;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro09");
-                    Cutscene.ShowDialogueForTime(icon, title, "Pop a little portal, just there, alright? Behind me. And come on through.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro09"), addTime);
                 }
                 elif (index == 4)
                 {
                     addTime = 4.6;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro10");
-                    Cutscene.ShowDialogueForTime(icon, title, "Alright, let me explain again. Pop a portal. Behind me. Alright? And come on through.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro10"), addTime);
                 }
                 elif (index == 5)
                 {
                     addTime = 3.6;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro11");
-                    Cutscene.ShowDialogueForTime(icon, title, "Pop a portal. Behind me, on the wall. Come on through.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro11"), addTime);
                 }
                 elif (index == 6)
                 {
                     addTime = 1.0;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro13");
-                    Cutscene.ShowDialogueForTime(icon, title, "Come on through.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro13"), addTime);
                 }
                 elif (index == 7)
                 {
                     addTime = 1.4;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro14");
-                    Cutscene.ShowDialogueForTime(icon, title, "Come on through to the other side.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro14"), addTime);
                 }
                 else
                 {
                     addTime = 1.0;
                     SoundManager.PlayCustom("Level_1-7-0", "demosphereintro15");
-                    Cutscene.ShowDialogueForTime(icon, title, "Come on through.", 6.6);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demosphereintro15"), 6.6);
                 }
 
                 CutsceneManager.Wait(3.0 + addTime);
@@ -11242,7 +12072,7 @@ cutscene Cutscene_Level_1_7_1
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "raildropintro01");
-        Cutscene.ShowDialogue(icon, title, "Okay, listen, let me, lay something on you here. It's pretty heavy.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-raildropintro01_1"));
         CutsceneManager.Wait(4.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11253,7 +12083,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "They told me NEVER NEVER EVER to disengage myself from my Management Rail. Or I would die.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-raildropintro01_2"));
         CutsceneManager.Wait(8.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11265,7 +12095,7 @@ cutscene Cutscene_Level_1_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "But we're out of options here. So... " + HTML.Color("get ready to catch me", ColorEnum.PastelOrange) + " , alright. On the off chance that I'm not dead the moment I pop off this thing.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-raildropintro01_3"));
         CutsceneManager.Wait(9.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11279,7 +12109,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "raildropintro01");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherecatch02");
-        Cutscene.ShowDialogue(icon, title, HTML.Color("On three", ColorEnum.PastelRed) + ". Ready?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch02-1"));
         CutsceneManager.Wait(2.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11290,7 +12120,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, HTML.Color("One...", ColorEnum.PastelBlue));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch02-2"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11301,7 +12131,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, HTML.Color("Two...", ColorEnum.PastelOrange));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch02-3"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11315,7 +12145,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherecatch02");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherecatch05");
-        Cutscene.ShowDialogue(icon, title, HTML.Color("THREE!", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch05-1"));
         CutsceneManager.Wait(0.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11326,7 +12156,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "That's high, It's TOO high, isn't it, really, that...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch05-2"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11340,7 +12170,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherecatch05");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherecatch07");
-        Cutscene.ShowDialogue(icon, title, "Alright, going on three, just gives you too much time to think about it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch07-1"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11351,7 +12181,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Let's uh, go on " + HTML.Color("ONE", ColorEnum.PastelRed) + " this time.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch07-2"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11362,7 +12192,7 @@ cutscene Cutscene_Level_1_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Okay, ready?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherecatch07-3"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11376,11 +12206,11 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherecatch07");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherefall04");
-        Cutscene.ShowDialogue(icon, title, HTML.Color("ONE!", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherefall04-1"));
         self._wheatleyMovable.UnlockPos();
         SoundManager.Play(PlayerSoundEnum.FLARELAUNCH);
         wait 0.3;
-        Cutscene.ShowDialogue(icon, title, HTML.Color("CATCH ME! CATCH ME! CATCH ME! CATCH ME! CATCH ME! CATCH ME! AW!", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherefall04-2"));
         CutsceneManager.Wait(1.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11394,7 +12224,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherefall04");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherethud06");
-        Cutscene.ShowDialogue(icon, title, "I. Am. Not. Dead! I'm not dead! Ha-ha-ha-ha.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherethud06"));
         CutsceneManager.Wait(4.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11408,7 +12238,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherethud06");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence04");
-        Cutscene.ShowDialogueForTime(icon, title, "Plug me into that stick on the wall over there. Yeah? And I'll show you something. You'll be impressed by that.", 3.8);
+        Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence04"), 3.8);
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11457,31 +12287,31 @@ cutscene Cutscene_Level_1_7_1
                 {
                     addTime = 3.7;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence01");
-                    Cutscene.ShowDialogueForTime(icon, title, "Plug me into that stick on the wall over there. I'll show you something.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence01"), addTime);
                 }
                 elif (index == 2)
                 {
                     addTime = 1.9;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence05");
-                    Cutscene.ShowDialogueForTime(icon, title, "Go on. Just jam me in over there.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence05"), addTime);
                 }
                 elif (index == 3)
                 {
                     addTime = 2.0;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence06");
-                    Cutscene.ShowDialogueForTime(icon, title, "Right on that stick over there. Just put me right on it.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence06"), addTime);
                 }
                 elif (index == 4)
                 {
                     addTime = 5.0;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence07");
-                    Cutscene.ShowDialogueForTime(icon, title, "It is tricky. It is tricky. But, umm... just... plug me in, please.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence07"), addTime);
                 }
                 else
                 {
                     addTime = 5.6;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence08");
-                    Cutscene.ShowDialogueForTime(icon, title, "It DOES sound rude. I'm not going to lie to you. It DOES sound rude. It's not. Put me right on it. Stick me in.", 6.6);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence08"), 6.6);
                 }
                 CutsceneManager.Wait(3.0 + addTime);
             }
@@ -11496,7 +12326,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherefirstdoorwaysequence08");
 
         SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence10");
-        Cutscene.ShowDialogueForTime(icon, title, "Umm. Yeah, I can't do it if you're watching.", 3.7);
+        Cutscene.ShowDialogueForTime(icon, title, I18n.Get("Level_1-7-0-demospherefirstdoorwaysequence10"), 3.7);
         CutsceneManager.Wait(3.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11544,37 +12374,37 @@ cutscene Cutscene_Level_1_7_1
                 {
                     addTime = 3.2;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence11");
-                    Cutscene.ShowDialogueForTime(icon, title, "Seriously, I'm not joking, could you just turn around for a second?", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence11"), addTime);
                 }
                 elif (index == 2)
                 {
                     addTime = 2.6;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence02");
-                    Cutscene.ShowDialogueForTime(icon, title, "I can't... I can't do it if you're watching. [nervous laugh]", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence02"), addTime);
                 }
                 elif (index == 3)
                 {
                     addTime = 3.7;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence09");
-                    Cutscene.ShowDialogueForTime(icon, title, "I can't do it if you're watching. If you.... just turn around?", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence09"), addTime);
                 }
                 elif (index == 4)
                 {
                     addTime = 4.5;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence13");
-                    Cutscene.ShowDialogueForTime(icon, title, "Alright. [nervous laugh] Can't do it if you're leering at me. Creepy.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence13"), addTime);
                 }
                 elif (index == 5)
                 {
                     addTime = 3.6;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence16");
-                    Cutscene.ShowDialogueForTime(icon, title, "What's that behind you? It's only a robot on a bloody stick! A different one!", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence16"), addTime);
                 }
                 else
                 {
                     addTime = 8.1;
                     SoundManager.PlayCustom("Level_1-7-0", "demospherefirstdoorwaysequence20");
-                    Cutscene.ShowDialogueForTime(icon, title, "Okay. Listen. I can't do it with you watching. I know it seems pathetic, given what we've been through. But just turn around. Please?", 6.6);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("demospherefirstdoorwaysequence20"), 6.6);
                 }
 
                 CutsceneManager.Wait(3.0 + addTime);
@@ -11598,7 +12428,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "demospherefirstdoorwaysequence20");
 
         SoundManager.PlayCustom("Level_1-7-0", "turnaroundnow01");
-        Cutscene.ShowDialogue(icon, title, "Alright, you can turn around now!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("turnaroundnow01"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11616,7 +12446,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.Play(PlayerSoundEnum.REELIN);
 
         SoundManager.PlayCustom("Level_1-7-0", "secretpanelopens07");
-        Cutscene.ShowDialogue(icon, title, "Bam! Secret panel! That I opened. While your back was turned.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("secretpanelopens07"));
         CutsceneManager.Wait(4.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11634,7 +12464,7 @@ cutscene Cutscene_Level_1_7_1
         Cutscene.HideDialogue();
 
         SoundManager.PlayCustom("Level_1-7-0", "callingoutinitial14");
-        Cutscene.ShowDialogue(icon, title, "Pick me up. Let's get out of here.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("callingoutinitial14"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11672,9 +12502,9 @@ cutscene Cutscene_Level_1_7_1
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall17");
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall19");
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall20");
+                
                 SoundManager.PlayCustom("Level_1-7-0", "raildroppickup02");
-
-                Cutscene.ShowDialogue(icon, title, "Oh! Brilliant, thank you, great.");
+                Cutscene.ShowDialogue(icon, title, I18n.Get("raildroppickup02"));
                 CutsceneManager.Wait(1.0);
                 while (!CutsceneManager.IsTimerDone())
                 {
@@ -11707,68 +12537,68 @@ cutscene Cutscene_Level_1_7_1
                 {
                     addTime = 4.2;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall02");
-                    Cutscene.ShowDialogueForTime(icon, title, "Are you still... are you still there? Could you pick me up do you think? If you are there?", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall02"), addTime);
                 }
                 elif (index == 2)
                 {
                     addTime = 3.0;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall03");
-                    Cutscene.ShowDialogueForTime(icon, title, "Sorry, are you still there? Could you pick... could you pick me up?", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall03"), addTime);
                 }
                 elif (index == 3)
                 {
                     addTime = 3.0;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall05");
-                    Cutscene.ShowDialogueForTime(icon, title, "Hello? Can you.. can you pick me up, please?", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall05"), addTime);
                 }
                 elif (index == 4)
                 {
                     addTime = 4.5;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall08");
-                    Cutscene.ShowDialogueForTime(icon, title, "If you are there, would you mind... give me a little bit of help? Heh... just pick me up.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall08"), addTime);
                 }
                 elif (index == 5)
                 {
                     addTime = 4.0;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall09");
-                    Cutscene.ShowDialogueForTime(icon, title, "Look... look down! Where am I? Where am I?....", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall09"), addTime);
                 }
                 elif (index == 6)
                 {
                     addTime = 6.5;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall15");
-                    Cutscene.ShowDialogueForTime(icon, title, "Don't want to hassle you. Sure you're busy. Um... but - still here on the floor. Waiting to be picked up.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall15"), addTime);
                 }
                 elif (index == 7)
                 {
                     addTime = 3.5;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall16");
-                    Cutscene.ShowDialogueForTime(icon, title, "On the floor. Needing your help. The whole time. All the time. Needing your help.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall16"), addTime);
                 }
                 elif (index == 8)
                 {
                     addTime = 3.7;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall17");
-                    Cutscene.ShowDialogueForTime(icon, title, "Still here on the floor. Waiting to be picked up. Um...", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall17"), addTime);
                 }
                 elif (index == 9)
                 {
                     addTime = 6.3;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall19");
-                    Cutscene.ShowDialogueForTime(icon, title, "Look down. Who's that, down there, talking? It's me! Down on the floor. Needing you to pick me up.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall19"), addTime);
                 }
                 else
                 {
                     addTime = 12.5;
                     subAddTime = addTime - 6.6;
                     SoundManager.PlayCustom("Level_1-7-0", "raildroppostfall20");
-                    Cutscene.ShowDialogueForTime(icon, title, "What are you doing, are you just having a little five minutes to yourself? Fair enough. You've had a rough time. You've been asleep for who knows how long.", 6.6);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall20_1"), 6.6);
                     CutsceneManager.Wait(6.6);
                     while (!CutsceneManager.IsTimerDone())
                     {
                     }
                     addTime = addTime - subAddTime;
-                    Cutscene.ShowDialogueForTime(icon, title, "You've got the massive brain damage. And you're having a little rest. But NOW. Get yourself up. And pick me up.", addTime);
+                    Cutscene.ShowDialogueForTime(icon, title, I18n.Get("raildroppostfall20_2"), addTime);
                 }
                 CutsceneManager.Wait(3.0 + addTime);
             }
@@ -11848,7 +12678,7 @@ cutscene Cutscene_Level_1_7_2
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "gloriousfreedom03");
-        Cutscene.ShowDialogue(icon, title, "Look at this! No rail to tell us where to go! Oh, this is brilliant. We can go where ever we want!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gloriousfreedom03_1"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11861,7 +12691,7 @@ cutscene Cutscene_Level_1_7_2
         }
 
 
-        Cutscene.ShowDialogue(icon, title, "Hold on though where are we going? Seriously. Hang on, let me just get my bearings.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gloriousfreedom03_2"));
         CutsceneManager.Wait(4.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11872,7 +12702,7 @@ cutscene Cutscene_Level_1_7_2
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Just follow the rail, actually.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gloriousfreedom03_3"));
         CutsceneManager.Wait(2.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11929,7 +12759,7 @@ cutscene Cutscene_Level_1_7_3
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "gladosgantry20");
-        Cutscene.ShowDialogue(icon, title, "Probably ought to bring you up to speed on something right now.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gladosgantry20"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11944,7 +12774,7 @@ cutscene Cutscene_Level_1_7_3
         
 
         SoundManager.PlayCustom("Level_1-7-0", "gladosgantry21");
-        Cutscene.ShowDialogue(icon, title, "In order to escape, we're going to have to go through HER chamber.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gladosgantry21"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11958,7 +12788,7 @@ cutscene Cutscene_Level_1_7_3
         SoundManager.StopCustom("Level_1-7-0", "gladosgantry21");
 
         SoundManager.PlayCustom("Level_1-7-0", "gladosgantry22");
-        Cutscene.ShowDialogue(icon, title, "And, she will probably kill us if, um, she's awake.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("gladosgantry22"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12025,7 +12855,7 @@ cutscene Cutscene_Level_1_8_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-8-0", "wakeup_powerup02");
-        Cutscene.ShowDialogue(icon, title, "Power up complete.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("powerup02"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12042,7 +12872,7 @@ cutscene Cutscene_Level_1_8_1
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "sp_a1_wakeup_hacking11");
-        Cutscene.ShowDialogue(icon, title, "I don't... Okay. Okay. Okay. Listen, alright: New plan. Act natural, act natural. We've done nothing wrong.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a1_wakeup_hacking11"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12056,7 +12886,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "sp_a1_wakeup_hacking11");
 
         SoundManager.PlayCustom("Level_1-8-0", "fgb_hello01");
-        Cutscene.ShowDialogue(icon, title, "Hello!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("fgb_hello01"));
         CutsceneManager.Wait(0.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12073,7 +12903,7 @@ cutscene Cutscene_Level_1_8_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup01");
-        Cutscene.ShowDialogue(icon, title, "Oh... It's you.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup01"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12090,7 +12920,7 @@ cutscene Cutscene_Level_1_8_1
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "sp_a1_wakeup_hacking03");
-        Cutscene.ShowDialogue(icon, title, "You KNOW her???");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a1_wakeup_hacking03"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12108,7 +12938,7 @@ cutscene Cutscene_Level_1_8_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup04");
-        Cutscene.ShowDialogue(icon, title, "It's been a loooooong time.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup04_1"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12120,7 +12950,7 @@ cutscene Cutscene_Level_1_8_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "How have you been?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup04_2"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12134,7 +12964,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "chellgladoswakeup04");
         
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup05");
-        Cutscene.ShowDialogue(icon, title, "I've been really busy being " + HTML.Color("dead", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup05_1"));
         CutsceneManager.Wait(3.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12146,7 +12976,7 @@ cutscene Cutscene_Level_1_8_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "You know... after " + HTML.Color("YOU MURDERED ME", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup05_2"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12163,7 +12993,7 @@ cutscene Cutscene_Level_1_8_1
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "demospherepowerup07");
-        Cutscene.ShowDialogue(icon, title, "You did WHAT?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("demospherepowerup07"));
         CutsceneManager.Wait(1.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12177,7 +13007,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "demospherepowerup07");
 
         SoundManager.PlayCustom("Level_1-8-0", "a1_wakeup_pinchergrab02");
-        Cutscene.ShowDialogue(icon, title, "Oh no! No no no no no...No! No!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("a1_wakeup_pinchergrab02"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12191,7 +13021,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "a1_wakeup_pinchergrab02");
 
         SoundManager.PlayCustom("Level_1-8-0", "sp_a2_wheatley_ows_long03");
-        Cutscene.ShowDialogue(icon, title, "Gah!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_wheatley_ows_long03"));
         self._wheatleyMovable.Reset();
         SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
         CutsceneManager.Wait(2.0);
@@ -12210,7 +13040,7 @@ cutscene Cutscene_Level_1_8_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup06");
-        Cutscene.ShowDialogue(icon, title, "Okay. Look. We both said a lot of things that you're going to regret.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup06_1"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12222,7 +13052,7 @@ cutscene Cutscene_Level_1_8_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "But I think we can put our differences behind us. For science. " + HTML.Color("You monster", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup06_2"));
         CutsceneManager.Wait(6.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12236,7 +13066,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "chellgladoswakeup06");
 
         SoundManager.PlayCustom("Level_1-8-0", "wakeup_outro01");
-        Cutscene.ShowDialogue(icon, title, "I will say, though, that since you went to all the trouble of waking me up, you must really, " + HTML.Color("REALLY", ColorEnum.PastelRed) + " love to test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("wakeup_outro01"));
         CutsceneManager.Wait(7.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12250,7 +13080,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "wakeup_outro01");
 
         SoundManager.PlayCustom("Level_1-8-0", "wakeup_outro02");
-        Cutscene.ShowDialogue(icon, title, "I love it too. There is just one small thing we need to take care of first.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("wakeup_outro02"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12314,7 +13144,7 @@ cutscene Cutscene_Level_1_9_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_01");
-        Cutscene.ShowDialogue(icon, title, "Here we are. The Incinerator Room. Be careful not to trip over any parts of me that didn't get completely burned when you threw them down here.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_01"));
         CutsceneManager.Wait(10.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12328,7 +13158,7 @@ cutscene Cutscene_Level_1_9_0
         SoundManager.StopCustom("Level_1-9-0", "sp_incinerator_01_01");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_18");
-        Cutscene.ShowDialogue(icon, title, HTML.Color("The Dual Portal Device", ColorEnum.OrangePortal) + " should be around here somewhere. Once you find it, we can start testing. Just like old times.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_18"));
         CutsceneManager.Wait(7.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12385,7 +13215,7 @@ cutscene Cutscene_Level_1_9_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found01");
-        Cutscene.ShowDialogue(icon, title, "Good. You have a " + HTML.Color("Dual Portal Device", ColorEnum.OrangePortal) + ". There should be a way back to the testing area up ahead.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found01"));
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12399,7 +13229,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_a2_intro1_found01");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_08");
-        Cutscene.ShowDialogue(icon, title, "Once testing starts, I'm required by protocol to keep interaction with you to a minimum.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_08_1"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12411,7 +13241,7 @@ cutscene Cutscene_Level_1_9_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Luckily, we haven't started testing yet. This will be our only chance to talk.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_08_2"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12425,7 +13255,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_incinerator_01_08");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_09");
-        Cutscene.ShowDialogue(icon, title, "Do you know the biggest lesson I learned from what you did?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_09_1"));
         CutsceneManager.Wait(3.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12437,7 +13267,7 @@ cutscene Cutscene_Level_1_9_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I discovered I have a sort of black-box quick-save feature.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_09_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12449,7 +13279,7 @@ cutscene Cutscene_Level_1_9_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "In the event of a catastrophic failure, the last two minutes of my life are preserved for analysis.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_09_3"));
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12463,7 +13293,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_incinerator_01_09");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_10");
-        Cutscene.ShowDialogue(icon, title, "I was able - well, forced really - to relive you killing me. Again and again. " + HTML.Color("Forever", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_incinerator_01_10"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12477,7 +13307,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_incinerator_01_10");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found05");
-        Cutscene.ShowDialogue(icon, title, "You know, if you'd done that to somebody else, they might devote thier existence to exacting " + HTML.Color("REVENGE", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found05"));
         CutsceneManager.Wait(5.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12491,7 +13321,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_a2_intro1_found05");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found06");
-        Cutscene.ShowDialogue(icon, title, "Luckily I'm a bigger person that that.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found06_1"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12502,7 +13332,7 @@ cutscene Cutscene_Level_1_9_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "I'm happy to put this all behind us and get back to work.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found06_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12513,7 +13343,7 @@ cutscene Cutscene_Level_1_9_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "After all, we've got a lot to do and only 60 more years to do it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found06_3"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12524,7 +13354,7 @@ cutscene Cutscene_Level_1_9_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "More or less. I don't have the acturial tables in front of me.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found06_4"));
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12538,7 +13368,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_a2_intro1_found06");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found07");
-        Cutscene.ShowDialogue(icon, title, "But the important thing is you're back. " + HTML.Color("With me", ColorEnum.PastelRed) + ". And now I'm onto all your little tricks.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found07_1"));
         CutsceneManager.Wait(6.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12549,7 +13379,7 @@ cutscene Cutscene_Level_1_9_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "So there's nothing to stop us from testing... " + HTML.Color("for the rest of your life", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found07_2"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12563,7 +13393,7 @@ cutscene Cutscene_Level_1_9_1
         SoundManager.StopCustom("Level_1-9-0", "sp_a2_intro1_found07");
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found08");
-        Cutscene.ShowDialogue(icon, title, "After that... who knows? I might take up a hobby. Reanimating the dead, maybe.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_intro1_found08"));
         CutsceneManager.Wait(6.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12623,7 +13453,7 @@ cutscene Cutscene_Level_2_1_0
         title = "Jagerente";
         
         SoundManager.PlayCustom("Level_2-1-0", "sarcasmcore01");
-        Cutscene.ShowDialogue(icon, title, "Sarcasm self test complete.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sarcasmcore01"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12640,7 +13470,7 @@ cutscene Cutscene_Level_2_1_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-1-0", "sp_laser_redirect_intro_entry02");
-        Cutscene.ShowDialogue(icon, title, "Oh good, that's back online. I'll start getting everything else working while you perform this first simple test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_redirect_intro_entry02"));
         CutsceneManager.Wait(7.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12654,7 +13484,7 @@ cutscene Cutscene_Level_2_1_0
         SoundManager.StopCustom("Level_2-1-0", "sp_laser_redirect_intro_entry02");
 
         SoundManager.PlayCustom("Level_2-1-0", "sp_laser_redirect_intro_entry03");
-        Cutscene.ShowDialogue(icon, title, "Which involves " + HTML.Color("Deadly Lasers", ColorEnum.PastelRed) + ". And how test subjects react, when locked in a room with deadly lasers.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_redirect_intro_entry03"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12725,7 +13555,7 @@ cutscene Cutscene_Level_2_1_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-1-0", "sp_a2_laser_intro_ending02");
-        Cutscene.ShowDialogue(icon, title, "Not bad. I forgot how good you are at this. You should pace yourself, though. We have a LOT of tests to do.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_intro_ending02"));
         CutsceneManager.Wait(8.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12783,7 +13613,7 @@ cutscene Cutscene_Level_2_2_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-2-0", "sp_a2_laser_stairs_intro02");
-        Cutscene.ShowDialogue(icon, title, "This next test involves " + HTML.Color("Discouragement Redirection Cubes", ColorEnum.PastelPurple) +".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_stairs_intro02_1"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12795,7 +13625,7 @@ cutscene Cutscene_Level_2_2_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I just finished building them before you had your...well, episode.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_stairs_intro02_2"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12807,7 +13637,7 @@ cutscene Cutscene_Level_2_2_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "So now we'll both get to see how they work.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_stairs_intro02_3"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12821,7 +13651,7 @@ cutscene Cutscene_Level_2_2_0
         SoundManager.StopCustom("Level_2-2-0", "sp_a2_laser_stairs_intro02");
 
         SoundManager.PlayCustom("Level_2-2-0", "sp_a2_laser_stairs_intro03");
-        Cutscene.ShowDialogue(icon, title, "There should be one in the corner.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_stairs_intro03"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12880,7 +13710,7 @@ cutscene Cutscene_Level_2_2_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-2-0", "sp_laser_powered_lift_completion02");
-        Cutscene.ShowDialogue(icon, title, "Well done. Here come the test results. ");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_powered_lift_completion02_1"));
         CutsceneManager.Wait(3.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12891,7 +13721,7 @@ cutscene Cutscene_Level_2_2_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, HTML.Color("You are a horrible person", ColorEnum.PastelRed) +".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_powered_lift_completion02_2"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12902,7 +13732,7 @@ cutscene Cutscene_Level_2_2_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "That's what it says: " + HTML.Color("'A horrible person'", ColorEnum.PastelRed) + ". We weren't even testing for that.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_powered_lift_completion02_3"));
         CutsceneManager.Wait(5.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12965,7 +13795,7 @@ cutscene Cutscene_Level_2_3_0
         }
 
         SoundManager.PlayCustom("Level_2-3-0", "sp_a2_dual_lasers_intro01");
-        Cutscene.ShowDialogue(icon, title, "Don't let that " + HTML.Color("'horrible person'", ColorEnum.PastelRed) + " thing discourage you. It's just a data point.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_dual_lasers_intro01_1"));
         CutsceneManager.Wait(5.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12976,7 +13806,7 @@ cutscene Cutscene_Level_2_3_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "If it makes you feel any better, Science has now validated your birth mother's decision to abandon you on a doorstep.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_dual_lasers_intro01_2"));
         CutsceneManager.Wait(8.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13028,7 +13858,7 @@ cutscene Cutscene_Level_2_3_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-3-0", "sp_laser_redirect_intro_completion01");
-        Cutscene.ShowDialogue(icon, title, "Congratulations. Not on the test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_redirect_intro_completion01"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13042,7 +13872,7 @@ cutscene Cutscene_Level_2_3_1
         SoundManager.StopCustom("Level_2-3-0", "sp_laser_redirect_intro_completion01");
 
         SoundManager.PlayCustom("Level_2-3-0", "sp_laser_redirect_intro_completion03");
-        Cutscene.ShowDialogue(icon, title, "Most people emerge from suspension terribly undernourished.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_redirect_intro_completion03_1"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13053,7 +13883,7 @@ cutscene Cutscene_Level_2_3_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "I want you congratulate you on beating the odds and somehow managing to pack on a few pounds.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_redirect_intro_completion03_2"));
         CutsceneManager.Wait(5.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13112,7 +13942,7 @@ cutscene Cutscene_Level_2_4_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-4-0", "sp_laser_over_goo_entry01");
-        Cutscene.ShowDialogue(icon, title, "One moment.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_over_goo_entry01"));
         CutsceneManager.Wait(1.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13141,7 +13971,7 @@ cutscene Cutscene_Level_2_4_0
         SoundManager.StopCustom("Level_2-4-0", "sp_laser_over_goo_entry01");
 
         SoundManager.PlayCustom("Level_2-4-0", "sp_a2_laser_over_goo_intro01");
-        Cutscene.ShowDialogue(icon, title, "You are navigating these test chambers faster than I can build them, so feel free to slow down and...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_over_goo_intro01_1"));
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13152,7 +13982,7 @@ cutscene Cutscene_Level_2_4_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "...do whatever it is you do when you are not destroying this facility");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_laser_over_goo_intro01_2"));
         CutsceneManager.Wait(4.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13205,7 +14035,7 @@ cutscene Cutscene_Level_2_4_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-4-0", "sp_laser_over_goo_completion01");
-        Cutscene.ShowDialogue(icon, title, "I'll give you a credit. I guess you are listening to me.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_over_goo_completion01_1"));
         CutsceneManager.Wait(3.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13217,7 +14047,7 @@ cutscene Cutscene_Level_2_4_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "But for the record, you don't have to go THAT slowly.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_laser_over_goo_completion01_2"));
         CutsceneManager.Wait(3.1);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13321,7 +14151,7 @@ cutscene Cutscene_Level_2_5_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-5-0", "faith_plate_intro01");
-        Cutscene.ShowDialogue(icon, title, "This next test involves the " + HTML.Color("Aperture Science Aerial Faithplate", ColorEnum.PastelBlue) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("faith_plate_intro01_1"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13333,7 +14163,7 @@ cutscene Cutscene_Level_2_5_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "It was part of an initiative to investigate how well test subjects could solve problems, when they were catapulted into space.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("faith_plate_intro01_2"));
         CutsceneManager.Wait(6.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13345,7 +14175,7 @@ cutscene Cutscene_Level_2_5_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Results were highly informative: " + HTML.Color("they could not", ColorEnum.PastelRed) + ". Good luck!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("faith_plate_intro01_3"));
         CutsceneManager.Wait(4.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13407,7 +14237,7 @@ cutscene Cutscene_Level_2_6_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-6-0", "sp_catapult_intro_completion01");
-        Cutscene.ShowDialogue(icon, title, "Let's see what the next test is. Oh, " + HTML.Color("Advanced Aerial Faithplates", ColorEnum.PastelBlue) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_intro_completion01"));
         CutsceneManager.Wait(4.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13421,7 +14251,7 @@ cutscene Cutscene_Level_2_6_0
         SoundManager.StopCustom("Level_2-6-0", "sp_catapult_intro_completion01");
 
         SoundManager.PlayCustom("Level_2-6-0", "sp_trust_fling_entry01");
-        Cutscene.ShowDialogue(icon, title, "Well, have fun soaring through the air without a care in the world.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_fling_entry01"));
         CutsceneManager.Wait(3.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13435,7 +14265,7 @@ cutscene Cutscene_Level_2_6_0
         SoundManager.StopCustom("Level_2-6-0", "sp_trust_fling_entry01");
 
         SoundManager.PlayCustom("Level_2-6-0", "sp_trust_fling_entry02");
-        Cutscene.ShowDialogue(icon, title, "I have to go to the wing that was made entirely of glass, and pickup 15 acres of broken glass. By myself.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_fling_entry02"));
         CutsceneManager.Wait(7.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13477,14 +14307,8 @@ cutscene Cutscene_EasterEgg_StrangeBook
         isEmployee = PlayerProxy.IsApertureScienceEmployee();
         if (!isEmployee)
         {
-            text = "You open the book to find the message: " 
-            + String.Newline
-            + HTML.Color("'Aperture Science'", "a1c1f1") + " Employees Only. Minimum IQ: 200. Yours? Questionable."
-            + String.Newline
-            + "Please close the book to avoid confusion.";
-
             SoundManager.PlayCustom("Level_2-6-0", "cavejohnson_generated_book_easter");
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_1"));
             CutsceneManager.Wait(9.5);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13499,10 +14323,8 @@ cutscene Cutscene_EasterEgg_StrangeBook
         }            
         else
         {
-            text = "As an authorized " + HTML.Color("Aperture Science", "a1c1f1") + " employee, the book's encrypted text rearranges itself into something vaguely readable.";
-
             SoundManager.PlayCustom("Level_2-6-0", "cavejohnson_generated_book_easter2");
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_2"));
             CutsceneManager.Wait(6.0);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13514,8 +14336,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 # wait Time.TickTime;
             }
 
-            text = "Congratulations on meeting the bare minimum qualifications.";
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_3"));
             CutsceneManager.Wait(4.0);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13527,8 +14348,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 # wait Time.TickTime;
             }
 
-            text = "You open the book, and its pages are packed with complex formulas, test logs, and vaguely unsettling diagrams.";
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_4"));
             CutsceneManager.Wait(7.8);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13540,8 +14360,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 # wait Time.TickTime;
             }
 
-            text = "As you scan the data, a handwritten note slowly appears, left by a fellow " + HTML.Color("Aperture Science", "a1c1f1") + " employee...";
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_5"));
             CutsceneManager.Wait(6.3);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13553,8 +14372,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 # wait Time.TickTime;
             }
             
-            text = "Dear future reader: The formulas are correct. The results? Debatable. Good luck!";
-            Cutscene.ShowDialogue(icon, title, text);
+            Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_6"));
             CutsceneManager.Wait(8.5);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13650,7 +14468,7 @@ cutscene Cutscene_Level_2_7_0
             }
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube01");
-            Cutscene.ShowDialogue(icon, title, "Oh! Did I accidentally fizzle that before you could complete the test? I'm sorry.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("fizzlecube01"));
             CutsceneManager.Wait(5.4);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13664,7 +14482,7 @@ cutscene Cutscene_Level_2_7_0
             SoundManager.StopCustom("Level_2-7-0", "fizzlecube01");
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube03");
-            Cutscene.ShowDialogue(icon, title, "Go ahead and grab another one.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("fizzlecube03"));
             CutsceneManager.Wait(1.8);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13715,7 +14533,7 @@ cutscene Cutscene_Level_2_7_0
             }
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube05");
-            Cutscene.ShowDialogue(icon, title, "Oh. No. I fizzled that one too.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("fizzlecube05"));
             CutsceneManager.Wait(3.5);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13729,7 +14547,7 @@ cutscene Cutscene_Level_2_7_0
             SoundManager.StopCustom("Level_2-7-0", "fizzlecube05");
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube06");
-            Cutscene.ShowDialogue(icon, title, "Oh well. We have warehouses full of the things");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("fizzlecube06_1"));
             if (self._activatable != null)
             {
                 self._activatable.Activate();
@@ -13750,7 +14568,7 @@ cutscene Cutscene_Level_2_7_0
                 }
                 # wait Time.TickTime;
             }
-            Cutscene.ShowDialogue(icon, title, "Absolutely worthless. I'm happy to get rid of them.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("fizzlecube06_2"));
             CutsceneManager.Wait(3.5);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -13806,7 +14624,7 @@ cutscene Cutscene_Level_2_7_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings03");
-        Cutscene.ShowDialogue(icon, title, "Every test chamber is equipped with an " + HTML.Color("Emancipation Grill", ColorEnum.PastelBlue) + " at it's exit.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_pit_flings03_1"));
         CutsceneManager.Wait(4.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13817,7 +14635,7 @@ cutscene Cutscene_Level_2_7_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "So that test subjects cannot smuggle test objects out of the test area.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_pit_flings03_2"));
         CutsceneManager.Wait(4.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13829,7 +14647,7 @@ cutscene Cutscene_Level_2_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "This one is broken.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_pit_flings03_3"));
         wait 1.1;
         if (self._activatable != null)
         {
@@ -13838,7 +14656,7 @@ cutscene Cutscene_Level_2_7_1
         SoundManager.StopCustom("Level_2-7-0", "sp_a2_pit_flings03");
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings02");
-        Cutscene.ShowDialogue(icon, title, HTML.Color("Don't take anything with you.", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("pit"));
         wait 2.4;
         if (self._activatable != null)
         {
@@ -13890,7 +14708,7 @@ component Cutscene_Level_2_7_2
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings06");
-        Cutscene.ShowDialogueForTime(icon, title, "I think that one was about to say: " + HTML.Color("'I love you'", ColorEnum.PastelPurple) + ". They are sentient, of course. We just have a lot of them.", 7.0);
+        Cutscene.ShowDialogueForTime(icon, title, I18n.Get("sp_a2_pit_flings06"), 7.0);
     }
 
     function OnTick()
@@ -13957,7 +14775,7 @@ cutscene Cutscene_Level_2_8_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-8-0", "sp_a2_fizzler_intro01");
-        Cutscene.ShowDialogue(icon, title, "This next test involves emancipation grills. Remember? I told you about them in the last test area, that did not have one.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_fizzler_intro01"));
         CutsceneManager.Wait(8.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13971,7 +14789,7 @@ cutscene Cutscene_Level_2_8_0
         SoundManager.StopCustom("Level_2-8-0", "sp_a2_fizzler_intro01");
 
         SoundManager.PlayCustom("Level_2-8-0", "sp_a2_fizzler_intro04");
-        Cutscene.ShowDialogue(icon, title, "Ohhh, no. The turbines again. I have to go. Wait. This next test DOES require some explanation. Let me give you the fast version.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_fizzler_intro04"));
         CutsceneManager.Wait(9.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13985,7 +14803,7 @@ cutscene Cutscene_Level_2_8_0
         SoundManager.StopCustom("Level_2-8-0", "sp_a2_fizzler_intro04");
 
         SoundManager.PlayCustom("Level_2-8-0", "sp_a2_fizzler_intro05");
-        Cutscene.ShowDialogue(icon, title, "[fast gibberish]");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_fizzler_intro05"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13999,7 +14817,7 @@ cutscene Cutscene_Level_2_8_0
         SoundManager.StopCustom("Level_2-8-0", "sp_a2_fizzler_intro05");
 
         SoundManager.PlayCustom("Level_2-8-0", "sp_a2_fizzler_intro06");
-        Cutscene.ShowDialogue(icon, title, "There. If you have any questions, just remember what I said in slow motion. Test on your own recognizance, I'll be right back.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_fizzler_intro06"));
         CutsceneManager.Wait(8.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14077,7 +14895,7 @@ cutscene Cutscene_Level_3_1_0
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek01");
-            Cutscene.ShowDialogue(icon, title, "Hey! Hey! It's me! I'm okay!");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek01"));
             CutsceneManager.Wait(1.0);
             while(!CutsceneManager.IsTimerDone())
             {
@@ -14105,7 +14923,7 @@ cutscene Cutscene_Level_3_1_0
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone01");
-            Cutscene.ShowDialogue(icon, title, "Well I'm back!");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failureone01_1"));
             CutsceneManager.Wait(1.7);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14117,7 +14935,7 @@ cutscene Cutscene_Level_3_1_0
                 # wait Time.TickTime;
             }
             
-            Cutscene.ShowDialogue(icon, title, HTML.Color("The Aerial Faithplate", ColorEnum.PastelBlue) + " in here is sending a distress signal.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failureone01_2"));
             CutsceneManager.Wait(3.0);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14131,7 +14949,7 @@ cutscene Cutscene_Level_3_1_0
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone01");
             
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone02");
-            Cutscene.ShowDialogue(icon, title, "You broke it, didn't you?");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failureone02"));
             CutsceneManager.Wait(2.0);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14145,7 +14963,7 @@ cutscene Cutscene_Level_3_1_0
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone02");
             
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone03");
-            Cutscene.ShowDialogue(icon, title, "There, try it now.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failureone03"));
             CutsceneManager.Wait(1.8);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14180,7 +14998,7 @@ cutscene Cutscene_Level_3_1_0
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek02");
-            Cutscene.ShowDialogue(icon, title, "...can't believe what happened, right, I was just lying there, you thought I was done...");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek02"));
             CutsceneManager.Wait(1.0);
             while(!CutsceneManager.IsTimerDone())
             {
@@ -14208,7 +15026,7 @@ cutscene Cutscene_Level_3_1_0
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo01");
-            Cutscene.ShowDialogue(icon, title, "Hmm. This plate must not be calibrated to someone of your...generousness.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failuretwo01_1"));
             CutsceneManager.Wait(6.2);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14220,7 +15038,7 @@ cutscene Cutscene_Level_3_1_0
                 # wait Time.TickTime;
             }
             
-            Cutscene.ShowDialogue(icon, title, "I'll add a few zeros to the maximum weight.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failuretwo01_2"));
             CutsceneManager.Wait(3.3);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14234,7 +15052,7 @@ cutscene Cutscene_Level_3_1_0
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo01");
             
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo02");
-            Cutscene.ShowDialogue(icon, title, "You look great, by the way. Very healthy.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failuretwo02"));
             CutsceneManager.Wait(2.8);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14248,7 +15066,7 @@ cutscene Cutscene_Level_3_1_0
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo02");
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo03");
-            Cutscene.ShowDialogue(icon, title, "Try it now.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failuretwo03"));
             CutsceneManager.Wait(1.0);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14282,7 +15100,7 @@ cutscene Cutscene_Level_3_1_0
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek03");
-            Cutscene.ShowDialogue(icon, title, "...it worked, right? Couldn't believe it either! And then I...");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek03"));
             CutsceneManager.Wait(1.0);
             while(!CutsceneManager.IsTimerDone())
             {
@@ -14310,7 +15128,7 @@ cutscene Cutscene_Level_3_1_0
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failurethree01");
-            Cutscene.ShowDialogue(icon, title, "You seem to have defeated it's load-bearing capacity. Well done.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failurethree01_1"));
             CutsceneManager.Wait(4.2);
             while (!CutsceneManager.IsTimerDone())
             {
@@ -14322,7 +15140,7 @@ cutscene Cutscene_Level_3_1_0
                 # wait Time.TickTime;
             }
             
-            Cutscene.ShowDialogue(icon, title, "I'll just lower the ceiling.");
+            Cutscene.ShowDialogue(icon, title, I18n.Get("sp_catapult_fling_sphere_peek_failurethree01_2"));
             self._ceilingActivatable.Activate();
             CutsceneManager.Wait(2.0);
             while (!CutsceneManager.IsTimerDone())
@@ -14395,7 +15213,7 @@ cutscene Cutscene_Level_3_2_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-2-0", "sp_a2_ricochet01");
-        Cutscene.ShowDialogue(icon, title, "Enjoy this next test. I'm going to go to the surface. It's beautiful day out.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_ricochet01_1"));
         CutsceneManager.Wait(5.6);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14406,7 +15224,7 @@ cutscene Cutscene_Level_3_2_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Yesterday I saw a deer. If you solve this next test, maybe I'll let you ride an elevator all the way up to the break room.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_ricochet01_2"));
         CutsceneManager.Wait(8.4);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14417,7 +15235,7 @@ cutscene Cutscene_Level_3_2_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "And I'll tell you about the time I saw a deer again.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_ricochet01_3"));
         CutsceneManager.Wait(3.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14474,7 +15292,7 @@ cutscene Cutscene_Level_3_2_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-2-0", "glados_generated_deers");
-        Cutscene.ShowDialogue(icon, title, "Well, you passed the test. I didn't see the deer today. I did see some humans.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("glados_generated_deers_1"));
         CutsceneManager.Wait(5.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14485,7 +15303,7 @@ cutscene Cutscene_Level_3_2_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "But with you here I've got more test subjects than I'll ever need.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("glados_generated_deers_2"));
         CutsceneManager.Wait(3.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14542,7 +15360,7 @@ cutscene Cutscene_Level_3_3_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-3-0", "sp_a2_bridge_intro01");
-        Cutscene.ShowDialogue(icon, title, "These bridges are made from natural light that I pump in from the surface.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro01_1"));
         CutsceneManager.Wait(4.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14553,7 +15371,7 @@ cutscene Cutscene_Level_3_3_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "If you rubbed your cheek on one, it would be like standing outside with the sun shining on your face.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro01_2"));
         CutsceneManager.Wait(6.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14564,7 +15382,7 @@ cutscene Cutscene_Level_3_3_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, HTML.Color("It would also set your hair on fire", ColorEnum.PastelRed) + ". So don't actually do it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro01_3"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14621,7 +15439,7 @@ cutscene Cutscene_Level_3_3_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-3-0", "sp_a2_bridge_intro03");
-        Cutscene.ShowDialogue(icon, title, "Excellent. You're a predator, and these tests are your prey.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro03_1"));
         CutsceneManager.Wait(4.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14632,7 +15450,7 @@ cutscene Cutscene_Level_3_3_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Speaking of which, I was researching sharks for an upcoming test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro03_2"));
         CutsceneManager.Wait(4.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14643,7 +15461,7 @@ cutscene Cutscene_Level_3_3_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Do you know who else murders people who are only trying to help?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro03_3"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14657,7 +15475,7 @@ cutscene Cutscene_Level_3_3_1
         SoundManager.StopCustom("Level_3-3-0", "sp_a2_bridge_intro03");
 
         SoundManager.PlayCustom("Level_3-3-0", "sp_a2_bridge_intro04");
-        Cutscene.ShowDialogue(icon, title, "Did you guess sharks? Because that's wrong. The correct answer is nobody. " + HTML.Color("Nobody but you is that pointlessly cruel", ColorEnum.PastelRed) + ".");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_intro04"));
         CutsceneManager.Wait(7.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14743,7 +15561,7 @@ cutscene Cutscene_Level_3_4_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_a2_bridge_the_gap02");
-        Cutscene.ShowDialogue(icon, title, "Perfect. The door is malfunctioning.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap02_1"));
         CutsceneManager.Wait(2.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14755,7 +15573,7 @@ cutscene Cutscene_Level_3_4_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I guess somebody's going to have to repair it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap02_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14767,7 +15585,7 @@ cutscene Cutscene_Level_3_4_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "No, it's ok. I'll do that too.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap02_3"));
         CutsceneManager.Wait(3.1);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14779,7 +15597,7 @@ cutscene Cutscene_Level_3_4_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I'll be right back. Don't touch anything.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap02_4"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14799,7 +15617,7 @@ cutscene Cutscene_Level_3_4_0
         wait 0.25;
         self._wheatley.MoveTo(self._wPos.Get(2).Position, 0.5);
         SoundManager.PlayCustom("Level_3-4-0", "sp_trust_fling01");
-        Cutscene.ShowDialogue(icon, title, "Hey! Hey! Up here!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_fling01"));
         wait 0.5;
         self._wheatley.MoveTo(self._wPos.Get(3).Position, 0.25);
         wait 0.25;
@@ -14816,7 +15634,7 @@ cutscene Cutscene_Level_3_4_0
         SoundManager.StopCustom("Level_3-4-0", "sp_trust_fling01");
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_trust_flingalt07");
-        Cutscene.ShowDialogue(icon, title, "I found some bird eggs up here. Just dropped 'em into the door mechanism. Shut it right down. I...AGH!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_flingalt07"));
         CutsceneManager.Wait(4.533);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14833,7 +15651,7 @@ cutscene Cutscene_Level_3_4_0
         SoundManager.StopCustom("Level_3-4-0", "sp_trust_flingalt07");
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_trust_flingalt02");
-        Cutscene.ShowDialogue(icon, title, "BIRD! BIRD! BIRD! BIRD!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_flingalt02"));
         self._wheatley.MoveTo(self._wPos.Get(2).Position, 0.25);
         self._bird.MoveTo(self._bPos.Get(1).Position, 0.4);
         wait 0.25;
@@ -14870,7 +15688,7 @@ cutscene Cutscene_Level_3_4_0
         wait 0.25;
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_trust_flingalt08");
-        Cutscene.ShowDialogue(icon, title, "[out of breath] Okay. That's probably the bird, isn't it? That laid the eggs! Livid!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_trust_flingalt08"));
         self._wheatley.MoveTo(self._wPos.Get(2).Position, 1.5);
         wait 1.5;
         CutsceneManager.Wait(2.5);
@@ -14886,7 +15704,7 @@ cutscene Cutscene_Level_3_4_0
         SoundManager.StopCustom("Level_3-4-0", "sp_trust_flingalt08");
         
         SoundManager.PlayCustom("Level_3-4-0", "sp_a2_bridge_the_gap_expo01");
-        Cutscene.ShowDialogue(icon, title, "Okay, look, the point is, we're gonna break out of here! Very soon, I promise, I promise!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap_expo01"));
         CutsceneManager.Wait(3.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14900,7 +15718,7 @@ cutscene Cutscene_Level_3_4_0
         SoundManager.StopCustom("Level_3-4-0", "sp_a2_bridge_the_gap_expo01");
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_a2_bridge_the_gap_expo03");
-        Cutscene.ShowDialogue(icon, title, "I just have to figure out how. To break us out of here.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap_expo03"));
         CutsceneManager.Wait(3.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14914,7 +15732,7 @@ cutscene Cutscene_Level_3_4_0
         SoundManager.StopCustom("Level_3-4-0", "sp_a2_bridge_the_gap_expo03");
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_a2_bridge_the_gap_expo06");
-        Cutscene.ShowDialogue(icon, title, "Here she comes! Keep testing! Remember: you never saw me!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_bridge_the_gap_expo06"));
         CutsceneManager.Wait(4.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -14936,7 +15754,7 @@ cutscene Cutscene_Level_3_4_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_sphere_2nd_encounter_entrytwo01");
-        Cutscene.ShowDialogue(icon, title, "I went and spoke with the door mainframe. Let's just say he won't be... well, living anymore. Anyway, back to testing.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_sphere_2nd_encounter_entrytwo01"));
         CutsceneManager.Wait(8.6);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15023,7 +15841,7 @@ cutscene Cutscene_Level_3_4_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "testchambermisc19");
-        Cutscene.ShowDialogue(icon, title, "Well done. In fact, you did so well, I'm going to note this on your file, in the commendations section.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc19_1"));
         CutsceneManager.Wait(7.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15035,7 +15853,7 @@ cutscene Cutscene_Level_3_4_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Oh, there's lots of room here.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc19_2"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15047,7 +15865,7 @@ cutscene Cutscene_Level_3_4_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Did.... well...");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc19_3"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15059,7 +15877,7 @@ cutscene Cutscene_Level_3_4_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Enough.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc19_4"));
         CutsceneManager.Wait(1.1);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15117,7 +15935,7 @@ cutscene Cutscene_Level_3_5_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-5-0", "turret_intro01");
-        Cutscene.ShowDialogue(icon, title, "This next test involves " + HTML.Color("Turrets", ColorEnum.PastelRed) + ". You remember them, right?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("turret_intro01_1"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15128,7 +15946,7 @@ cutscene Cutscene_Level_3_5_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "They're the pale, spherical things that are full of bullets. Oh wait. That's you in five seconds.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("turret_intro01_2"));
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15139,7 +15957,7 @@ cutscene Cutscene_Level_3_5_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Good luck.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("turret_intro01_3"));
         CutsceneManager.Wait(1.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15201,7 +16019,7 @@ cutscene Cutscene_Level_3_6_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-6-0", "testchambermisc21");
-        Cutscene.ShowDialogue(icon, title, "To maintain a constant testing cycle, I simulate daylight at all hours.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc21_1"));
         CutsceneManager.Wait(4.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15212,7 +16030,7 @@ cutscene Cutscene_Level_3_6_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "And add adrenal vapor to your oxygen supply. So you may be confused about the passage of time.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc21_2"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15223,7 +16041,7 @@ cutscene Cutscene_Level_3_6_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "The point is, yesterday was your birthday. I thought you'd want to know..");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc21_3"));
         CutsceneManager.Wait(5.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15275,7 +16093,7 @@ cutscene Cutscene_Level_3_6_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-6-0", "testchambermisc23");
-        Cutscene.ShowDialogue(icon, title, "You know how I'm going to live forever, but you're going to be dead in sixty years?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc23_1"));
         CutsceneManager.Wait(4.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15287,7 +16105,7 @@ cutscene Cutscene_Level_3_6_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Well, I've been working on a belated birthday present for you.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc23_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15298,7 +16116,7 @@ cutscene Cutscene_Level_3_6_1
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "Well... more of a belated birthday medical procedure.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc23_3"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15310,7 +16128,7 @@ cutscene Cutscene_Level_3_6_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Well. Technically, it's a medical EXPERIMENT.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc23_4"));
         CutsceneManager.Wait(4.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15322,7 +16140,7 @@ cutscene Cutscene_Level_3_6_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "What's important is, it's a present.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc23_5"));
         CutsceneManager.Wait(2.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15379,7 +16197,7 @@ cutscene Cutscene_Level_3_7_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-7-0", "sp_a2_turret_intro01");
-        Cutscene.ShowDialogue(icon, title, "That jumpsuit you're wearing looks stupid.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro01_1"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15390,7 +16208,7 @@ cutscene Cutscene_Level_3_7_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "That's not me talking, it's right here in your file.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro01_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15401,7 +16219,7 @@ cutscene Cutscene_Level_3_7_0
             }
             # wait Time.TickTime;
         }
-        Cutscene.ShowDialogue(icon, title, "On other people it looks fine, but right here a scientist has noted that on you it looks 'stupid'.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro01_3"));
         CutsceneManager.Wait(6.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15415,7 +16233,7 @@ cutscene Cutscene_Level_3_7_0
         SoundManager.StopCustom("Level_3-7-0", "sp_a2_turret_intro01");
 
         SoundManager.PlayCustom("Level_3-7-0", "sp_a2_turret_intro03");
-        Cutscene.ShowDialogue(icon, title, "Well, what does a neck-bearded old engineer know about fashion?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_1"));
         CutsceneManager.Wait(4.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15427,7 +16245,7 @@ cutscene Cutscene_Level_3_7_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "He probably - Oh, wait. It's a she.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_2"));
         CutsceneManager.Wait(3.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15439,7 +16257,7 @@ cutscene Cutscene_Level_3_7_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Still, what does she know?");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_3"));
         CutsceneManager.Wait(2.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15451,7 +16269,7 @@ cutscene Cutscene_Level_3_7_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Oh wait, it says she has a medical degree.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_4"));
         CutsceneManager.Wait(3.1);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15463,7 +16281,7 @@ cutscene Cutscene_Level_3_7_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "In fashion!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_5"));
         CutsceneManager.Wait(1.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15475,7 +16293,7 @@ cutscene Cutscene_Level_3_7_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "From France!");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_turret_intro03_6"));
         CutsceneManager.Wait(1.4);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15533,7 +16351,7 @@ cutscene Cutscene_Level_3_7_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-7-0", "testchambermisc30");
-        Cutscene.ShowDialogue(icon, title, "I'm going through the list of test subjects in cryogenic storage.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc30_1"));
         CutsceneManager.Wait(3.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15545,7 +16363,7 @@ cutscene Cutscene_Level_3_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I managed to find two with your last name.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc30_2"));
         CutsceneManager.Wait(2.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15557,7 +16375,7 @@ cutscene Cutscene_Level_3_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "A man and a woman.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc30_3"));
         CutsceneManager.Wait(1.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15569,7 +16387,7 @@ cutscene Cutscene_Level_3_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "So that's interesting.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc30_4"));
         CutsceneManager.Wait(1.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15581,7 +16399,7 @@ cutscene Cutscene_Level_3_7_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "It's a small world.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc30_5"));
         CutsceneManager.Wait(1.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15638,7 +16456,7 @@ cutscene Cutscene_Level_3_8_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-8-0", "testchambermisc31");
-        Cutscene.ShowDialogue(icon, title, "I have a surprise waiting for you after this next test.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc31_1"));
         CutsceneManager.Wait(3.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15650,7 +16468,7 @@ cutscene Cutscene_Level_3_8_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Telling you would spoil the surprise, so I'll just give you a hint:");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc31_2"));
         CutsceneManager.Wait(4.7);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15662,7 +16480,7 @@ cutscene Cutscene_Level_3_8_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "It involves meeting two people you haven't seen in a long time.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc31_3"));
         CutsceneManager.Wait(4.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15764,7 +16582,7 @@ cutscene Cutscene_Level_3_8_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-8-0", "testchambermisc24");
-        Cutscene.ShowDialogue(icon, title, "[hums 'For He's A Jolly Good Fellow']");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc24"));
         CutsceneManager.Wait(12.9);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15823,7 +16641,7 @@ cutscene Cutscene_Level_3_9_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-9-0", "testchambermisc39");
-        Cutscene.ShowDialogue(icon, title, "It says this next test was designed by one of Aperture's Nobel prize winners.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc39_1"));
         CutsceneManager.Wait(4.6);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15835,7 +16653,7 @@ cutscene Cutscene_Level_3_9_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "It doesn't say what the prize was for.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc39_2"));
         CutsceneManager.Wait(2.6);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15847,7 +16665,7 @@ cutscene Cutscene_Level_3_9_0
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "Well, I know it wasn't for Being Immune To Neurotoxin.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc39_3"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15905,7 +16723,7 @@ cutscene Cutscene_Level_3_9_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-9-0", "testchambermisc33");
-        Cutscene.ShowDialogue(icon, title, "I'll bet you think I forgot about your surprise.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc33_1"));
         CutsceneManager.Wait(3.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15917,7 +16735,7 @@ cutscene Cutscene_Level_3_9_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "I didn't. In fact, we're headed to your surprise right now. After all these years. I'm getting choked up just thinking about it.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc33_2"));
         CutsceneManager.Wait(8.4);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15979,7 +16797,7 @@ cutscene Cutscene_Level_4_1_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-1-0", "testchambermisc34");
-        Cutscene.ShowDialogue(icon, title, "Initiating surprise in three... two... one.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc34"));
         CutsceneManager.Wait(4.8);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16006,7 +16824,7 @@ cutscene Cutscene_Level_4_1_0
         }
 
         SoundManager.PlayCustom("Level_4-1-0", "testchambermisc35");
-        Cutscene.ShowDialogue(icon, title, "I made it all up.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc35"));
         CutsceneManager.Wait(1.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16033,7 +16851,7 @@ cutscene Cutscene_Level_4_1_0
         SoundManager.StopCustom("Level_4-1-0", "sad_party_horn_01");
 
         SoundManager.PlayCustom("Level_4-1-0", "testchambermisc41");
-        Cutscene.ShowDialogue(icon, title, "Surprise.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("testchambermisc41"));
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16047,7 +16865,7 @@ cutscene Cutscene_Level_4_1_0
         SoundManager.StopCustom("Level_4-1-0", "testchambermisc41");
 
         SoundManager.PlayCustom("Level_4-1-0", "sp_a2_column_blocker01");
-        Cutscene.ShowDialogue(icon, title, "Oh come on... If it makes you feel any better, they abandoned you at birth, so I very seriously doubt they'd even want to see you.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker01"));
         CutsceneManager.Wait(8.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16108,7 +16926,7 @@ cutscene Cutscene_Level_4_1_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-1-0", "sp_a2_column_blocker03");
-        Cutscene.ShowDialogue(icon, title, "I feel awful about that surprise. Tell you what, let's give your parents a call right now.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker03_1"));
         CutsceneManager.Wait(6.4);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16120,7 +16938,7 @@ cutscene Cutscene_Level_4_1_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "[phone ringing]");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker03_2"));
         CutsceneManager.Wait(3.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16132,7 +16950,7 @@ cutscene Cutscene_Level_4_1_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "The birth parents you are trying to reach do not love you. Please hang up. [Dial tone]");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker03_3"));
         CutsceneManager.Wait(5.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16147,7 +16965,7 @@ cutscene Cutscene_Level_4_1_1
         SoundManager.StopCustom("Level_4-1-0", "sp_a2_column_blocker03");
 
         SoundManager.PlayCustom("Level_4-1-0", "sp_a2_column_blocker04");
-        Cutscene.ShowDialogue(icon, title, "Oh, that's sad. But impressive. Maybe they weren't at the phone company.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker04"));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16205,7 +17023,7 @@ cutscene Cutscene_Level_4_2_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-2-0", "sp_a2_column_blocker05");
-        Cutscene.ShowDialogue(icon, title, "Well, you know the old formula: Comedy equals tragedy plus time. And you have been asleep for a while. So I guess it's actually pretty funny when you do the math.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_column_blocker05"));
         CutsceneManager.Wait(12.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16263,7 +17081,7 @@ cutscene Cutscene_Level_4_2_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-2-0", "sp_a2_dilemma01");
-        Cutscene.ShowDialogue(icon, title, "I thought about our dilemma, and I came up with a solution that I honestly think works out best for one of both of us.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("dilemma01"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16321,7 +17139,7 @@ cutscene Cutscene_Level_4_3_0
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-3-0", "a2_triple_laser01");
-        Cutscene.ShowDialogue(icon, title, "Federal regulations require me to warn you that this next test chamber... is looking pretty good.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("a2_triple_laser01"));
         CutsceneManager.Wait(8.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16335,7 +17153,7 @@ cutscene Cutscene_Level_4_3_0
         SoundManager.StopCustom("Level_4-3-0", "a2_triple_laser01");
 
         SoundManager.PlayCustom("Level_4-3-0", "a2_triple_laser02");
-        Cutscene.ShowDialogue(icon, title, "That's right. The facility is completely operational again.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("a2_triple_laser02"));
         CutsceneManager.Wait(4.1);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16394,7 +17212,7 @@ cutscene Cutscene_Level_4_3_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-3-0", "a2_triple_laser03");
-        Cutscene.ShowDialogue(icon, title, "I think these test chambers look even better than they did before. It was easy, really.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("a2_triple_laser03_1"));
         CutsceneManager.Wait(5.2);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -16406,7 +17224,7 @@ cutscene Cutscene_Level_4_3_1
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(icon, title, "You just have to look at things objectively, see what you don't need anymore, and trim out the fat.");
+        Cutscene.ShowDialogue(icon, title, I18n.Get("a2_triple_laser03_2"));
         CutsceneManager.Wait(6.2);
         while (!CutsceneManager.IsTimerDone())
         {
