@@ -34,7 +34,8 @@ class Main {
     {
         InputManager.InitKeybinds();
         I18n.RegisterLanguagePack(EnglishLanguagePack());
-        I18n.RegisterLanguagePack(ChineseLanguagePack());
+        I18n.RegisterLanguagePack(ChineseLanguagePack(0));
+        I18n.RegisterLanguagePack(ChineseLanguagePack(1));
         I18n.RegisterLanguagePack(RussianLanguagePack());
 
         self._InitRouter();
@@ -9907,6 +9908,7 @@ extension I18n
     ChineseLanguage = "简体中文";
     EnglishLanguage = "English";
     RussianLanguage = "Russian";
+    TraditionalChineseLanguage = "繁體中文";
 
     _languages = Dict();
     _defaultLanguage = null;
@@ -10365,6 +10367,7 @@ class RussianLanguagePack
 class ChineseLanguagePack
 {
     _pack = Dict();
+    _type = 0;
 
     function Load()
     {
@@ -10373,11 +10376,16 @@ class ChineseLanguagePack
 
     function Language()
     {
-        return I18n.ChineseLanguage;
+        if (self._type == 0)
+        {
+            return I18n.ChineseLanguage;
+        }
+        return I18n.TraditionalChineseLanguage;
     }
 
-    function Init()
+    function Init(t)
     {
+        self._type = t;
         # UI
         self._pack.Set("input.title", "按键绑定");
         self._pack.Set("input.admin_panel", "管理面板");
@@ -14656,7 +14664,7 @@ cutscene Cutscene_Level_2_7_1
         SoundManager.StopCustom("Level_2-7-0", "sp_a2_pit_flings03");
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings02");
-        Cutscene.ShowDialogue(icon, title, I18n.Get("pit"));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_pit_flings02"));
         wait 2.4;
         if (self._activatable != null)
         {
@@ -17081,7 +17089,7 @@ cutscene Cutscene_Level_4_2_1
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-2-0", "sp_a2_dilemma01");
-        Cutscene.ShowDialogue(icon, title, I18n.Get("dilemma01"));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_dilemma01"));
         CutsceneManager.Wait(6.5);
         while (!CutsceneManager.IsTimerDone())
         {
