@@ -1,0 +1,4 @@
+extension GameState
+{
+    GameStarted = false;
+}
