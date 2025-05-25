@@ -12,7 +12,7 @@ class Main
 
     function SendGetDamageMessage(p, dmg)
     {
-        Broker.Send(p, GetDamageMessage.New(dmg));
+        Dispatcher.Send(p, GetDamageMessage.New(dmg));
     }
 
     function initRouter()
