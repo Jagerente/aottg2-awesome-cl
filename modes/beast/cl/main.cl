@@ -1058,7 +1058,11 @@ cutscene Cutscene_3
 		{
 			TitanManager.IdleAll(0.0);
 		}
-		Main._beastTitan.Idle(0.0);
+
+		if (!Main.BeastIdle)
+		{
+			Main._beastTitan.Idle(0.0);
+		}
 
 		Cutscene.ShowDialogue("Titan14", I18n.Get("dialogue.name.zeke"), I18n.Get("dialogue.c.2"));
 				CutsceneManager.Wait(5.5); while (!CutsceneManager.IsTimerDone()){if (CutsceneManager.SkipSent()){ self.Skip(); return; }}
