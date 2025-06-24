@@ -1,7 +1,3 @@
-# -----------------------------------------
-# Extension Utils for Hit FX
-#
-
 # @import enums
 extension HitUtilsFX
 {
@@ -15,93 +11,100 @@ extension HitUtilsFX
 		}
     }
 
-    function DamageHitSoundFX(player, damage, type, armor)
+    # @param human Human
+    # @param damage int
+    # @param type string
+    # @param armor int
+    function DamageHitSoundFX(human, damage, type, armor)
     {
-        # @type Human
-        human = player.Character;
-        if (human == null)
-        {
-            Game.Debug("HitUtilFX : DamageHitFX player does not have character (null)");
-            return;
-        }
-        if (human.Type != "Human")
-        {
-            Game.Debug("HitUtilFX : DamageHitFX player character is not human");
-            return;
-        }
+
         if (type == WeaponEnum.BLADES)
         {
-            if (damage > armor)
-            {
-                if (damage < 500)
-                {
-                    human.StopSound(PlayerSoundEnum.NAPEHIT);
-                    human.PlaySound(PlayerSoundEnum.NAPEHIT);
-                }
-                elif (damage < 1000)
-                {
-                    sound = self.GetRandom(type, 1);
-                    human.StopSound(sound);
-                    human.PlaySound(sound);
-                }
-                elif (damage < 2000)
-                {
-                    sound = self.GetRandom(type, 2);
-                    human.StopSound(sound);
-                    human.PlaySound(sound);
-                }
-                elif (damage < 3000)
-                {
-                    sound = self.GetRandom(type, 3);
-                    human.StopSound(sound);
-                    human.PlaySound(sound);
-                }
-                else
-                {
-                    sound = self.GetRandom(type, 4);
-                    human.StopSound(sound);
-                    human.PlaySound(sound);
-                }
-            }
-            else
-            {
-                human.StopSound(PlayerSoundEnum.BLADEBREAK);
-                human.PlaySound(PlayerSoundEnum.BLADEBREAK);
-            }
+            self._HandleBladesSound(human, damage, armor);
             return;
         }
         elif (type == WeaponEnum.AHSS)
         {
-            if (damage < 1000 || damage < armor)
-            {
-                human.StopSound(PlayerSoundEnum.NAPEHIT);
-                human.PlaySound(PlayerSoundEnum.NAPEHIT);
-            }
-            elif (damage < 2000)
-            {
-                sound = self.GetRandom(type, 1);
-                human.StopSound(sound);
-                human.PlaySound(sound);
-            }
-            else
-            {
-                sound = self.GetRandom(type, 2);
-                human.StopSound(sound);
-                human.PlaySound(sound);
-            }
+            self._HandleAHSSSound(human, damage, armor);
+            
             return;
         }
         elif (type == WeaponEnum.APG)
-        {
-            human.StopSound(PlayerSoundEnum.NAPEHIT);   
-            human.PlaySound(PlayerSoundEnum.NAPEHIT);            
+        {          
+            self._HandleAPGSound(human, damage, armor);
             return;
         }
     }
 
-    # Get Random Variation of a Hit Sound Selection
 
-    function GetRandom(weapon, type)
+    function _HandleBladesSound(human, damage, armor)
+	{
+        # Armor Hiting sound
+        if (damage <= armor)
+        {
+            human.StopSound(PlayerSoundEnum.BLADEBREAK);
+            human.PlaySound(PlayerSoundEnum.BLADEBREAK);
+            
+            return;
+        }
+
+        # Clean Hiting sound
+        if (damage < 500)
+        {
+            sound = PlayerSoundEnum.NAPEHIT;
+        }
+        elif (damage < 1000)
+        {
+            sound = self.GetRandom(WeaponEnum.BLADES, 1);
+        }
+        elif (damage < 2000)
+        {
+            sound = self.GetRandom(WeaponEnum.BLADES, 2);
+        }
+        elif (damage < 3000)
+        {
+            sound = self.GetRandom(WeaponEnum.BLADES, 3);
+        }       
+        else
+        {
+            sound = self.GetRandom(WeaponEnum.BLADES, 4);
+        }
+
+        human.StopSound(sound);
+        human.PlaySound(sound);
+    }
+
+
+    function _HandleAHSSSound(human, damage, armor)
+	{
+        if (damage < 1000 || damage < armor)
+        {
+            sound = PlayerSoundEnum.NAPEHIT;
+        }
+        elif (damage < 2000)
+        {
+            sound = self.GetRandom(WeaponEnum.AHSS, 1);
+        }
+        else
+        {
+            sound = self.GetRandom(WeaponEnum.AHSS, 2);
+        }
+
+        human.StopSound(sound);
+        human.PlaySound(sound);
+    }
+
+    
+    function _HandleAPGSound(human, damage, armor)
+	{
+        human.StopSound(PlayerSoundEnum.NAPEHIT);   
+        human.PlaySound(PlayerSoundEnum.NAPEHIT);  
+    }
+
+    
+    # @param weapon string
+    # @param thresholdType int
+    function GetRandom(weapon, thresholdType)
     {
         if (weapon == WeaponEnum.AHSS)
         {
@@ -116,7 +119,7 @@ extension HitUtilsFX
             return;
         }
         rand = Random.RandomInt(1, numVar + 1);
-		sound = weapon+"Nape"+Convert.ToString(type)+"Var"+Convert.ToString(rand);
+		sound = weapon+"Nape"+Convert.ToString(thresholdType)+"Var"+Convert.ToString(rand);
 
         return sound; 
     }

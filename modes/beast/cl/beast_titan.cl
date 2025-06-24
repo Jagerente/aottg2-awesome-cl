@@ -6,6 +6,7 @@
 component ZekeShifter
 {
 	Health = 4000;
+	Armor = 0;
 
 	Damage = 1000;
 	DamageText = "Beast Titan";
@@ -855,19 +856,26 @@ component ZekeNapeHurtBox
 
 		self._getDamagedCoolDown = 0.02;
 
-		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
+		if (false && self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
 		{
 			character.CurrentBladeDurability = 0;
 			character.PlaySound(PlayerSoundEnum.BLADEBREAK);
 			return;
 		}
 
-		armor = 0;
-		HitUtilsFX.DamageHitSoundFX(character.Player, damage, type, armor);
-		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, armor);
+		self._HandleDamageFX(character, damage, type);
 
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastGetDamageMessage.New(character.ViewID, Convert.ToInt(damage)));
 		Game.ShowKillScore(damage);
+	}
+	
+	# @param human Human
+	# @param damage int
+	# @param type string
+	function _HandleDamageFX(human, damage, type)
+	{
+		HitUtilsFX.DamageHitSoundFX(human, damage, type, self._shifter.Armor);
+		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, self._shifter.Armor);
 	}
 }
 
@@ -899,14 +907,21 @@ component ZekeEyesHurtBox
 		{
 			return;
 		}
-
-		armor = 0;
-		HitUtilsFX.DamageHitSoundFX(character.Player, damage, type, armor);
-		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, armor);
+		
+		self._HandleDamageFX(character, damage, type);
 
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastBlindMessage.New());
 
 		self._getDamagedCoolDown = 5.0;
+	}
+
+	# @param human Human
+	# @param damage int
+	# @param type string
+	function _HandleDamageFX(human, damage, type)
+	{
+		HitUtilsFX.DamageHitSoundFX(human, damage, type, self._shifter.Armor);
+		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, self._shifter.Armor);
 	}
 }
 
