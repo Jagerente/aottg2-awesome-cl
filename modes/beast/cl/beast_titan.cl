@@ -856,7 +856,7 @@ component ZekeNapeHurtBox
 
 		self._getDamagedCoolDown = 0.02;
 
-		if (false && self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
+		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
 		{
 			character.CurrentBladeDurability = 0;
 			character.PlaySound(PlayerSoundEnum.BLADEBREAK);
