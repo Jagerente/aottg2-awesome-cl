@@ -1,7 +1,6 @@
 # @import enums
 extension HitUtilsFX
 {
-
     function DamageVisualFX(napePosition, damage, armor)
     {
         Game.SpawnEffect(EffectEnum.CRITICALHIT, napePosition, Vector3.Zero, 6.0);
