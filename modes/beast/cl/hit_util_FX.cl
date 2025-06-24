@@ -17,7 +17,6 @@ extension HitUtilsFX
     # @param armor int
     function DamageHitSoundFX(human, damage, type, armor)
     {
-
         if (type == WeaponEnum.BLADES)
         {
             self._HandleBladesSound(human, damage, armor);
@@ -26,7 +25,6 @@ extension HitUtilsFX
         elif (type == WeaponEnum.AHSS)
         {
             self._HandleAHSSSound(human, damage, armor);
-            
             return;
         }
         elif (type == WeaponEnum.APG)
@@ -36,10 +34,8 @@ extension HitUtilsFX
         }
     }
 
-
     function _HandleBladesSound(human, damage, armor)
 	{
-        # Armor Hiting sound
         if (damage <= armor)
         {
             human.StopSound(PlayerSoundEnum.BLADEBREAK);
@@ -48,7 +44,6 @@ extension HitUtilsFX
             return;
         }
 
-        # Clean Hiting sound
         if (damage < 500)
         {
             sound = PlayerSoundEnum.NAPEHIT;
@@ -74,7 +69,6 @@ extension HitUtilsFX
         human.PlaySound(sound);
     }
 
-
     function _HandleAHSSSound(human, damage, armor)
 	{
         if (damage < 1000 || damage < armor)
@@ -94,14 +88,12 @@ extension HitUtilsFX
         human.PlaySound(sound);
     }
 
-    
     function _HandleAPGSound(human, damage, armor)
 	{
         human.StopSound(PlayerSoundEnum.NAPEHIT);   
         human.PlaySound(PlayerSoundEnum.NAPEHIT);  
     }
 
-    
     # @param weapon string
     # @param thresholdType int
     function GetRandom(weapon, thresholdType)

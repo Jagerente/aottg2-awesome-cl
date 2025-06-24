@@ -868,7 +868,7 @@ component ZekeNapeHurtBox
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastGetDamageMessage.New(character.ViewID, Convert.ToInt(damage)));
 		Game.ShowKillScore(damage);
 	}
-	
+
 	# @param human Human
 	# @param damage int
 	# @param type string
@@ -907,7 +907,7 @@ component ZekeEyesHurtBox
 		{
 			return;
 		}
-		
+
 		self._HandleDamageFX(character, damage, type);
 
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastBlindMessage.New());
