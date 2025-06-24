@@ -2,6 +2,7 @@
 # @import router
 # @import timer
 # @import enums
+# @import hit_util_FX
 component ZekeShifter
 {
 	Health = 4000;
@@ -861,6 +862,10 @@ component ZekeNapeHurtBox
 			return;
 		}
 
+		armor = 0;
+		HitUtilsFX.DamageHitSoundFX(character.Player, damage, type, armor);
+		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, armor);
+
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastGetDamageMessage.New(character.ViewID, Convert.ToInt(damage)));
 		Game.ShowKillScore(damage);
 	}
@@ -887,12 +892,17 @@ component ZekeEyesHurtBox
 		}
 	}
 
+	# @param character Human
 	function OnGetHit(character, name, damage, type, hitPosition)
 	{
-		if (self._getDamagedCoolDown > 0)
+		if (self._getDamagedCoolDown > 0 || !character.IsMainCharacter)
 		{
 			return;
 		}
+
+		armor = 0;
+		HitUtilsFX.DamageHitSoundFX(character.Player, damage, type, armor);
+		HitUtilsFX.DamageVisualFX(self.MapObject.Position, damage, armor);
 
 		Dispatcher.CSend(self._shifter, self._shifter.NetworkView.Owner, BeastBlindMessage.New());
 
