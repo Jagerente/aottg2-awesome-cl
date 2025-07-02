@@ -4,7 +4,7 @@
 # @import event_manager events
 # @import titan_proxy titan_target titan_spawner
 # @import router messages message_handlers
-# @import i18n i18n_english i18n_korean i18n_russian
+# @import i18n i18n_english i18n_korean i18n_russian i18n_chinese
 # @import ui_popups
 # @import enums
 # @import html
@@ -315,6 +315,8 @@ class Main
 		I18n.RegisterLanguagePack(EnglishLanguagePack());
 		I18n.RegisterLanguagePack(KoreanLanguagePack());
 		I18n.RegisterLanguagePack(RussianLanguagePack());
+		I18n.RegisterLanguagePack(ChineseLanguagePack(0));
+		I18n.RegisterLanguagePack(ChineseLanguagePack(1));
 	}
 
 	function _InitRouter()

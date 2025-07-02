@@ -45,7 +45,6 @@ extension GameGuideUI
 		text += I18n.Get("guide.recommendations.settings.invincible");
 		text += String.Newline;
 		text += String.Newline;
-		text += String.Newline;
 
 		headerText = HTML.Color(I18n.Get("guide.description.header"), ColorEnum.Orange);
 		text += headerText;
