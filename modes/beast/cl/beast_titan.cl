@@ -747,9 +747,9 @@ component ZekeShifter
 			&& !self.BeastTypeWarriorEnabled
 		)
 		{
-			self.BeastTypeAssassinEnabled = true;
+			self.BeastTypeAssassinEnabled = false;
 			self.BeastTypePitcherEnabled = false;
-			self.BeastTypeWarriorEnabled = false;
+			self.BeastTypeWarriorEnabled = true;
 		}
 
 		if (self.BeastTypeAssassinEnabled)
