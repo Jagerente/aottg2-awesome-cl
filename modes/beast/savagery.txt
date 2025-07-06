@@ -4750,32 +4750,32 @@ component ZekeShifter
 			{
 				self._turnDirection = null;
 			}
-		}
 
-		if (self._actionCDLeft.IsDone())
-		{
-			velocity = self._rigidbody.GetVelocity();
-			velocity.Y = 0;
-			if (velocity.Magnitude > 5)
+			if (self._actionCDLeft.IsDone())
 			{
-				if (self._currentType == "Warrior")
+				velocity = self._rigidbody.GetVelocity();
+				velocity.Y = 0;
+				if (velocity.Magnitude > 5)
 				{
-					moveAnimation = "Amarture_VER2|run.abnormal.1";
-				}
-				elif (self._currentType == "Assassin")
-				{
-					moveAnimation = "Amarture_VER2|run.abnormal.3";
+					if (self._currentType == "Warrior")
+					{
+						moveAnimation = BeastAnimationEnum.RunAbnormal1;
+					}
+					elif (self._currentType == "Assassin")
+					{
+						moveAnimation = BeastAnimationEnum.RunAbnormal3;
+					}
+					else
+					{
+						moveAnimation = BeastAnimationEnum.Walk;
+					}
+
+					self.PlayAnimation(moveAnimation);
 				}
 				else
 				{
-					moveAnimation = "Amarture_VER2|run.walk";
+					self.PlayAnimation(BeastAnimationEnum.Idle);
 				}
-
-				self._transform.PlayAnimation(moveAnimation, 0.2);
-			}
-			else
-			{
-				self._transform.PlayAnimation(BeastAnimationEnum.Idle, 0.2);
 			}
 		}
 
@@ -4954,21 +4954,18 @@ component ZekeShifter
 	{
 		if(type == "Pitcher")
 		{
-			BeastAnimationEnum.Move="Amarture_VER2|run.walk";
 			self.MoveSpeed = 20;
 			self.ThrowCooldown = 4;
 			self.ActionCooldown = 2;
 		}
 		elif(type == "Warrior")
 		{
-			BeastAnimationEnum.Move="Amarture_VER2|run.abnormal.1";
 			self.MoveSpeed = 100;
 			self.ThrowCooldown = 6;
 			self.ActionCooldown=1.5;
 		}
 		elif(type == "Assassin")
 		{
-			BeastAnimationEnum.Move="Amarture_VER2|run.abnormal.3";
 			self.MoveSpeed = 120;
 			self.ThrowCooldown = 8;
 			self.ActionCooldown = 1.0;
@@ -5202,7 +5199,12 @@ component ZekeBombHitBox
 extension BeastAnimationEnum
 {
 	Idle = "Amarture_VER2|idle";
-	Move = "Amarture_VER2|run.walk";
+
+	Walk = "Amarture_VER2|run.walk";
+
+	RunAbnormal1 = "Amarture_VER2|run.abnormal.1";
+	RunAbnormal3 = "Amarture_VER2|run.abnormal.3";
+
 	TurnLeft = "Amarture_VER2|turnaround.L";
 	TurnRight = "Amarture_VER2|turnaround.R";
 
