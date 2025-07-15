@@ -832,7 +832,7 @@ cutscene Cutscene_1
 		Main._spawnLight.Active = true;
 		Main._titansFloor.Active = false;
 
-		if(Network.IsMasterClient)
+		if (Network.IsMasterClient)
 		{
 			for (i in Range(0, Main.JumperTitanNum, 1))
 			{
@@ -877,7 +877,11 @@ cutscene Cutscene_1
 			}
 		}
 
-		while (Game.AITitans.Count < Main.AbnormalTitanNum + Main.JumperTitanNum + Main.CrawlerTitanNum + Main.ThrowerTitanNum + Main.PunkTitanNum)
+		CutsceneManager.Wait(10.0);
+		while (
+			(Game.AITitans.Count < Main.AbnormalTitanNum + Main.JumperTitanNum + Main.CrawlerTitanNum + Main.ThrowerTitanNum + Main.PunkTitanNum)
+			&& !CutsceneManager.IsTimerDone()
+		)
 		{
 			wait 0.15;
 		}
