@@ -6005,7 +6005,21 @@ class KillTitansEvent
 			return;
 		}
 
-		if(!self._cutscene1Once)
+		activePlayerCount = 0;
+		for (p in Network.Players)
+		{
+			if (p.Status != "Spectating")
+			{
+				activePlayerCount += 1;
+			}
+		}
+
+		if (Game.PlayerHumans.Count + Game.PlayerTitans.Count + Game.PlayerShifters.Count < activePlayerCount)
+		{
+			return;
+		}
+
+		if (!self._cutscene1Once)
 		{
 			self._cutscene1Once = true;
 			Dispatcher.SendAll(RunCutsceneMessage.New(1, false));
