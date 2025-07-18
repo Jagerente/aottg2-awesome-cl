@@ -61,3 +61,15 @@ extension RunCutsceneMessage
 		return msg;
 	}
 }
+
+extension LoadedMessage
+{
+	TOPIC = "loaded";
+
+	function New()
+	{
+		msg = Dict();
+		msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+		return msg;
+	}
+}

@@ -24,13 +24,15 @@ class KillTitansEvent
 	_timeLeft = 0.0;
 	_playersReady = false;
 	_titansNumForPhase2 = 0;
+	_timeout = 15.0;
 
 	# @param time float|null
 	# @param titans int
-	function Init(time, titans)
+	function Init(time, titans, timeout)
 	{
 		self._timeLeft = time;
 		self._titansNumForPhase2 = titans;
+		self._timeout = timeout;
 	}
 
 	# @param t float
@@ -48,16 +50,7 @@ class KillTitansEvent
 			return;
 		}
 
-		activePlayerCount = 0;
-		for (p in Network.Players)
-		{
-			if (p.Status != "Spectating")
-			{
-				activePlayerCount += 1;
-			}
-		}
-
-		if (Game.PlayerHumans.Count + Game.PlayerTitans.Count + Game.PlayerShifters.Count < activePlayerCount)
+		if (!GameState.IsAllPlayersLoaded() && Time.GameTime <= self._timeout)
 		{
 			return;
 		}
