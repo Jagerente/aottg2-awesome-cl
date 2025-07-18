@@ -2,6 +2,7 @@
 # @import i18n
 # @import music_manager
 # @import cutscene_manager
+# @import game_state
 
 #######################
 # Message Handlers
@@ -60,5 +61,13 @@ class RunCutsceneMessageHandler
 		full = msg.Get(RunCutsceneMessage.KEY_FULL);
 
 		CutsceneManager.Start("Cutscene_" + id, full);
+	}
+}
+
+class LoadedMessageHandler
+{
+	function Handle(sender, msg)
+	{
+		GameState.AddPlayer(sender.ID);
 	}
 }

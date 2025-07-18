@@ -1,6 +1,6 @@
 class Main
 {
-	StartTime = 3.5;
+	StartTime = 15.0;
 
 	AbnormalTitanNum=10;
 	AbnormalTitanNumTooltip="The number of Abnormal Titans";
@@ -132,7 +132,7 @@ class Main
 			SupplyStationSwitcher.Deactivate();
 		}
 
-		if (Time.GameTime > Math.Min(self.StartTime, 3.0))
+		if (Time.GameTime >= self.StartTime)
 		{
 			MusicManager.Play(Main.BgmSet);
 		}
@@ -143,6 +143,8 @@ class Main
 
 		self._titansFloor = Map.FindMapObjectByName("TitansFloor");
 		self._spawnLight = Map.FindMapObjectByName("SpawnLight");
+
+		Dispatcher.Send(Network.MasterClient, LoadedMessage.New());
 	}
 
 	function OnNetworkMessage(sender, msg)
@@ -157,11 +159,11 @@ class Main
 			PlayerProxy.OnSpawn();
 		}
 
-		if(character.Type=="Human")
+		if(character.Type == "Human")
 		{
 			self._HandleHumanSpawn(character);
 		}
-		elif(character.Type=="Titan")
+		elif(character.Type == "Titan")
 		{
 			self._HandleTitanSpawn(character);
 		}
@@ -222,6 +224,29 @@ class Main
 		TitanTargetSwitcher.OnCharacterDamaged(victim, killer, killerName, damage);
 	}
 
+	function OnPlayerJoin(player)
+	{
+			if (!Network.IsMasterClient) { return; }
+
+		node = EventManager._currentNode;
+			if (node == null) { return; }
+
+		Dispatcher.Send(
+			player,
+			SetLocalizedLabelMessage.New(
+			UILabelTypeEnum.TOPCENTER,
+			EventManager._currentNode._event.GoalKey(),
+			EventManager._currentNode._event.GoalParams(),
+			null
+		)
+		);
+	}
+
+	function OnPlayerLeave(player)
+	{
+		GameState.RemovePlayer(player.ID);
+	}
+
 	function _ValidateGameSettings()
 	{
 		self.TimeToBeastTypeSwitch = Math.Abs(self.TimeToBeastTypeSwitch);
@@ -235,6 +260,8 @@ class Main
 		self.CrawlerTitanNum = Math.Max(self.CrawlerTitanNum, 0);
 		self.PunkTitanNum = Math.Max(self.PunkTitanNum, 0);
 		self.ThrowerTitanNum = Math.Max(self.ThrowerTitanNum, 0);
+
+		self.StartTime = Math.Max(self.StartTime, 15.0);
 	}
 
 	function _InitTitanSpawnPoints()
@@ -288,7 +315,8 @@ class Main
 
 		killTitansEvent = KillTitansEvent(
 			t1,
-			(self.AbnormalTitanNum + self.JumperTitanNum + self.CrawlerTitanNum + self.PunkTitanNum + self.ThrowerTitanNum) / 2
+			(self.AbnormalTitanNum + self.JumperTitanNum + self.CrawlerTitanNum + self.PunkTitanNum + self.ThrowerTitanNum) / 2,
+			self.StartTime
 		);
 		killBeastEvent = KillBeastEvent(t2, self._beastTitan);
 
@@ -314,6 +342,7 @@ class Main
 		self._router.RegisterHandler(SetLocalizedLabelMessage.TOPIC, SetLocalizedLabelMessageHandler());
 		self._router.RegisterHandler(PlayMusicMessage.TOPIC, PlayMusicMessageHandler());
 		self._router.RegisterHandler(RunCutsceneMessage.TOPIC, RunCutsceneMessageHandler());
+		self._router.RegisterHandler(LoadedMessage.TOPIC, LoadedMessageHandler());
 	}
 
 	function _InitUIManager()
@@ -331,24 +360,6 @@ class Main
 		{
 			human.AddOutline(Color(60,0,0), "OutlineVisible");
 		}
-	}
-
-	function OnPlayerJoin(player)
-	{
-			if (!Network.IsMasterClient) { return; }
-
-		node = EventManager._currentNode;
-			if (node == null) { return; }
-
-		Dispatcher.Send(
-			player,
-			SetLocalizedLabelMessage.New(
-			UILabelTypeEnum.TOPCENTER,
-			EventManager._currentNode._event.GoalKey(),
-			EventManager._currentNode._event.GoalParams(),
-			null
-		)
-		);
 	}
 
 	# @param titan Titan
@@ -814,7 +825,7 @@ cutscene Cutscene_1
 
 		InputManager.DisableInput();
 
-		timeUntilStart = Math.Max(Main.StartTime - Time.GameTime, 0);
+		timeUntilStart = 3.5;
 
 		delayBeforeMusic = 0;
 		if (Main.BgmSet == "BGM3-BGM4")
@@ -2955,11 +2966,29 @@ class BeastBlindMessageHandler
 }
 
 extension GameState
-{
+{	
 	GameStarted = false;
 
 	# @type List<TitanProxy>
 	Titans = List();
+
+	# @type Dict<int, bool>
+	Players = Dict();
+
+	function IsAllPlayersLoaded()
+	{
+		return self.Players.Count >= Network.Players.Count;
+	}
+
+	function AddPlayer(id)
+	{
+		self.Players.Set(id, true);
+	}
+
+	function RemovePlayer(id)
+	{
+		self.Players.Remove(id);
+	}
 }
 
 extension InputManager
@@ -3352,6 +3381,18 @@ extension RunCutsceneMessage
 	}
 }
 
+extension LoadedMessage
+{
+	TOPIC = "loaded";
+
+	function New()
+	{
+		msg = Dict();
+		msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+		return msg;
+	}
+}
+
 class IEvent
 {
 	# @param t float
@@ -3579,13 +3620,15 @@ class KillTitansEvent
 	_timeLeft = 0.0;
 	_playersReady = false;
 	_titansNumForPhase2 = 0;
+	_timeout = 15.0;
 
 	# @param time float|null
 	# @param titans int
-	function Init(time, titans)
+	function Init(time, titans, timeout)
 	{
 		self._timeLeft = time;
 		self._titansNumForPhase2 = titans;
+		self._timeout = timeout;
 	}
 
 	# @param t float
@@ -3603,16 +3646,7 @@ class KillTitansEvent
 			return;
 		}
 
-		activePlayerCount = 0;
-		for (p in Network.Players)
-		{
-			if (p.Status != "Spectating")
-			{
-				activePlayerCount += 1;
-			}
-		}
-
-		if (Game.PlayerHumans.Count + Game.PlayerTitans.Count + Game.PlayerShifters.Count < activePlayerCount)
+		if (!GameState.IsAllPlayersLoaded() && Time.GameTime <= self._timeout)
 		{
 			return;
 		}
@@ -4093,6 +4127,14 @@ class RunCutsceneMessageHandler
 		full = msg.Get(RunCutsceneMessage.KEY_FULL);
 
 		CutsceneManager.Start("Cutscene_" + id, full);
+	}
+}
+
+class LoadedMessageHandler
+{
+	function Handle(sender, msg)
+	{
+		GameState.AddPlayer(sender.ID);
 	}
 }
 
