@@ -261,6 +261,7 @@ component RigidbodyBuiltin
         self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddTorque", force, mode);
     }
 
+    # @return Vector3
     function GetVelocity()
     {
         return self.MapObject.ReadBuiltinComponent("Rigidbody", "Velocity");
@@ -3983,6 +3984,7 @@ component Turret
 
 component TurretFOV
 {
+    # @type Human
     _target = null;
     _resetTimer = Timer(0.0);
     _resetTime = 0.1;
@@ -4019,6 +4021,7 @@ component TurretFOV
         self._target = null;
     }
 
+    # @return Human
     function GetTarget()
     {
         return self._target;
@@ -6548,11 +6551,6 @@ extension PlayerProxy
             return;
         }
 
-        if (self._weapon != null)
-        {
-            self._weapon.OnSecond();
-        }
-        
         self.ForceFPV();
         self.DisableGas();
         if (Main.CustomSpeed > 0)
@@ -6793,6 +6791,10 @@ extension PlayerProxy
         }
     }
 
+    # @param startPos Vector3
+    # @param direction Vector3
+    # @param distance float
+    # @return LineCastHitResult
     function _CastPTAwareRay(startPos, direction, distance)
     {
         endPos = startPos + direction * distance;
@@ -6807,7 +6809,11 @@ extension PlayerProxy
             return null;
         }
 
-        pt = res.Collider.GetComponent("TargetPassThrough");
+        # @type MapObject
+        collider = res.Collider;
+
+        # @type TargetPassThrough
+        pt = collider.GetComponent("TargetPassThrough");
         if (pt != null && pt.All)
         {
             return self._CastPTAwareRay(res.Point + direction * 0.1, direction, distance - Vector3.Distance(startPos, res.Point));
@@ -6910,8 +6916,11 @@ extension PlayerAccelerationTracker
 
 extension ButtonGroupStorage
 {
+    # @type Dict<string,List<Button>>
     _s = Dict();
 
+    # @param k string
+    # @param v Button
     function Add(k, v)
     {
         l = self._s.Get(k, List());
@@ -6919,6 +6928,9 @@ extension ButtonGroupStorage
         self._s.Set(k, l);
     }
 
+
+    # @param k string
+    # @return List<Button>
     function GetList(k)
     {
         return self._s.Get(k, List());
@@ -7118,8 +7130,10 @@ extension TeleportGUI
     Height = 600;
     _inited = false;
 
+    # @type Dict<string,Dict<string,TeleportReference>>
     _zonesByGroup = Dict();
 
+    # @type List<string>
     _popups = List();
 
     function Initialize()
@@ -7226,8 +7240,8 @@ extension TeleportGUI
             {
                 return;
             }
-            grp = parts.Get(0, "");
-            pointName = parts.Get(1, "");
+            grp = parts.Get(0);
+            pointName = parts.Get(1);
 
             groupDict = self._zonesByGroup.Get(grp);
             c = groupDict.Get(pointName);
@@ -9251,8 +9265,9 @@ extension Router
     # @param msg string
     function Route(sender, msg)
     {
-        msg = Json.LoadFromString(msg);
-        topic = msg.Get("topic");
+        # @type Dict<string, any>
+        dict = Json.LoadFromString(msg);
+        topic = dict.Get("topic");
 
         h = self._handlers.Get(topic, null);
         if (h == null)
@@ -9260,7 +9275,7 @@ extension Router
             return;
         }
 
-        h.Handle(sender, msg);
+        h.Handle(sender, dict);
     }
 }
 
@@ -10111,9 +10126,9 @@ class EnglishLanguagePack
         self._pack.Set("gladosgantry21", "In order to escape, we're going to have to go through HER chamber.");
         self._pack.Set("gladosgantry22", "And, she will probably kill us if, um, she's awake.");
 
-        self._pack.Set("wakeup", "Power up complete.");
+        self._pack.Set("wakeup_powerup02", "Power up complete.");
         self._pack.Set("sp_a1_wakeup_hacking11", "I don't... Okay. Okay. Okay. Listen, alright: New plan. Act natural, act natural. We've done nothing wrong.");
-        self._pack.Set("hello01", "Hello!");
+        self._pack.Set("fgb_hello01", "Hello!");
         self._pack.Set("chellgladoswakeup01", "Oh... It's you.");
         self._pack.Set("sp_a1_wakeup_hacking03", "You KNOW her???");
         self._pack.Set("chellgladoswakeup04_1", "It's been a loooooong time.");
@@ -10515,9 +10530,9 @@ class ChineseLanguagePack
         self._pack.Set("gladosgantry21", "为了能逃走，我们必须经过她的测试室。");
         self._pack.Set("gladosgantry22", "她八成会杀了我们，如果，呃，如果她醒着的话。");
 
-        self._pack.Set("wakeup", "通电完毕。");
+        self._pack.Set("wakeup_powerup02", "通电完毕。");
         self._pack.Set("sp_a1_wakeup_hacking11", "好好好。注意：计划改变。动作自然点。我们没做错什么事。");
-        self._pack.Set("hello01", "哈啰！");
+        self._pack.Set("fgb_hello01", "哈啰！");
         self._pack.Set("chellgladoswakeup01", "哦...是你。");
         self._pack.Set("sp_a1_wakeup_hacking03", " 你认识她？");
         self._pack.Set("chellgladoswakeup04_1", "好久不见……");
@@ -12863,7 +12878,7 @@ cutscene Cutscene_Level_1_8_1
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-8-0", "wakeup_powerup02");
-        Cutscene.ShowDialogue(icon, title, I18n.Get("powerup02"));
+        Cutscene.ShowDialogue(icon, title, I18n.Get("wakeup_powerup02"));
         CutsceneManager.Wait(1.5);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -15525,7 +15540,9 @@ cutscene Cutscene_Level_3_4_0
     # @type Controllable
     _bird = null;
 
+    # @type Dict<int,MapObject>
     _wPos = Dict();
+    # @type Dict<int,MapObject>
     _bPos = Dict();
 
     function InitActivatable()
