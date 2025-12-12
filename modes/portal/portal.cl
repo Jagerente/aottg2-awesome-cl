@@ -332,6 +332,11 @@ component Activatable
     }
 }
 
+class DeactivatableCallback
+{
+    function OnDeactivate(){}
+}
+
 component ActiveControl
 {
     ActivatableID = 0;
@@ -341,6 +346,7 @@ component ActiveControl
     # @type Activatable
     _activatable = null;
     _activated = false;
+    # @type List<string>
     _deactivatableList = List();
 
     function Initialize()
@@ -412,6 +418,7 @@ component ActiveControl
 
         for (k in self._deactivatableList)
         {
+            # @type DeactivatableCallback
             comp = self.MapObject.GetComponent(k);
             if (comp != null)
             {
@@ -448,6 +455,7 @@ component WeightedButton
         self.Initialize();
     }
     
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) || 
@@ -473,6 +481,7 @@ component WeightedButton
         }
     }
 
+    # @param obj any
     function OnCollisionExit(obj)
     {
         if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) || 
@@ -567,6 +576,7 @@ component RegionButton
         self.Initialize();
     }
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (self.Once && !self._activateOnce && self.MyHuman && obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
@@ -577,6 +587,7 @@ component RegionButton
         }
     }
 
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (self.Once){return;}
@@ -599,7 +610,10 @@ component RegionButton
             return;
         }
 
-        if (self.MapObjects != "" && self._moDict.Contains(obj.Name))
+        # @type MapObject
+        mapObject = obj;
+
+        if (self.MapObjects != "" && self._moDict.Contains(mapObject.Name))
         {
             self._timer.Reset(self.DeactivateDelay + 0.25);
             return;
@@ -609,7 +623,7 @@ component RegionButton
         {
             for (k in self._cDict.Keys)
             {
-                if (obj.GetComponent(k) != null)
+                if (mapObject.GetComponent(k) != null)
                 {
                     self._timer.Reset(self.DeactivateDelay + 0.25);
                     return;
@@ -618,6 +632,7 @@ component RegionButton
         }
     }
 
+    # @param obj any
     function OnCollisionExit(obj)
     {
         if (self.Once){return;}
@@ -639,7 +654,10 @@ component RegionButton
             return;
         }
 
-        if (self.MapObjects != "" && self._moDict.Contains(obj.Name))
+        # @type MapObject
+        mapObject = obj;
+
+        if (self.MapObjects != "" && self._moDict.Contains(mapObject.Name))
         {
             self._timer.Reset(self.DeactivateDelay);
             return;
@@ -649,7 +667,7 @@ component RegionButton
         {
             for (k in self._cDict.Keys)
             {
-                if (obj.GetComponent(k) != null)
+                if (mapObject.GetComponent(k) != null)
                 {
                     self._timer.Reset(self.DeactivateDelay);
                     return;
@@ -819,7 +837,7 @@ component MultiButton
     Any = false;
     # @type Activatable
     _activatable = null;
-    # @type List(Activatable)
+    # @type List<Activatable>
     _activatablesRefs = List();
 
     function OnGameStart()
@@ -924,6 +942,7 @@ component CutscenePlayer
     CutsceneID = "";
     Full = false;
 
+    # @type any
     function OnCollisionEnter(obj)
     {
         if (!CutsceneManager.GetCanPlay(self.CutsceneID))
@@ -937,6 +956,7 @@ component CutscenePlayer
         }
     }
 
+    # @type any
     function OnCollisionStay(obj)
     {
         if (!CutsceneManager.GetCanPlay(self.CutsceneID))
@@ -956,6 +976,7 @@ component MovementLocker
     Lock = true;
     Time = 3.0;
 
+    # @type any
     function OnCollisionEnter(obj)
     {
         if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
@@ -1305,11 +1326,14 @@ component Elevator
         self._lastActive = self._activatable.IsActive();
     }
 
+    # @type any
     function OnCollisionStay(obj)
     {
         if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
         {
-            currentAnimation = obj.CurrentAnimation;
+            # @type Human
+            human = obj;
+            currentAnimation = human.CurrentAnimation;
             if (
                 currentAnimation == HumanAnimationEnum.IDLEAHSSF
                 || currentAnimation == HumanAnimationEnum.IDLEAHSSM
@@ -1320,29 +1344,32 @@ component Elevator
                 || currentAnimation == HumanAnimationEnum.LAND
             )
             {
-                if (!self._relativePositions.Contains(obj))
+                if (!self._relativePositions.Contains(human))
                 {
-                    self._relativePositions.Set(obj, obj.Position - self.MapObject.Position);
+                    self._relativePositions.Set(human, human.Position - self.MapObject.Position);
                 }
-                relativePos = self._relativePositions.Get(obj);
-                obj.Position = self.MapObject.Position + relativePos;
+                relativePos = self._relativePositions.Get(human);
+                human.Position = self.MapObject.Position + relativePos;
             }
             else
             {
-                self._relativePositions.Set(obj, obj.Position - self.MapObject.Position);
+                self._relativePositions.Set(human, human.Position - self.MapObject.Position);
             }
         }
         elif (obj.Type == ObjectTypeEnum.MAP_OBJECT)
         {
-            comp = obj.GetComponent("Movable");
+            # @type MapObject
+            mapObject = obj;
+            # @type Movable
+            comp = mapObject.GetComponent("Movable");
             if (!comp.IsCarried())
             {
-                if (!self._relativePositions.Contains(obj))
+                if (!self._relativePositions.Contains(mapObject))
                 {
-                    self._relativePositions.Set(obj, obj.Position - self.MapObject.Position);
+                    self._relativePositions.Set(mapObject, mapObject.Position - self.MapObject.Position);
                 }
-                relativePos = self._relativePositions.Get(obj);
-                obj.Position = self.MapObject.Position + relativePos;
+                relativePos = self._relativePositions.Get(mapObject);
+                mapObject.Position = self.MapObject.Position + relativePos;
             }
         }
     }
@@ -1683,6 +1710,7 @@ component EasterEgg
         EasterEggManager.Register(self.Name);
     }
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (self._once || obj.Type != ObjectTypeEnum.HUMAN || !obj.IsMine)
@@ -1789,6 +1817,7 @@ component SpeedRunCheck
         }
     }
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (
@@ -1864,6 +1893,7 @@ component SmartTeleport
         }
     }
 
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (obj.Type != ObjectTypeEnum.HUMAN || !obj.IsMine)
@@ -1905,6 +1935,7 @@ component CheckpointRegion
 {
     Name = "";
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (obj.Type == "Human" && obj.IsMine)
@@ -1949,6 +1980,7 @@ component Portal
         self._animationTimer.Reset(0.0);
     }
 
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (self._related == null || !self._related._enabled)
@@ -2208,6 +2240,7 @@ component LaserSource
     Active = false;
     ActiveTooltip = "Determines whether the component is active. Ignored if ActivatableID is set.";
 
+    # @type List<LineRenderer>
     _activeLasers = List();
     # @type Activatable
     _activatable = null;
@@ -2218,9 +2251,12 @@ component LaserSource
 
     _maxLasers = 100;
 
+    # @type List<ObjectSegment>
     _currentLaserPath = List();
+    # @type List<ObjectSegment>
     _previousLaserPath = List();
     
+    # @type Vector3
     _rayCastOffset = null;
     _maxDistance = 10000;
     _laserWidth = 0.1;
@@ -2237,6 +2273,7 @@ component LaserSource
             {
                 self._activatable = activatableObj.GetComponent("Activatable");
 
+                # @type ActiveControl
                 lightObjAC = self.MapObject.GetChild("LaserSource_Light").GetComponent("ActiveControl");
                 lightObjAC.ActivatableID = self.ActivatableID;
                 lightObjAC.Initialize();
@@ -2341,25 +2378,32 @@ component LaserSource
         {
             if (res.IsMapObject)
             {
-                passThrough = res.Collider.GetComponent("TargetPassThrough");
+                # @type MapObject
+                mapObject = res.Collider;
+                # @type TargetPassThrough
+                passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.Lasers))
                 {
-                    if (res.Collider.Name == "LaserReceiver" || res.Collider.Name == "LaserReceiver2")
+                    if (mapObject.Name == "LaserReceiver" || mapObject.Name == "LaserReceiver2")
                     {
-                        res.Collider.GetComponent("LaserReceiver").Trigger();
+                        # @type LaserReceiver
+                        laserReceiver = mapObject.GetComponent("LaserReceiver");
+                        laserReceiver.Trigger();
                     }
                     newStartPos = res.Point - self._rayCastOffset + (direction * 0.01);
                     self._CastLaser(newStartPos, direction, depth + 1);
                 }
-                elif (res.Collider.Name == "Portal_BLUE_Visuals" || res.Collider.Name == "Portal_ORANGE_Visuals")
+                elif (mapObject.Name == "Portal_BLUE_Visuals" || mapObject.Name == "Portal_ORANGE_Visuals")
                 {
-                    if (res.Collider.Name == "Portal_BLUE_Visuals")
+                    if (mapObject.Name == "Portal_BLUE_Visuals")
                     {
-                        portalComp = res.Collider.GetChild("Portal_BLUE").GetComponent("Portal");
+                        # @type Portal
+                        portalComp = mapObject.GetChild("Portal_BLUE").GetComponent("Portal");
                     }
                     else
                     {
-                        portalComp = res.Collider.GetChild("Portal_ORANGE").GetComponent("Portal");
+                        # @type Portal
+                        portalComp = mapObject.GetChild("Portal_ORANGE").GetComponent("Portal");
                     }
 
                     if (portalComp != null && portalComp._related.IsEnabled() && portalComp._related != null)
@@ -2369,17 +2413,20 @@ component LaserSource
                         self._CastLaser(newStartPos + newDirection * -0.1, newDirection, depth + 1);
                     }
                 }
-                elif (res.Collider.Name == "DiscouragementRedirectionCube")
+                elif (mapObject.Name == "DiscouragementRedirectionCube")
                 {
-                    self._CastLaser(res.Collider.Position, res.Collider.Forward, depth + 1);
+                    self._CastLaser(mapObject.Position, mapObject.Forward, depth + 1);
                 }
-                elif (res.Collider.Name == "LaserReceiver" || res.Collider.Name == "LaserReceiver2")
+                elif (mapObject.Name == "LaserReceiver" || mapObject.Name == "LaserReceiver2")
                 {
-                    res.Collider.GetComponent("LaserReceiver").Trigger();
+                    # @type LaserReceiver
+                    laserReceiver = mapObject.GetComponent("LaserReceiver");
+                    laserReceiver.Trigger();
                 }
-                elif (res.Collider.Name == "Turret")
+                elif (mapObject.Name == "Turret")
                 {
-                    turretComp = res.Collider.GetComponent("Turret");
+                    # @type Turret
+                    turretComp = mapObject.GetComponent("Turret");
                     if (self._damageDelayTimer.IsDone())
                     {
                         turretComp.SetOnFire();
@@ -2390,7 +2437,9 @@ component LaserSource
             }
             elif (res.IsCharacter)
             {
-                if (res.Collider.IsMine)
+                # @type Character
+                char = res;
+                if (char.IsMine)
                 {
                     if (self._damageDelayTimer.IsDone())
                     {
@@ -2455,6 +2504,7 @@ component LaserSource
             }
             elif (res.IsMapObject)
             {
+                # @type TargetPassThrough
                 passThrough = res.Collider.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.Lasers))
                 {
@@ -2582,6 +2632,7 @@ component LaserReceiver
     function Initialize()
     {
         self._redDot = self.MapObject.GetChild("LaserSource_RedDot");
+        # @type ActiveControl
         lightObjAC = self.MapObject.GetChild("LaserReceiver_Light").GetComponent("ActiveControl");
         if (self.ActivatableID == 0 || self.ActivatableID == self.MapObject.ID)
         {
@@ -2692,6 +2743,7 @@ component LaunchPad
         self.Initialize();
     }
 
+    # @type any
     function OnCollisionEnter(obj)
     {
         if (self._activatable != null && !self._activatable.IsActive())
@@ -2701,27 +2753,29 @@ component LaunchPad
 
         if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
         {
-            if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
+            if (self.LockMovementFor > 0.0)
             {
-                if (self.LockMovementFor > 0.0)
-                {
-                    PlayerProxy.LockMovementFor(self.LockMovementFor);
-                }
+                PlayerProxy.LockMovementFor(self.LockMovementFor);
             }
+
             self._obj = obj;
             self._launch = true;
         }
         elif (obj.Type == ObjectTypeEnum.MAP_OBJECT)
         {
-            rb = obj.GetComponent("Rigidbody");
+            # @type MapObject
+            mapObject = obj;
+            # @type RigidbodyBuiltin
+            rb = mapObject.GetComponent("Rigidbody");
             if (rb != null)
             {
-                m = obj.GetComponent("Movable");
+                # @type Movable
+                m = mapObject.GetComponent("Movable");
                 if (m != null && m.IsCarried())
                 {
                     return;
                 }
-                obj.Position = Vector3(self.MapObject.Position.X, obj.Position.Y , self.MapObject.Position.Z);
+                mapObject.Position = Vector3(self.MapObject.Position.X, mapObject.Position.Y , self.MapObject.Position.Z);
                 vel = self.Direction.Normalized * self.Force;
                 rb.SetVelocity(vel);
                 SoundManager.Play(PlayerSoundEnum.SWITCHBACK);
@@ -2773,15 +2827,19 @@ component HardLightBridgeSource
     Active = false;
     ActiveTooltip = "Determines whether the component is active. Ignored if ActivatableID is set.";
 
+    # @type List<MapObject>
     _activeBridges = List();
     # @type Activatable
     _activatable = null;
 
+    # @type Vector3
     _rayCastOffset = null;
     _maxBridges = 20;
     _maxDistance = 10000;
 
+    # @type List<ObjectSegment>
     _currentBridgePath = List();
+    # @type List<ObjectSegment>
     _previousBridgePath = List();
     
     _once = false;
@@ -2893,7 +2951,10 @@ component HardLightBridgeSource
             }
             elif (res.IsMapObject)
             {
-                passThrough = res.Collider.GetComponent("TargetPassThrough");
+                # @type MapObject
+                mapObject = res.Collider;
+                # @type TargetPassThrough
+                passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.HardLightBridges))
                 {
                     newStartPos = res.Point - self._rayCastOffset + (direction * 0.01);
@@ -2901,16 +2962,16 @@ component HardLightBridgeSource
                 }
                 else
                 {
-                    if (res.Collider.Name == "Portal_BLUE_Visuals" || res.Collider.Name == "Portal_ORANGE_Visuals")
+                    if (mapObject.Name == "Portal_BLUE_Visuals" || mapObject.Name == "Portal_ORANGE_Visuals")
                     {
                         portalComp = null;
-                        if (res.Collider.Name == "Portal_BLUE_Visuals")
+                        if (mapObject.Name == "Portal_BLUE_Visuals")
                         {
-                            portalComp = res.Collider.GetChild("Portal_BLUE").GetComponent("Portal");
+                            portalComp = mapObject.GetChild("Portal_BLUE").GetComponent("Portal");
                         }
                         else
                         {
-                            portalComp = res.Collider.GetChild("Portal_ORANGE").GetComponent("Portal");
+                            portalComp = mapObject.GetChild("Portal_ORANGE").GetComponent("Portal");
                         }
 
                         if (portalComp != null && portalComp._related != null && portalComp._related.IsEnabled())
@@ -2945,6 +3006,8 @@ component HardLightBridgeSource
         res = segment.HitResult;
         if (res != null && res.IsMapObject)
         {
+            # @type MapObject
+            mapObject = res.Collider;
             name = res.Collider.Name;
             if (name == "Portal_BLUE_Visuals" || name == "Portal_ORANGE_Visuals")
             {
@@ -2965,6 +3028,7 @@ component HardLightBridgeSource
             }
             elif (res.IsMapObject)
             {
+                # @type TargetPassThrough
                 passThrough = res.Collider.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.HardLightBridges))
                 {
@@ -3140,15 +3204,18 @@ component Turret
     _wasCarried = false;
     _wasFlipped = false;
 
+    # @type List<LineRenderer>
     _activeLasers = List();
+    # @type List<ObjectSegment>
     _currentLaserPath = List();
+    # @type List<ObjectSegment>
     _previousLaserPath = List();
 
     _preparationTimer = Timer(0.5);
     _damageDelayTimer = Timer(0.0);
     _fireDamageDelayTimer = Timer(0.0);
     _flipTimer = Timer(1.0);
-    # @type Dict(string, Transform)
+    # @type Dict<string,Dict<string,Transform>>
     _sounds = Dict();
 
     # @type MapObject
@@ -3650,21 +3717,26 @@ component Turret
         {
             if (res.IsMapObject)
             {
-                passThrough = res.Collider.GetComponent("TargetPassThrough");
+                # @type MapObject
+                mapObject = res.Collider;
+                # @type TargetPassThrough
+                passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.TurretLasers))
                 {
                     newStartPos = res.Point + direction * 0.01;
                     self._CastLaser(newStartPos, direction, depth + 1);
                 }
-                elif (res.Collider.Name == "Portal_BLUE_Visuals" || res.Collider.Name == "Portal_ORANGE_Visuals")
+                elif (mapObject.Name == "Portal_BLUE_Visuals" || mapObject.Name == "Portal_ORANGE_Visuals")
                 {
-                    if (res.Collider.Name == "Portal_BLUE_Visuals")
+                    if (mapObject.Name == "Portal_BLUE_Visuals")
                     {
-                        portalComp = res.Collider.GetChild("Portal_BLUE").GetComponent("Portal");
+                        # @type Portal
+                        portalComp = mapObject.GetChild("Portal_BLUE").GetComponent("Portal");
                     }
                     else
                     {
-                        portalComp = res.Collider.GetChild("Portal_ORANGE").GetComponent("Portal");
+                        # @type Portal
+                        portalComp = mapObject.GetChild("Portal_ORANGE").GetComponent("Portal");
                     }
 
                     if (portalComp != null && portalComp._related != null && portalComp._related.IsEnabled())
@@ -3677,7 +3749,9 @@ component Turret
             }
             elif (res.IsCharacter)
             {
-                if (res.Collider.IsMine)
+                # @type Character
+                char = res.Collider;
+                if (char.IsMine)
                 {
                     self._foundHuman = true;
                     if (self._preparationTimer.IsDone() && self._damageDelayTimer.IsDone())
@@ -3994,6 +4068,7 @@ component TurretFOV
         self._resetTimer = Timer(0.0);
     }
     
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (obj.Type != ObjectTypeEnum.HUMAN || !obj.IsMine)
@@ -4033,7 +4108,9 @@ component WireMonitor
     ButtonID = 0;
     ButtonIDTooltip = "The ID of an object with an Activatable component.";
 
+    # @type List<MapObject>
     _xMarkObjects = List();
+    # @type List<MapObject>
     _vMarkObjects = List();
 
     # @type Activatable
@@ -4158,6 +4235,7 @@ component PortalGunModifier
     EnableBlue = true;
     PlaySound = false;
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (obj.Type != ObjectTypeEnum.HUMAN || !obj.IsMine || PlayerProxy._weapon == null)
@@ -4178,6 +4256,7 @@ component PortalGunModifier
         }
     }
 
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (obj.Type != ObjectTypeEnum.HUMAN || !obj.IsMine || PlayerProxy._weapon == null)
@@ -4204,6 +4283,7 @@ component LevelReset
     Group = "";
     GroupTooltip = "Group ID to reset all registered objects with the same ID.";
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
@@ -4220,6 +4300,7 @@ component EmancipationGrill
         self._HandleObject(obj);
     }
 
+    # @param obj any
     function OnCollisionStay(obj)
     {
         if (obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine)
@@ -4465,6 +4546,7 @@ component WheatleyPositionLocker
         self._activatable = Map.FindMapObjectByID(self.ActivatableID).GetComponent("Activatable");
     }
 
+    # @param obj any
     function OnCollisionEnter(obj)
     {
         if (!self._activatable.IsActive() || self._wheatleyMovable != null)
@@ -4477,7 +4559,10 @@ component WheatleyPositionLocker
             return;
         }
 
-        self._wheatleyMovable = obj.GetComponent("Movable");
+        # @type MapObject
+        mapObject = obj;
+
+        self._wheatleyMovable = mapObject.GetComponent("Movable");
         self._wheatleyMovable.LockPos(self.MapObject.Position);
     }
 
@@ -4518,15 +4603,23 @@ component LampRef
         }
         objC = Map.CopyMapObject(obj, true);
         light = objC.GetChild("Lamp_Light");
+        # @type PointLightBuiltin
         lightC = light.GetComponent("PointLight");
         lightC.Intensity = self.Intensity;
         lightC.Range = self.Range;
+        # @type ActiveControl
         c = objC.AddComponent("ActiveControl");
         c.ActivatableID = self.ActivatableID;
         objC.Position = self.MapObject.Position;
         objC.Rotation = self.MapObject.Rotation;
         c.Initialize();
     }
+}
+
+class PointLightBuiltin
+{
+    Intensity = 0.0;
+    Range = 0.0;
 }
 
 component ObjectRef
@@ -4557,6 +4650,7 @@ component ObjectRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = c.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4584,6 +4678,7 @@ component LaserReceiverRef
         }
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
+        # @type LaserReceiver
         c = objC.AddComponent("LaserReceiver");
         if (self.ActivatableID == 0)
         {
@@ -4596,6 +4691,7 @@ component LaserReceiverRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4619,6 +4715,7 @@ component LaserSourceRef
         obj = Map.FindMapObjectByName("LaserSource");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
+        # @type LaserSource
         c = objC.AddComponent("LaserSource");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4628,6 +4725,7 @@ component LaserSourceRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4651,6 +4749,7 @@ component HardLightBridgeRef
         obj = Map.FindMapObjectByName("HardLightBridgeSource");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
+        # @type HardLightBridgeSource
         c = objC.AddComponent("HardLightBridgeSource");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4660,6 +4759,7 @@ component HardLightBridgeRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4711,6 +4811,7 @@ component TurretRef
             return;
         }
 
+        # @type Turret
         c = self._ref.AddComponent("Turret");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4725,6 +4826,7 @@ component TurretRef
 
         if (self.Rigidbody || self.Movable)
         {
+            # @type RigidbodyBuiltin
             rb = self._ref.AddComponent("Rigidbody");
             rb.Mass = self.Mass;
             rb.Gravity = self.Gravity;
@@ -4734,6 +4836,7 @@ component TurretRef
 
         if (self.Movable)
         {
+            # @type Movable
             m = self._ref.AddComponent("Movable");
             m.ResetGroup = self.ResetGroup;
             m.LockForward = self.LockForward;
@@ -4861,6 +4964,7 @@ component WeightedButtonRef
         objC.Active = true;
         objC.Position = self.MapObject.Position;
         objC.Rotation = self.MapObject.Rotation;
+        # @type WeightedButton
         wbComp = objC.AddComponent("WeightedButton");
         if (self.ActivatableID == 0)
         {
@@ -4870,14 +4974,15 @@ component WeightedButtonRef
         wbComp.Initialize();
 
         b = objC.GetChild("WeightedButton_Visuals_Button_MOCK");
+        # @type Slider
         s = b.AddComponent("Slider");
         s.ButtonID = self.ActivatableID;
         s.SlideVector = self.SlideVector;
         s.AnimationDuration = self.AnimationDuration;
-        s.Initialize();
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4942,6 +5047,7 @@ component WheatleyRef
 
         if (self.ActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.ActivatableID;
             acComp.Initialize();
@@ -4987,6 +5093,7 @@ component SlideDoorRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4997,6 +5104,7 @@ component SlideDoorRef
             return;
         }
 
+        # @type SoundPlayer
         sp = objC.AddComponent("SoundPlayer");
         sp.ActivatableID = self.ButtonID;
         sp.ActivateSound = PlayerSoundEnum.REELIN;
@@ -5007,6 +5115,7 @@ component SlideDoorRef
         {
             if (child.Name == "SlideDoor_Left")
             {
+                # @type Slider
                 comp = child.GetComponent("Slider");
                 comp.ButtonID = self.ButtonID;
                 comp.AnimationDuration = self.AnimationDuration;
@@ -5014,13 +5123,12 @@ component SlideDoorRef
             }
             elif (child.Name == "SlideDoor_Right")
             {
+                # @type Slider
                 comp = child.GetComponent("Slider");
                 comp.ButtonID = self.ButtonID;
                 comp.AnimationDuration = self.AnimationDuration;
                 comp.SlideVector = self.SlideVectorRight;
             }
-
-            comp.Initialize();
         }
     }
 }
@@ -5039,11 +5147,11 @@ component SlideWallRef
         objC.Position = self.MapObject.Position;
         objC.Rotation = self.MapObject.Rotation;
         objC.Scale = self.MapObject.Scale;
+        # @type Slider
         sComp = objC.AddComponent("Slider");
         sComp.ButtonID = self.ActivatableID;
         sComp.SlideVector = self.SlideVector;
         sComp.AnimationDuration = self.AnimationDuration;
-        sComp.Initialize();
     }
 }
 
@@ -5075,6 +5183,7 @@ component LaunchPadRef
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
         reg = objC.GetChild("LaunchPad_Region");
+        # @type LaunchPad
         c = reg.AddComponent("LaunchPad");
         c.ActivatableID = self.ActivatableID;
         c.Direction = self.Direction;
@@ -5088,6 +5197,7 @@ component LaunchPadRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5121,6 +5231,7 @@ component CompanionRef
         self._ref = Map.CopyMapObject(obj, true);
         self._ref.Active = true;
 
+        # @type TargetPassThrough
         pt = self._ref.AddComponent("TargetPassThrough");
         pt.All = false;
         pt.Portals = true;
@@ -5136,6 +5247,7 @@ component CompanionRef
         
         if (self.Rigidbody || self.Movable)
         {
+            # @type RigidbodyBuiltin
             rb = self._ref.AddComponent("Rigidbody");
             rb.Mass = self.Mass;
             rb.Gravity = self.Gravity;
@@ -5147,6 +5259,7 @@ component CompanionRef
         self._ref.Rotation = self.MapObject.Rotation;
         if (self.Movable)
         {
+            # @type Movable
             m = self._ref.AddComponent("Movable");
             m.ResetGroup = self.ResetGroup;
             m.LockForward = self.LockForward;
@@ -5156,6 +5269,7 @@ component CompanionRef
         if (self.ActivatableID > 0)
         {
             self._activatable = Map.FindMapObjectByID(self.ActivatableID).GetComponent("Activatable");
+            # @type ActiveControl
             acComp = self._ref.AddComponent("ActiveControl");
             acComp.ActivatableID = self.ActivatableID;
             acComp.Initialize();
@@ -5175,6 +5289,7 @@ component WireMonitorRef
         obj = Map.FindMapObjectByName("WireMonitor");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
+        # @type WireMonitor
         c = objC.AddComponent("WireMonitor");
         c.ButtonID = self.ButtonID;
         objC.Position = self.MapObject.Position;
@@ -5183,6 +5298,7 @@ component WireMonitorRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5266,7 +5382,10 @@ component CubeDispencerRef
         reg = objC.GetChild("CubeDispenserRegionButton");
         objC.Scale = self.MapObject.Scale;
 
-        reg.AddComponent("Activatable").Initialize();
+        # @type Activatable
+        ac = reg.AddComponent("Activatable");
+        ac.Initialize();
+        # @type RegionButton
         rbComp = reg.AddComponent("RegionButton");
         rbComp.DeactivateDelay = 0;
         rbComp.Reverse = false;
@@ -5280,6 +5399,7 @@ component CubeDispencerRef
 
         if (self.CullingActivatableID > 0)
         {
+            # @type ActiveControl
             acComp = reg.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5583,10 +5703,10 @@ class RigidBodyAccelerationTracker
 
 class MapObjectPoolData
 {
-    # @type List(MapObject)
+    # @type List<MapObject>
     pool = null;    
     limit = 0;   
-    # @type MapObject
+    # @type CommonBuilder
     builder = null;
 
     # @param limit int
@@ -5646,6 +5766,7 @@ class PortalGun
     _objAtomIScale = Vector3(0.0);
     _once = false;
 
+    # @type List<ProjectileData>
     _activeProjectiles = List();
     _cdTimerBlue = Timer(0.0);
     _cdTimerOrange = Timer(0.0);
@@ -5952,6 +6073,7 @@ class PortalGun
 
     function _UpdateProjectiles()
     {
+        # @type List<ProjectileData>
         projectilesToRemove = List();
         for (projectile in self._activeProjectiles)
         {
@@ -6033,8 +6155,11 @@ class PortalGun
         right = Vector3.Cross(Vector3.Up, forward).Normalized;
         up = Vector3.Cross(forward, right).Normalized;
 
+        # @type List<Vector3>
         localCorners = List();
-        for (corner in res.Collider.GetCorners())
+        # @type MapObject
+        mapObject = res.Collider;
+        for (corner in mapObject.GetCorners())
         {
             toCorner = corner - res.Point;
 
@@ -6110,6 +6235,13 @@ class PortalGun
 #######################
 ## ABILITIES
 #######################
+
+class Ability
+{
+    function OnTickHandler(){}
+
+    function OnFrameHandler(){}
+}
 
 class AirMovementAbility
 {
@@ -6473,6 +6605,7 @@ extension PlayerProxy
     _transformCache = null;
     # @type PortalGun
     _weapon = null;
+    # @type List<Ability>
     _abilities = List();
     _velocityTimer = Timer(0.0);
     _movementLockTimer = Timer(0.0);
@@ -6754,15 +6887,20 @@ extension PlayerProxy
                 return;
             }
 
-            movable = res.Collider.GetComponent("Movable");
+            # @type MapObject
+            mapObject = res.Collider;
+
+            # @type Movable
+            movable = mapObject.GetComponent("Movable");
             if (movable != null && movable.CanPickup())
             {
-                self._carrying = res.Collider.GetComponent("Movable");
+                self._carrying = movable;
                 self._carrying.Pickup(self._character);
                 return;
             }
 
-            btn = res.Collider.GetComponent("Button");
+            # @type Button
+            btn = mapObject.GetComponent("Button");
             if (btn != null)
             {
                 btn.Activate();
@@ -6981,8 +7119,10 @@ extension PortalStorage
         portalBlueVisuals = Map.CopyMapObject(self._blueRef, true);
         portalBlue = portalBlueVisuals.GetChild("Portal_BLUE");
 
+        # @type Portal
         portalOrangeComponent = portalOrange.GetComponent("Portal");
 
+        # @type Portal
         portalBlueComponent = portalBlue.GetComponent("Portal");
 
         portalOrangeComponent.UID = id;
@@ -7148,6 +7288,7 @@ extension TeleportGUI
 
         for (obj in Map.FindMapObjectsByComponent("TeleportReference"))
         {
+            # @type TeleportReference
             c = obj.GetComponent("TeleportReference");
             grp = c.Group;
             if (grp == "")
@@ -7717,10 +7858,14 @@ extension SpeedRunManager
     _runTime = 0.0;
     _segmentStartTime = 0.0;
 
+    # @type Dict<string,bool>
     _groups = Dict();
+    # @type Dict<string,List<string>>
     _segmentsByGroup = Dict();
+    # @type Dict<string,Vector3>
     _spawnPointsByGroup = Dict();
 
+    # @type List<SpeedRunCheck>
     _components = List();
 
     function Initialize()
@@ -7749,11 +7894,14 @@ extension SpeedRunManager
         self._segmentsByGroup.Set(group, segList);
     }
 
+    # @param c SpeedRunCheck
     function RegisterComponent(c)
     {
         self._components.Add(c);
     }
 
+    # @param group string
+    # @param pos Vector3
     function RegisterSpawnPoint(group, pos)
     {
         self._spawnPointsByGroup.Set(group, pos);
@@ -8452,7 +8600,7 @@ extension SoundManager
 {
     # @type MapObject
     _customManager = null;
-    # @type Dict(string, Dict(string, Transform))
+    # @type Dict<string,Dict<string,Transform>>
     _levels = Dict();
     _customInited = false;
     
@@ -8882,13 +9030,17 @@ extension ObjectPoolManager
     WEIGHTED_COMPANION_CUBE = 8;
     DISCOURAGEMENT_REDIRECTION_CUBE = 9;
 
+    # @type Dict<int,MapObjectPoolData>
     _pools = Dict();
+    # @type List<LineRenderer>
+    _lineRendererPool = List();
     _inited = false;
     _lineRendererPoolSize = 100;
 
     function Initialize()
     {
         self._pools = Dict();
+        self._lineRendererPool = Dict();
         self._inited = true;
     }
 
@@ -8923,13 +9075,7 @@ extension ObjectPoolManager
             self.Initialize();
         }
 
-        if (!self._pools.Contains(self.LINE_RENDERER))
-        {
-            self._pools.Set(self.LINE_RENDERER, List());
-        }
-
-        pool = self._pools.Get(self.LINE_RENDERER);
-        for (line in pool)
+        for (line in self._lineRendererPool)
         {
             if (!line.Enabled)
             {
@@ -8937,10 +9083,10 @@ extension ObjectPoolManager
             }
         }
 
-        if (pool.Count < self._lineRendererPoolSize)
+        if (self._lineRendererPool.Count < self._lineRendererPoolSize)
         {
             line = LineRenderer.CreateLineRenderer();
-            pool.Add(line);
+            self._lineRendererPool.Add(line);
             return line;
         }
 
@@ -8988,7 +9134,6 @@ extension ObjectPoolManager
                 poolData.pool.Add(newObj);
                 return newObj;
             }
-
         }
         return null;
     }
@@ -9021,7 +9166,7 @@ extension ObjectPoolManager
         if (self._pools.Contains(objectType))
         {
             pool = self._pools.Get(objectType);
-            for (obj in pool)
+            for (obj in pool.pool)
             {
                 obj.Active = false;
                 obj.Position = Vector3(0, -9999, 0);
@@ -9036,11 +9181,13 @@ class CommonBuilder
     # @type MapObject
     _ref = null;
 
+    # @param ref MapObject
     function Init(ref)
     {
         self._ref = ref;
     }
 
+    # @return MapObject
     function Build()
     {
         return Map.CopyMapObject(self._ref, true);
@@ -9062,17 +9209,20 @@ class CubeBuilder
         ref = Map.FindMapObjectByName(self._type);
         obj = Map.CopyMapObject(ref, true);
 
+        # @type TargetPassThrough
         pt = obj.AddComponent("TargetPassThrough");
         pt.All = false;
         pt.Portals = true;
         pt.HardLightBridges = true;
 
+        # @type RigidbodyBuiltin
         rb = obj.AddComponent("Rigidbody");
         rb.Mass = 1.0;
         rb.Gravity = Vector3(0, -20, 0);
         rb.FreezeRotation = false;
         rb.Interpolate = true;
 
+        # @type Movable
         m = obj.AddComponent("Movable");
         m.ResetGroup = "";
         m.LockForward = true;
@@ -9082,8 +9232,14 @@ class CubeBuilder
     }
 }
 
+class Resetable
+{
+    function Reset(){}
+}
+
 extension ResetManager
 {
+    # @type Dict<string,List<Resetable>>
     _resetables = Dict();
 
     function Add(k, v)
@@ -9252,8 +9408,16 @@ extension CutsceneManager
     }
 }
 
+class Handler
+{
+    # @param sender Player
+    # @param msg Dict
+    function Handle(sender, msg){}
+}
+
 extension Router
 {
+    # @type Dict<string,Handler>
     _handlers = Dict();
 
     function RegisterHandler(topic, handler)
@@ -9304,15 +9468,26 @@ extension Dispatcher
     }
 }
 
+class UIRouterHandler
+{
+    # @param btn string
+    function CanHandleClick(btn){}
+    # @param btn string
+    function OnButtonClick(btn){}
+}
+
 extension UIRouter
 {
+    # @type List<UIRouterHandler>
     _handlers = List();
 
+    # @param h UIRouterHandler
     function RegisterHandler(h)
     {
         self._handlers.Add(h);
     }
 
+    # @param btn string
     function OnButtonClick(btn)
     {
         for (h in self._handlers)
@@ -9925,9 +10100,13 @@ extension I18n
     RussianLanguage = "Russian";
     TraditionalChineseLanguage = "繁體中文";
 
+    # @type Dict<string,Dict<string,string>>
     _languages = Dict();
+    # @type string
     _defaultLanguage = null;
 
+    # @param key string
+    # @return string
     function Get(key)
     {
         pack = self._LoadLanguagePack();
@@ -9947,6 +10126,7 @@ extension I18n
         return "[ERR] Localized string not found: " + key;
     }
 
+    # @param language string
     function SetDefaultLanguage(language)
     {
         self._defaultLanguage = language;
@@ -9963,7 +10143,7 @@ extension I18n
         }
     }
 
-    # @return Dict
+    # @return Dict<string,string>
     function _LoadLanguagePack()
     {
         return self._languages.Get(UI.GetLanguage(), self._languages.Get(self._defaultLanguage));
@@ -9972,7 +10152,7 @@ extension I18n
 
 class LanguagePack
 {
-    # @return Dict
+    # @return Dict<string,string>
     function Load(){}
 
     # @return string
@@ -9981,13 +10161,16 @@ class LanguagePack
 
 class EnglishLanguagePack
 {
+    # @type Dict<string,string>
     _pack = Dict();
 
+    # @return Dict<string,string>
     function Load()
     {
         return self._pack;
     }
 
+    # @return string
     function Language()
     {
         return I18n.EnglishLanguage;
@@ -10343,13 +10526,16 @@ class EnglishLanguagePack
 
 class RussianLanguagePack
 {
+    # @type Dict<string,string>
     _pack = Dict();
 
+    # @return Dict<string,string>
     function Load()
     {
         return self._pack;
     }
 
+    # @return string
     function Language()
     {
         return I18n.RussianLanguage;
@@ -10381,14 +10567,17 @@ class RussianLanguagePack
 # Source: https://github.com/wastedziyun/Portal2_Better_Chinese
 class ChineseLanguagePack
 {
+    # @type Dict<string,string>
     _pack = Dict();
     _type = 0;
 
+    # @return Dict<string,string>
     function Load()
     {
         return self._pack;
     }
 
+    # @return string
     function Language()
     {
         if (self._type == 0)
@@ -12078,7 +12267,9 @@ cutscene Cutscene_Level_1_7_1
 
         obj = Map.FindMapObjectByName(self._name);
         self._activatable = obj.GetComponent("Activatable");
-        self._wheatley = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef")._ref;
+        # @type WheatleyRef
+        wheatleyComp = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef");
+        self._wheatley = wheatleyComp._ref;
         self._wheatleyMovable = self._wheatley.GetComponent("Movable");
         self._secretPanelActivatable = Map.FindMapObjectByName("SecretPanel_1_7_1").GetComponent("Activatable");
         self._secretLockerActivatable = Map.FindMapObjectByName("SecretLocker_1_7_1").GetComponent("Activatable");
@@ -12861,7 +13052,9 @@ cutscene Cutscene_Level_1_8_1
 
         obj = Map.FindMapObjectByName(self._name);
         self._activatable = obj.GetComponent("Activatable");
-        self._wheatley = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef")._ref;
+        # @type WheatleyRef
+        wheatleyComp = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef");
+        self._wheatley = wheatleyComp._ref;
         self._wheatleyMovable = self._wheatley.GetComponent("Movable");
         self._tpZoneActivatable = Map.FindMapObjectByName("Level 1-8-0 END").GetComponent("Activatable");
     }
@@ -14714,7 +14907,15 @@ component Cutscene_Level_2_7_2
 
     function OnCollisionEnter(obj)
     {
-        if (obj.Type != ObjectTypeEnum.MAP_OBJECT || obj.Name != "WeightedCompanionCube")
+        if (obj.Type != ObjectTypeEnum.MAP_OBJECT)
+        {
+            return;
+        }
+
+        # @type MapObject
+        mapObject = obj;
+
+        if (mapObject.Name != "WeightedCompanionCube")
         {
             return;
         }
@@ -14723,7 +14924,9 @@ component Cutscene_Level_2_7_2
 
         self._activatable.Deactivate();
 
-        obj.GetComponent("Movable").Reset();
+        # @type Movable
+        movable = mapObject.GetComponent("Movable");
+        movable.Reset();
         SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
         self._timer.Reset(9.5);
 
@@ -14894,7 +15097,9 @@ cutscene Cutscene_Level_3_1_0
         self._activatable = obj.GetComponent("Activatable");
         self._ceilingActivatable = Map.FindMapObjectByName("Cutscene_Level_3_1_0_Ceiling").GetComponent("Activatable");
         self._wheatley = Map.FindMapObjectByName("WheatleyRef 3-1-0");
-        self._launchPad = Map.FindMapObjectByName("LaunchPadRef 3-1-0").GetComponent("LaunchPadRef")._ref;
+        # @type LaunchPadRef
+        launchPadComp = Map.FindMapObjectByName("LaunchPadRef 3-1-0").GetComponent("LaunchPadRef");
+        self._launchPad = launchPadComp._ref;
     }
 
     coroutine Start()
