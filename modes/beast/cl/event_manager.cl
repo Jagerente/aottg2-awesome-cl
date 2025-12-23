@@ -67,7 +67,7 @@ extension EventManager
 
 		Dispatcher.SendAll(
 			SetLocalizedLabelMessage.New(
-			UILabelTypeEnum.TOPCENTER,
+			UILabelEnum.TopCenter,
 			self._currentNode._event.GoalKey(),
 			self._currentNode._event.GoalParams(),
 			null

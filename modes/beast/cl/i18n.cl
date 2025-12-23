@@ -69,7 +69,7 @@ extension I18n
 	# @return Dict<string, string>
 	function _LoadLanguagePack()
 	{
-		return self._languages.Get(UI.GetLanguage(), self._languages.Get(self._defaultLanguage));
+		return self._languages.Get(Locale.CurrentLanguage, self._languages.Get(self._defaultLanguage));
 	}
 }
 

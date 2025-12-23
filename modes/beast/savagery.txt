@@ -2636,7 +2636,7 @@ class Main
 		Dispatcher.Send(
 			player,
 			SetLocalizedLabelMessage.New(
-			UILabelTypeEnum.TOPCENTER,
+			UILabelEnum.TopCenter,
 			EventManager._currentNode._event.GoalKey(),
 			EventManager._currentNode._event.GoalParams(),
 			null
@@ -2750,7 +2750,7 @@ class Main
 	function _InitUIManager()
 	{
 		UIManager.RegisterProvider(
-			UILabelTypeEnum.TOPLEFT,
+			UILabelEnum.TopLeft,
 			InfoTextProvider(),
 			UpdateRateEnum.Second
 		);
@@ -2947,24 +2947,24 @@ extension PlayerProxy
 	{
 		if(self.Human.Weapon == WeaponEnum.AHSS)
 		{
-			self.Human.SetWeapon(WeaponEnum.BLADES);
-			self.Human.SetSpecial(SpecialEnum.SPIN1);
+			self.Human.SetWeapon(WeaponEnum.Blade);
+			self.Human.SetSpecial(SpecialEnum.Spin1);
 		}
 		elif (self.Human.Weapon == WeaponEnum.APG)
 		{
-			self.Human.SetWeapon(WeaponEnum.TS);
-			self.Human.SetSpecial(SpecialEnum.SWITCHBACK);
+			self.Human.SetWeapon(WeaponEnum.Thunderspear);
+			self.Human.SetSpecial(SpecialEnum.Switchback);
 		}
 
 		if(
-			(Main.NoThrowBlade && self.Human.CurrentSpecial == SpecialEnum.BLADETHROW && self.Human.Weapon == WeaponEnum.BLADES)
-			|| (self.Human.Weapon == WeaponEnum.BLADES && Main.JustSpin1)
-			|| self.Human.CurrentSpecial == SpecialEnum.DANCE
-			|| self.Human.CurrentSpecial == SpecialEnum.ANNIE
-			|| self.Human.CurrentSpecial == SpecialEnum.EREN
+			(Main.NoThrowBlade && self.Human.CurrentSpecial == SpecialEnum.BladeThrow && self.Human.Weapon == WeaponEnum.Blade)
+			|| (self.Human.Weapon == WeaponEnum.Blade && Main.JustSpin1)
+			|| self.Human.CurrentSpecial == SpecialEnum.Dance
+			|| self.Human.CurrentSpecial == SpecialEnum.Annie
+			|| self.Human.CurrentSpecial == SpecialEnum.Eren
 		)
 		{
-			self.Human.SetSpecial(SpecialEnum.SPIN1);
+			self.Human.SetSpecial(SpecialEnum.Spin1);
 		}
 	}
 
@@ -3012,16 +3012,16 @@ extension PlayerProxy
 		}
 
 		self._bladesSpecial = self.Human.CurrentSpecial;
-		self._tsSpecial = SpecialEnum.SWITCHBACK;
+		self._tsSpecial = SpecialEnum.Switchback;
 		if (Main.Spin123NoCD && String.StartsWith(self._bladesSpecial, "Spin"))
 		{
 			self._bladesSpecialCD = 0.0;
 		}
 		else
 		{
-			self._bladesSpecialCD = SpecialEnum.GetCooldown(self._bladesSpecial);
+			self._bladesSpecialCD = SpecialEnumCD.GetCooldown(self._bladesSpecial);
 		}
-		self._tsSpecialCD = SpecialEnum.GetCooldown(self._tsSpecial);
+		self._tsSpecialCD = SpecialEnumCD.GetCooldown(self._tsSpecial);
 	}
 
 	function _HandleInputOnTick()
@@ -3033,19 +3033,19 @@ extension PlayerProxy
 
 		if (
 			self.Human.Weapon == "Blade"
-			&& Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKSPECIAL)
+			&& Input.GetKeyHold(InputHumanEnum.AttackSpecial)
 			&& String.StartsWith(PlayerProxy.Human.CurrentSpecial, "Spin")
 		)
 		{
 			if (
-				PlayerProxy.Human.State != PlayerStateEnum.SPECIALATTACK
+				PlayerProxy.Human.State != HumanStateEnum.SpecialAttack
 				&& (Main.Spin123NoCD || Main.TrueLevi)
 			)
 			{
 				self.Human.SpecialCooldown = 0.0;
 				PlayerProxy.Human.ActivateSpecial();
 			}
-			elif (PlayerProxy.Human.State == PlayerStateEnum.SPECIALATTACK && Main.Spin123Plus || Main.TrueLevi)
+			elif (PlayerProxy.Human.State == HumanStateEnum.SpecialAttack && Main.Spin123Plus || Main.TrueLevi)
 			{
 				PlayerProxy.Human.Rotation+=Vector3(0,250,0);
 			}
@@ -3053,7 +3053,7 @@ extension PlayerProxy
 			if (Main.TrueLevi)
 			{
 				if (
-					self.Human.State == PlayerStateEnum.SPECIALATTACK
+					self.Human.State == HumanStateEnum.SpecialAttack
 				)
 				{
 					targetTitan = self.FindNearestTitan(self.Human.Position);
@@ -3152,14 +3152,14 @@ extension PlayerProxy
 
 	function _SwitchWeapon()
 	{
-		if (self.Human == null || PlayerProxy.Human.State == PlayerStateEnum.SPECIALATTACK)
+		if (self.Human == null || PlayerProxy.Human.State == HumanStateEnum.SpecialAttack)
 		{
 			return;
 		}
 
-		if (self.Human.Weapon == WeaponEnum.BLADES)
+		if (self.Human.Weapon == WeaponEnum.Blade)
 		{
-			self.Human.SetWeapon(WeaponEnum.TS);
+			self.Human.SetWeapon(WeaponEnum.Thunderspear);
 			self.Human.MaxAmmoTotal = Main.ThunderSpearsCount;
 			self.Human.CurrentAmmoLeft = self._lastTSAmmoLeft;
 			self.Human.MaxAmmoRound = 2;
@@ -3173,7 +3173,7 @@ extension PlayerProxy
 		}
 		else
 		{
-			self.Human.SetWeapon(WeaponEnum.BLADES);
+			self.Human.SetWeapon(WeaponEnum.Blade);
 			self.Human.MaxBlade = Main.BladesCount;
 			self.Human.CurrentBlade = self._lastBladesCount;
 			self.Human.MaxBladeDurability = Main.BladesDurability;
@@ -3196,13 +3196,13 @@ extension PlayerProxy
 
 		self._lastGas = self.Human.CurrentGas;
 
-		if (self.Human.Weapon == WeaponEnum.BLADES)
+		if (self.Human.Weapon == WeaponEnum.Blade)
 		{
 			self._lastBladesDurability = self.Human.CurrentBladeDurability;
 			self._lastBladesCount = self.Human.CurrentBlade;
 			self._bladesSpecialCD = self.Human.SpecialCooldown;
 		}
-		elif (self.Human.Weapon == WeaponEnum.TS)
+		elif (self.Human.Weapon == WeaponEnum.Thunderspear)
 		{
 			self._lastTSAmmoRound = self.Human.CurrentAmmoRound;
 			self._lastTSAmmoLeft = self.Human.CurrentAmmoLeft;
@@ -3440,7 +3440,7 @@ cutscene Cutscene_3
 
 			for(t in Game.AITitans)
 			{
-				t.Emote("Roar");
+				t.Emote(TitanSoundEnum.Roar1);
 			}
 		}
 
@@ -3569,54 +3569,39 @@ cutscene Cutscene_6
 	}
 }
 
-component RigidbodyBuiltin
+component IRigidbody
 {
-	Mass = 1.0;
-	Gravity = Vector3(0.0, -20.0, 0.0);
-	FreezeRotation = false;
-	Interpolate = false;
+    Mass = 1.0;
+    Gravity = Vector3(0.0, -20.0, 0.0);
+    FreezeRotation = false;
+    Interpolate = false;
 
-	function Init()
-	{
-		self.MapObject.AddBuiltinComponent("Rigidbody", self.Mass, self.Gravity, self.FreezeRotation, self.Interpolate);
-	}
+    function Init(){}
 
-	function SetVelocity(velocity)
-	{
-		self.MapObject.UpdateBuiltinComponent("Rigidbody", "SetVelocity", velocity);
-	}
+    # @param velocity Vector3
+    function SetVelocity(velocity){}
 
-	function AddForce(force)
-	{
-		self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force);
-	}
+    # @param force Vector3
+    function AddForce(force){}
 
-	function AddForceWithMode(force, mode)
-	{
-		self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force, mode);
-	}
+    # @param force Vector3
+    # @param mode string
+    function AddForceWithMode(force, mode){}
 
-	function AddForceWithModeAtPoint(force, point, mode)
-	{
-		self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force, mode, point);
-	}
+    # @param force Vector3
+    # @param point Vector3
+    # @param mode string
+    function AddForceWithModeAtPoint(force, point, mode){}
 
-	function AddTorque(force, mode)
-	{
-		self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddTorque", force, mode);
-	}
+    # @param force Vector3
+    # @param mode string
+    function AddTorque(force, mode){}
 
-	# @return Vector3
-	function GetVelocity()
-	{
-		return self.MapObject.ReadBuiltinComponent("Rigidbody", "Velocity");
-	}
+    # @return Vector3
+    function GetVelocity(){}
 
-	# @return Vector3
-	function GetAngularVelocity()
-	{
-		return self.MapObject.ReadBuiltinComponent("Rigidbody", "AngularVelocity");
-	}
+    # @return Vector3
+    function GetAngularVelocity(){}
 }
 
 #######################
@@ -3785,98 +3770,6 @@ class Timer
 	}
 }
 
-extension UILabelTypeEnum
-{
-	TOPCENTER = "TopCenter";
-	TOPLEFT = "TopLeft";
-	TOPRIGHT = "TopRight";
-	MIDDLECENTER = "MiddleCenter";
-	MIDDLELEFT = "MiddleLeft";
-	MIDDLERIGHT = "MiddleRight";
-	BOTTOMLEFT = "BottomLeft";
-	BOTTOMRIGHT = "BottomRight";
-}
-
-extension KeyBindsEnum
-{
-	GENERAL_FORWARD = "General/Forward";
-	GENERAL_BACK = "General/Back";
-	GENERAL_LEFT = "General/Left";
-	GENERAL_RIGHT = "General/Right";
-	GENERAL_UP = "General/Up";
-	GENERAL_DOWN = "General/Down";
-	GENERAL_AUTORUN = "General/Autorun";
-	GENERAL_PAUSE = "General/Pause";
-	GENERAL_HIDEUI = "General/HideUI";
-	GENERAL_RESTARTGAME = "General/RestartGame";
-	GENERAL_CHANGECHARACTER = "General/ChangeCharacter";
-	GENERAL_CHAT = "General/Chat";
-	GENERAL_PUSHTOTALK = "General/PushToTalk";
-	GENERAL_CHANGECAMERA = "General/ChangeCamera";
-	GENERAL_MINIMAPMAXIMIZE = "General/MinimapMaximize";
-	GENERAL_SPECTATEPREVIOUSPLAYER = "General/SpectatePreviousPlayer";
-	GENERAL_SPECTATENEXTPLAYER = "General/SpectateNextPlayer";
-	GENERAL_SKIPCUTSCENE = "General/SkipCutscene";
-	GENERAL_TOGGLESCOREBOARD = "General/ToggleScoreboard";
-	GENERAL_TAPSCOREBOARD = "General/TapScoreboard";
-	GENERAL_TAPSCOREBOARDTOOLTIP = "General/TapScoreboardTooltip";
-	GENERAL_HIDECURSOR = "General/HideCursor";
-	HUMAN_ATTACKDEFAULT = "Human/AttackDefault";
-	HUMAN_ATTACKSPECIAL = "Human/AttackSpecial";
-	HUMAN_HOOKLEFT = "Human/HookLeft";
-	HUMAN_HOOKRIGHT = "Human/HookRight";
-	HUMAN_HOOKBOTH = "Human/HookBoth";
-	HUMAN_DASH = "Human/Dash";
-	HUMAN_REELIN = "Human/ReelIn";
-	HUMAN_REELOUT = "Human/ReelOut";
-	HUMAN_DODGE = "Human/Dodge";
-	HUMAN_FLARE1 = "Human/Flare1";
-	HUMAN_FLARE2 = "Human/Flare2";
-	HUMAN_FLARE3 = "Human/Flare3";
-	HUMAN_JUMP = "Human/Jump";
-	HUMAN_RELOAD = "Human/Reload";
-	HUMAN_SALUTE = "Human/Salute";
-	HUMAN_HORSEMOUNT = "Human/HorseMount";
-	HUMAN_HORSEWALK = "Human/HorseWalk";
-	HUMAN_HORSEJUMP = "Human/HorseJump";
-	HUMAN_NAPELOCK = "Human/NapeLock";
-	HUMAN_DASHDOUBLETAP = "Human/DashDoubleTap";
-	HUMAN_AUTOUSEGAS = "Human/AutoUseGas";
-	HUMAN_AUTOUSEGASTOOLTIP = "Human/AutoUseGasTooltip";
-	HUMAN_REELOUTSCROLLSMOOTHING = "Human/ReelOutScrollSmoothing";
-	HUMAN_REELOUTSCROLLSMOOTHINGTOOLTIP = "Human/ReelOutScrollSmoothingTooltip";
-	HUMAN_SWAPTSATTACKSPECIAL = "Human/SwapTSAttackSpecial";
-	HUMAN_SWAPTSATTACKSPECIALTOOLTIP = "Human/SwapTSAttackSpecialTooltip";
-	HUMAN_AUTOREFILLGAS = "Human/AutoRefillGas";
-	HUMAN_REELINHOLDING = "Human/ReelInHolding";
-	HUMAN_REELINHOLDINGTOOLTIP = "Human/ReelInHoldingTooltip";
-	TITAN_COVERNAPE = "Titan/CoverNape";
-	TITAN_KICK = "Titan/Kick";
-	TITAN_JUMP = "Titan/Jump";
-	TITAN_SIT = "Titan/Sit";
-	TITAN_WALK = "Titan/Walk";
-	TITAN_SPRINT = "Titan/Sprint";
-	INTERACTION_INTERACT = "Interaction/Interact";
-	INTERACTION_INTERACT2 = "Interaction/Interact2";
-	INTERACTION_INTERACT3 = "Interaction/Interact3";
-	INTERACTION_ITEMMENU = "Interaction/ItemMenu";
-	INTERACTION_EMOTEMENU = "Interaction/EmoteMenu";
-	INTERACTION_MENUNEXT = "Interaction/MenuNext";
-	INTERACTION_QUICKSELECT1 = "Interaction/QuickSelect1";
-	INTERACTION_QUICKSELECT2 = "Interaction/QuickSelect2";
-	INTERACTION_QUICKSELECT3 = "Interaction/QuickSelect3";
-	INTERACTION_QUICKSELECT4 = "Interaction/QuickSelect4";
-	INTERACTION_QUICKSELECT5 = "Interaction/QuickSelect5";
-	INTERACTION_QUICKSELECT6 = "Interaction/QuickSelect6";
-	INTERACTION_QUICKSELECT7 = "Interaction/QuickSelect7";
-	INTERACTION_QUICKSELECT8 = "Interaction/QuickSelect8";
-	INTERACTION_QUICKSELECT9 = "Interaction/QuickSelect9";
-	INTERACTION_FUNCTION1 = "Interaction/Function1";
-	INTERACTION_FUNCTION2 = "Interaction/Function2";
-	INTERACTION_FUNCTION3 = "Interaction/Function3";
-	INTERACTION_FUNCTION4 = "Interaction/Function4";
-}
-
 extension PlayerStateEnum
 {
 	IDLE = "Idle";
@@ -3898,60 +3791,31 @@ extension PlayerStateEnum
 	WALLSLIDE = "WallSlide";
 }
 
-extension WeaponEnum
+extension SpecialEnumCD
 {
-	BLADES = "Blade";
-	APG = "APG";
-	AHSS = "AHSS";
-	TS = "Thunderspear";
-}
-
-extension SpecialEnum
-{
-	AHSSTWINSHOT = "AHSSTwinShot";
-	ANNIE = "Annie";
-	BLADETHROW = "BladeThrow";
-	CARRY = "Carry";
-	CONFUSE = "Confuse";
-	DANCE = "Dance";
-	DISTRACT = "Distract";
-	DOWNSTRIKE = "DownStrike";
-	EREN = "Eren";
-	ESCAPE = "Escape";
-	NONE = "None";
-	POTATO = "Potato";
-	SMELL = "Smell";
-	SMOKEBOMB = "SmokeBomb";
-	SPIN1 = "Spin1";
-	SPIN2 = "Spin2";
-	SPIN3 = "Spin3";
-	STOCK = "Stock";
-	SUPPLY = "Supply";
-	SWITCHBACK = "Switchback";
-
 	_cooldowns = Dict();
 
 	function Init()
 	{
-		self._cooldowns.Set(self.AHSSTWINSHOT, 1.0);
-		self._cooldowns.Set(self.ANNIE, 60.0);
-		self._cooldowns.Set(self.BLADETHROW, 1.0);
-		self._cooldowns.Set(self.CARRY, 2.0);
-		self._cooldowns.Set(self.CONFUSE, 30.0);
-		self._cooldowns.Set(self.DANCE, 2.0);
-		self._cooldowns.Set(self.DISTRACT, 5.0);
-		self._cooldowns.Set(self.DOWNSTRIKE, 5.0);
-		self._cooldowns.Set(self.EREN, 60.0);
-		self._cooldowns.Set(self.ESCAPE, 0);
-		self._cooldowns.Set(self.POTATO, 20.0);
-		self._cooldowns.Set(self.SMELL, 60.0);
-		self._cooldowns.Set(self.SMOKEBOMB, 15.0);
-		self._cooldowns.Set(self.SPIN1, 5.0);
-		self._cooldowns.Set(self.SPIN2, 5.0);
-		self._cooldowns.Set(self.SPIN3, 3.5);
-		self._cooldowns.Set(self.STOCK, 0);
-		self._cooldowns.Set(self.SUPPLY, 300.0);
-		self._cooldowns.Set(self.SWITCHBACK, 2.0);
+		self._cooldowns.Set(SpecialEnum.AHSSTwinShot, 1.0);
+		self._cooldowns.Set(SpecialEnum.Annie, 60.0);
+		self._cooldowns.Set(SpecialEnum.BladeThrow, 1.0);
+		self._cooldowns.Set(SpecialEnum.Carry, 2.0);
+		self._cooldowns.Set(SpecialEnum.Confuse, 30.0);
+		self._cooldowns.Set(SpecialEnum.Dance, 2.0);
+		self._cooldowns.Set(SpecialEnum.Distract, 5.0);
+		self._cooldowns.Set(SpecialEnum.DownStrike, 5.0);
+		self._cooldowns.Set(SpecialEnum.Eren, 60.0);
+		self._cooldowns.Set(SpecialEnum.Escape, 0);
+		self._cooldowns.Set(SpecialEnum.Potato, 20.0);
+		self._cooldowns.Set(SpecialEnum.Smell, 60.0);
+		self._cooldowns.Set(SpecialEnum.SmokeBomb, 15.0);
+		self._cooldowns.Set(SpecialEnum.Spin1, 5.0);
+		self._cooldowns.Set(SpecialEnum.Spin2, 5.0);
+		self._cooldowns.Set(SpecialEnum.Spin3, 3.5);
+		self._cooldowns.Set(SpecialEnum.Stock, 0);
+		self._cooldowns.Set(SpecialEnum.Supply, 300.0);
+		self._cooldowns.Set(SpecialEnum.Switchback, 2.0);
 	}
 
 	function GetCooldown(special)
@@ -3972,127 +3836,14 @@ extension ColorEnum
 	Brown   = "A52A2A";
 }
 
-extension EffectEnum
-{
-	THUNDERSPEAREXPLODE = "ThunderspearExplode";
-	GASBURST = "GasBurst";
-	GROUNDSHATTER = "GroundShatter";
-	BLOOD1 = "Blood1";
-	BLOOD2 = "Blood2";
-	PUNCHHIT = "PunchHit";
-	GUNEXPLODE = "GunExplode";
-	CRITICALHIT = "CriticalHit";
-	TITANSPAWN = "TitanSpawn";
-	TITANDIE1 = "TitanDie1";
-	TITANDIE2 = "TitanDie2";
-	BOOM1 = "Boom1";
-	BOOM2 = "Boom2";
-	BOOM3 = "Boom3";
-	BOOM4 = "Boom4";
-	BOOM5 = "Boom5";
-	BOOM6 = "Boom6";
-	BOOM7 = "Boom7";
-	SPLASH = "Splash";
-	TITANBITE = "Bite";
-	SHIFTERTHUNDER = "ShifterThunder";
-	BLADETHROWHIT = "BladeThrowHit";
-	APGTRAIL = "APGTrail";
-	SINGLESPLASH = "Splash";
-	SPLASH1 = "Splash1";
-	SPLASH2 = "Splash2";
-	SPLASH3 = "Splash3";
-	WATERWAKE = "WaterWake";
-}
-
-extension PlayerSoundEnum
-{
-	BLADEBREAK = "BladeBreak";
-	BLADEHIT = "BladeHit";
-	OLDBLADEHIT = "OldBladeHit";
-	NAPEHIT = "NapeHit";
-	LIMBHIT = "LimbHit";
-	OLDNAPEHIT = "OldNapeHit";
-	BLADERELOADAIR = "BladeReloadAir";
-	BLADERELOADGROUND = "BladeReloadGround";
-	GUNRELOAD = "GunReload";
-	BLADESWING1 = "BladeSwing1";
-	BLADESWING2 = "BladeSwing2";
-	BLADESWING3 = "BladeSwing3";
-	BLADESWING4 = "BladeSwing4";
-	OLDBLADESWING = "OldBladeSwing";
-	DODGE = "Dodge";
-	FLARELAUNCH = "FlareLaunch";
-	THUNDERSPEARLAUNCH = "ThunderspearLaunch";
-	GASBURST = "GasBurst";
-	HOOKLAUNCH = "HookLaunch";
-	OLDHOOKLAUNCH = "OldHookLaunch";
-	HOOKRETRACTLEFT = "HookRetractLeft";
-	HOOKRETRACTRIGHT = "HookRetractRight";
-	HOOKIMPACT = "HookImpact";
-	HOOKIMPACTLOUD = "HookImpactLoud";
-	GASSTART = "GasStart";
-	GASLOOP = "GasLoop";
-	GASEND = "GasEnd";
-	REELIN = "ReelIn";
-	REELOUT = "ReelOut";
-	CRASHLAND = "CrashLand";
-	JUMP = "Jump";
-	LAND = "Land";
-	NOGAS = "NoGas";
-	REFILL = "Refill";
-	SLIDE = "Slide";
-	FOOTSTEP1 = "Footstep1";
-	FOOTSTEP2 = "Footstep2";
-	DEATH1 = "Death1";
-	DEATH2 = "Death2";
-	DEATH3 = "Death3";
-	DEATH4 = "Death4";
-	DEATH5 = "Death5";
-	CHECKPOINT = "Checkpoint";
-	GUNEXPLODE = "GunExplode";
-	GUNEXPLODELOUD = "GunExplodeLoud";
-	WATERSPLASH = "WaterSplash";
-	SWITCHBACK = "Switchback";
-	APGSHOT1 = "APGShot1";
-	APGSHOT2 = "APGShot2";
-	APGSHOT3 = "APGShot3";
-	APGSHOT4 = "APGShot4";
-	BLADENAPE1VAR1 = "BladeNape1Var1";
-	BLADENAPE1VAR2 = "BladeNape1Var2";
-	BLADENAPE1VAR3 = "BladeNape1Var3";
-	BLADENAPE2VAR1 = "BladeNape2Var1";
-	BLADENAPE2VAR2 = "BladeNape2Var2";
-	BLADENAPE2VAR3 = "BladeNape2Var3";
-	BLADENAPE3VAR1 = "BladeNape3Var1";
-	BLADENAPE3VAR2 = "BladeNape3Var2";
-	BLADENAPE3VAR3 = "BladeNape3Var3";
-	BLADENAPE4VAR1 = "BladeNape4Var1";
-	BLADENAPE4VAR2 = "BladeNape4Var2";
-	BLADENAPE4VAR3 = "BladeNape4Var3";
-	AHSSGUNSHOT1 = "AHSSGunShot1";
-	AHSSGUNSHOT2 = "AHSSGunShot2";
-	AHSSGUNSHOT3 = "AHSSGunShot3";
-	AHSSGUNSHOT4 = "AHSSGunShot4";
-	AHSSGUNSHOTDOUBLE1 = "AHSSGunShotDouble1";
-	AHSSGUNSHOTDOUBLE2 = "AHSSGunShotDouble2";
-	AHSSNAPE1VAR1 = "AHSSNape1Var1";
-	AHSSNAPE1VAR2 = "AHSSNape1Var2";
-	AHSSNAPE2VAR1 = "AHSSNape2Var1";
-	AHSSNAPE2VAR2 = "AHSSNape2Var2";
-	AHSSNAPE3VAR1 = "AHSSNape3Var1";
-	AHSSNAPE3VAR2 = "AHSSNape3Var2";
-	TSLAUNCH1 = "TSLaunch1";
-	TSLAUNCH2 = "TSLaunch2";
-}
-
 extension HitUtilsFX
 {
     function DamageVisualFX(napePosition, damage, armor)
     {
-        Game.SpawnEffect(EffectEnum.CRITICALHIT, napePosition, Vector3.Zero, 6.0);
+        Game.SpawnEffect(EffectNameEnum.CriticalHit, napePosition, Vector3.Zero, 6.0);
 		if (damage > armor)
 		{
-			Game.SpawnEffect(EffectEnum.BLOOD1, napePosition, Vector3.Zero, 4.0);
+			Game.SpawnEffect(EffectNameEnum.Blood1, napePosition, Vector3.Zero, 4.0);
 		}
     }
 
@@ -4102,7 +3853,7 @@ extension HitUtilsFX
     # @param armor int
     function DamageHitSoundFX(human, damage, type, armor)
     {
-        if (type == WeaponEnum.BLADES)
+        if (type == WeaponEnum.Blade)
         {
             self._HandleBladesSound(human, damage, armor);
             return;
@@ -4123,31 +3874,31 @@ extension HitUtilsFX
 	{
         if (damage <= armor)
         {
-            human.StopSound(PlayerSoundEnum.BLADEBREAK);
-            human.PlaySound(PlayerSoundEnum.BLADEBREAK);
+            human.StopSound(HumanSoundEnum.BladeBreak);
+            human.PlaySound(HumanSoundEnum.BladeBreak);
             
             return;
         }
 
         if (damage < 500)
         {
-            sound = PlayerSoundEnum.NAPEHIT;
+            sound = HumanSoundEnum.NapeHit;
         }
         elif (damage < 1000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 1);
+            sound = self.GetRandom(WeaponEnum.Blade, 1);
         }
         elif (damage < 2000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 2);
+            sound = self.GetRandom(WeaponEnum.Blade, 2);
         }
         elif (damage < 3000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 3);
+            sound = self.GetRandom(WeaponEnum.Blade, 3);
         }       
         else
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 4);
+            sound = self.GetRandom(WeaponEnum.Blade, 4);
         }
 
         human.StopSound(sound);
@@ -4158,7 +3909,7 @@ extension HitUtilsFX
 	{
         if (damage < 1000 || damage < armor)
         {
-            sound = PlayerSoundEnum.NAPEHIT;
+            sound = HumanSoundEnum.NapeHit;
         }
         elif (damage < 2000)
         {
@@ -4175,8 +3926,8 @@ extension HitUtilsFX
 
     function _HandleAPGSound(human, damage, armor)
 	{
-        human.StopSound(PlayerSoundEnum.NAPEHIT);   
-        human.PlaySound(PlayerSoundEnum.NAPEHIT);  
+        human.StopSound(HumanSoundEnum.NapeHit);   
+        human.PlaySound(HumanSoundEnum.NapeHit);  
     }
 
     # @param weapon string
@@ -4187,7 +3938,7 @@ extension HitUtilsFX
         {
             numVar = 2;
         }
-        elif (weapon == WeaponEnum.BLADES)
+        elif (weapon == WeaponEnum.Blade)
         {
             numVar = 3;
         }
@@ -4233,7 +3984,7 @@ component ZekeShifter
 	# @type MapObject
 	_rock = null;
 
-	# @type RigidbodyBuiltin
+	# @type IRigidbody
 	_rigidbody = null;
 
 	# @type Transform
@@ -4565,12 +4316,15 @@ component ZekeShifter
 		eyesPos = self._eyesHurtBox.MapObject.Position;
 		napePos = self._napeHurtBox.MapObject.Position;
 
-		distanceToEyes = (targetPos - eyesPos).Magnitude;
-		distanceToNape = (targetPos - napePos).Magnitude;
+		difference = targetPos - eyesPos;
+		distanceToEyes = difference.Magnitude;
+		difference = targetPos - napePos;
+		distanceToNape = difference.Magnitude;
 
 		if (distanceToEyes < 15)
 		{
-			directionToTarget = (targetPos - self.MapObject.Position).Normalized;
+			difference = targetPos - self.MapObject.Position;
+			directionToTarget = difference.Normalized;
 			angleToTarget = Vector3.Angle(directionToTarget, self.MapObject.Forward);
 
 			if (angleToTarget >= 70 && angleToTarget <= 85)
@@ -4582,7 +4336,8 @@ component ZekeShifter
 
 		if (distanceToNape < 10)
 		{
-			directionToTarget = (targetPos - self.MapObject.Position).Normalized;
+			difference = targetPos - self.MapObject.Position;
+			directionToTarget = difference.Normalized;
 			angleToTarget = Vector3.Angle(directionToTarget, self.MapObject.Forward * -1);
 
 			if (angleToTarget >= 80 && angleToTarget <= 95)
@@ -4647,8 +4402,8 @@ component ZekeShifter
 	coroutine WaitAndDie(delay)
 	{
 		t = Game.SpawnTitanAt("normal",self._transform.Position+Vector3(0,-200,0));
-		t.PlaySound("Roar");
-		t.Health=0;
+		t.PlaySound(TitanSoundEnum.Roar1);
+		t.Health = 0;
 
 		Game.SpawnEffect("Blood1", self._transform.Position+Vector3(0,80,0), Vector3.Zero, 10.0);
 		Game.SpawnEffect("Blood2", self._transform.Position+Vector3(0,80,0), Vector3.Zero, 10.0);
@@ -4702,7 +4457,7 @@ component ZekeShifter
 					if (self._currentAttackState == 0 && self._currentAnimationTime > 1.68)
 					{
 						Game.SpawnEffect(
-							EffectEnum.BOOM3,
+							EffectNameEnum.Boom3,
 							self._eyesHurtBox.MapObject.Position,
 							Vector3(270.0, 0.0, 0.0),
 							8.0
@@ -4716,7 +4471,7 @@ component ZekeShifter
 					if (self._currentAttackState == 0 && self._currentAnimationTime > 1.68)
 					{
 						Game.SpawnEffect(
-							EffectEnum.BOOM3,
+							EffectNameEnum.Boom3,
 							self._napeHurtBox.MapObject.Position,
 							Vector3(270.0, 0.0, 0.0),
 							6.0
@@ -5052,10 +4807,10 @@ component ZekeNapeHurtBox
 
 		self._getDamagedCoolDown = 0.02;
 
-		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
+		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.Blade)
 		{
 			character.CurrentBladeDurability = 0;
-			character.PlaySound(PlayerSoundEnum.BLADEBREAK);
+			character.PlaySound(HumanSoundEnum.BladeBreak);
 			return;
 		}
 
@@ -5408,17 +5163,17 @@ extension InputManager
 
 	function InitKeybinds()
 	{
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION1, false);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION3, false);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION4, false);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, false);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, false);
+		Input.SetKeyDefaultEnabled(InputInteractionEnum.Function1, false);
+		Input.SetKeyDefaultEnabled(InputInteractionEnum.Function3, false);
+		Input.SetKeyDefaultEnabled(InputInteractionEnum.Function4, false);
+		Input.SetKeyDefaultEnabled(InputGeneralEnum.SkipCutscene, false);
+		Input.SetKeyDefaultEnabled(InputInteractionEnum.ItemMenu, false);
 
-		self.Guide = KeyBindsEnum.INTERACTION_FUNCTION1;
-		self.Interaction1 = KeyBindsEnum.INTERACTION_FUNCTION3;
-		self.Interaction2 = KeyBindsEnum.INTERACTION_FUNCTION4;
-		self.SkipCutscene = KeyBindsEnum.GENERAL_SKIPCUTSCENE;
-		self.SwitchWeapon = KeyBindsEnum.INTERACTION_ITEMMENU;
+		self.Guide = InputInteractionEnum.Function1;
+		self.Interaction1 = InputInteractionEnum.Function3;
+		self.Interaction2 = InputInteractionEnum.Function4;
+		self.SkipCutscene = InputGeneralEnum.SkipCutscene;
+		self.SwitchWeapon = InputInteractionEnum.ItemMenu;
 	}
 
 	function DisableInput()
@@ -5433,17 +5188,17 @@ extension InputManager
 
 	function _SwitchInput(enabled)
 	{
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_FORWARD, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_BACK, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_LEFT, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_RIGHT, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_JUMP, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_DODGE, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_HOOKLEFT, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_HOOKRIGHT, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_HOOKBOTH, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, enabled);
-		Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, enabled);
+		Input.SetKeyDefaultEnabled(InputGeneralEnum.Forward, enabled);
+		Input.SetKeyDefaultEnabled(InputGeneralEnum.Back, enabled);
+		Input.SetKeyDefaultEnabled(InputGeneralEnum.Left, enabled);
+		Input.SetKeyDefaultEnabled(InputGeneralEnum.Right, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.Jump, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.Dodge, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.HookLeft, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.HookRight, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.HookBoth, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.AttackDefault, enabled);
+		Input.SetKeyDefaultEnabled(InputHumanEnum.AttackSpecial, enabled);
 	}
 }
 
@@ -5860,7 +5615,7 @@ extension EventManager
 
 		Dispatcher.SendAll(
 			SetLocalizedLabelMessage.New(
-			UILabelTypeEnum.TOPCENTER,
+			UILabelEnum.TopCenter,
 			self._currentNode._event.GoalKey(),
 			self._currentNode._event.GoalParams(),
 			null
@@ -5958,7 +5713,7 @@ extension I18n
 	# @return Dict<string, string>
 	function _LoadLanguagePack()
 	{
-		return self._languages.Get(UI.GetLanguage(), self._languages.Get(self._defaultLanguage));
+		return self._languages.Get(Locale.CurrentLanguage, self._languages.Get(self._defaultLanguage));
 	}
 }
 
@@ -6349,7 +6104,7 @@ class TitanProxy
 
 	function IdleRoar()
 	{
-		self.Titan.Emote("Roar");
+		self.Titan.Emote(TitanSoundEnum.Roar1);
 		self.Titan.Idle(5.0);
 	}
 
@@ -6358,7 +6113,7 @@ class TitanProxy
 	function Target(c, t)
 	{
 		self.Titan.Target(c, t);
-		self.Titan.Emote("Roar");
+		self.Titan.Emote(TitanSoundEnum.Roar1);
 	}
 
 	# @param pos Vector3
@@ -6397,7 +6152,7 @@ extension TitanTargetSwitcher
 {
 	MinDamage = 1000;
 
-	# @param Human
+	# @type Human
 	_currentTarget = null;
 
 	function OnCharacterDamaged(victim, killer, killerName, damage)
