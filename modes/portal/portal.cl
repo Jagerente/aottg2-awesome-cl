@@ -29,7 +29,6 @@ class Main {
     #######################
     ## CALLBACKS
     #######################
-
     function OnGameStart()
     {
         InputManager.InitKeybinds();
@@ -62,40 +61,6 @@ class Main {
         TeleportGUI.Initialize();
         AdminPanelGUI.Initialize();
         SpeedRunGUI.Initialize();
-
-        # self.Armored();
-    }
-
-    coroutine Armored()
-    {
-        # wait 5.0;
-        # ref = Map.FindMapObjectByName("Level Wheatley");
-
-        refs = Map.FindMapObjectsByName("ArmoredSP");
-        if (Network.IsMasterClient)
-        {
-            for (ref in refs)
-            {
-                s = Game.SpawnShifterAt("Armored", ref.Position, 90.0);
-                # s.LookAt(ref.Position);
-            }
-        }
-
-        wait 0.3;
-
-        i = 0;
-        for (s in Game.Shifters)
-        {
-            ref = refs.Get(i);
-            if (Network.IsMasterClient)
-            {
-                s.Position = ref.Position;
-                s.Rotation = ref.Rotation;
-            }
-            s.Transform.Scale = ref.Scale;
-
-            i += 1;
-        }
     }
 
     function OnNetworkMessage(sender, message)
@@ -109,7 +74,7 @@ class Main {
         {
             return;
         }
-        
+
         if (!character.IsAI && character.IsMine)
         {
             PortalStorage.Add(character.Player.ID);
@@ -151,12 +116,12 @@ class Main {
 
         PlayerProxy.OnTick();
 
-        if (Network.MyPlayer.Status == PlayerStatusEnum.DEAD)
+        if (Network.MyPlayer.Status == PlayerStatusEnum.Dead)
         {
             self._respawnTimer.UpdateOnTick();
             if (!self._respawnTimer.IsDone())
             {
-                UI.SetLabelForTime(UILabelTypeEnum.MIDDLECENTER, HTML.Color("Respawn in " + self._respawnTimer.String(2), ColorEnum.PastelOrange), 0.1);
+                UI.SetLabelForTime(UILabelEnum.MiddleCenter, HTML.Color("Respawn in " + self._respawnTimer.String(2), ColorEnum.PastelOrange), 0.1);
             }
             else
             {
@@ -224,53 +189,39 @@ class Main {
 ## Builtin
 #######################
 
-component RigidbodyBuiltin
+component IRigidbody
 {
     Mass = 1.0;
     Gravity = Vector3(0.0, -20.0, 0.0);
     FreezeRotation = false;
     Interpolate = false;
 
-    function Init()
-    {
-        self.MapObject.AddBuiltinComponent("Rigidbody", self.Mass, self.Gravity, self.FreezeRotation, self.Interpolate);
-    }
+    function Init(){}
 
-    function SetVelocity(velocity)
-    {
-        self.MapObject.UpdateBuiltinComponent("Rigidbody", "SetVelocity", velocity);
-    }
+    # @param velocity Vector3
+    function SetVelocity(velocity){}
 
-    function AddForce(force)
-    {
-        self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force);
-    }
+    # @param force Vector3
+    function AddForce(force){}
 
-    function AddForceWithMode(force, mode)
-    {
-        self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force, mode);
-    }
+    # @param force Vector3
+    # @param mode string
+    function AddForceWithMode(force, mode){}
 
-    function AddForceWithModeAtPoint(force, point, mode)
-    {
-        self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddForce", force, mode, point);
-    }
+    # @param force Vector3
+    # @param point Vector3
+    # @param mode string
+    function AddForceWithModeAtPoint(force, point, mode){}
 
-    function AddTorque(force, mode)
-    {
-        self.MapObject.UpdateBuiltinComponent("Rigidbody", "AddTorque", force, mode);
-    }
+    # @param force Vector3
+    # @param mode string
+    function AddTorque(force, mode){}
 
     # @return Vector3
-    function GetVelocity()
-    {
-        return self.MapObject.ReadBuiltinComponent("Rigidbody", "Velocity");
-    }
+    function GetVelocity(){}
 
-    function GetAngularVelocity()
-    {
-        return self.MapObject.ReadBuiltinComponent("Rigidbody", "AngularVelocity");
-    }
+    # @return Vector3
+    function GetAngularVelocity(){}
 }
 
 #######################
@@ -376,6 +327,7 @@ component ActiveControl
         {
             self._Deactivate();
         }
+
         self._activated = isActive;
     }
 
@@ -435,7 +387,7 @@ component WeightedButton
     _activatable = null;
     _wasSoundPlayed = false;
     _deactivationTimer = Timer(0.0);
-    _isActive = false; 
+    _isActive = false;
 
     function Initialize()
     {
@@ -454,14 +406,14 @@ component WeightedButton
     {
         self.Initialize();
     }
-    
+
     # @param obj any
     function OnCollisionStay(obj)
     {
-        if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) || 
-            (obj.Type == ObjectTypeEnum.MAP_OBJECT && 
+        if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) ||
+            (obj.Type == ObjectTypeEnum.MAP_OBJECT &&
             (
-                obj.Name == "WeightedStorageCube" 
+                obj.Name == "WeightedStorageCube"
                 || obj.Name == "WeightedCompanionCube"
                 || obj.Name == "DiscouragementRedirectionCube"
             )))
@@ -473,7 +425,7 @@ component WeightedButton
 
                 if (!self._wasSoundPlayed)
                 {
-                    SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                    SoundManager.Play(HumanSoundEnum.Checkpoint);
                     self._wasSoundPlayed = true;
                 }
             }
@@ -484,10 +436,10 @@ component WeightedButton
     # @param obj any
     function OnCollisionExit(obj)
     {
-        if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) || 
-            (obj.Type == ObjectTypeEnum.MAP_OBJECT && 
+        if ((obj.Type == ObjectTypeEnum.HUMAN && obj.IsMine) ||
+            (obj.Type == ObjectTypeEnum.MAP_OBJECT &&
             (
-                obj.Name == "WeightedStorageCube" 
+                obj.Name == "WeightedStorageCube"
                 || obj.Name == "WeightedCompanionCube"
                 || obj.Name == "DiscouragementRedirectionCube"
             )))
@@ -507,7 +459,7 @@ component WeightedButton
 
             if (self._wasSoundPlayed)
             {
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
                 self._wasSoundPlayed = false;
             }
         }
@@ -610,7 +562,6 @@ component RegionButton
             return;
         }
 
-        # @type MapObject
         mapObject = obj;
 
         if (self.MapObjects != "" && self._moDict.Contains(mapObject.Name))
@@ -814,8 +765,8 @@ component Button
         }
 
         self._activatable.Activate();
-        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
-        
+        SoundManager.Play(HumanSoundEnum.Checkpoint);
+
         self._timer.Reset(self.ActiveTime);
         self._cdTimer.Reset(self.CD);
     }
@@ -904,7 +855,7 @@ component SoundPlayer
     {
         self.Initialize();
     }
-    
+
     function OnTick()
     {
         if (self._activatable == null)
@@ -1335,13 +1286,13 @@ component Elevator
             human = obj;
             currentAnimation = human.CurrentAnimation;
             if (
-                currentAnimation == HumanAnimationEnum.IDLEAHSSF
-                || currentAnimation == HumanAnimationEnum.IDLEAHSSM
-                || currentAnimation == HumanAnimationEnum.IDLEF
-                || currentAnimation == HumanAnimationEnum.IDLEM
-                || currentAnimation == HumanAnimationEnum.IDLETSF
-                || currentAnimation == HumanAnimationEnum.IDLETSM
-                || currentAnimation == HumanAnimationEnum.LAND
+                currentAnimation == HumanAnimationEnum.IdleAHSSF
+                || currentAnimation == HumanAnimationEnum.IdleAHSSM
+                || currentAnimation == HumanAnimationEnum.IdleF
+                || currentAnimation == HumanAnimationEnum.IdleM
+                || currentAnimation == HumanAnimationEnum.IdleTSF
+                || currentAnimation == HumanAnimationEnum.IdleTSM
+                || currentAnimation == HumanAnimationEnum.Land
             )
             {
                 if (!self._relativePositions.Contains(human))
@@ -1360,7 +1311,6 @@ component Elevator
         {
             # @type MapObject
             mapObject = obj;
-            # @type Movable
             comp = mapObject.GetComponent("Movable");
             if (!comp.IsCarried())
             {
@@ -1429,10 +1379,10 @@ component Movable
     LockForward = false;
     LockBackward = false;
     LockPositionID = 0;
-    
+
     _pickupDistance = 3.0;
     _pickupThreshold = 0.1;
-    _springFactor = 200.0; 
+    _springFactor = 200.0;
     _dampingFactor = 20.0;
 
     _carrier = null;
@@ -1451,7 +1401,8 @@ component Movable
     {
         self._initPos = self.MapObject.Position;
         self._initRot = self.MapObject.Rotation;
-        self._rb = self.MapObject.GetComponent("Rigidbody");
+        # TODO: Rigidbody. Example of successfull access
+        self._rb = self.MapObject.Rigidbody;
         self._accelerationTracker = RigidBodyAccelerationTracker(self._rb);
         self._initGravity = self._rb.Gravity;
         if (self.LockPositionID > 0)
@@ -1475,12 +1426,13 @@ component Movable
         }
         self.MapObject.Position = self._initPos;
         self.MapObject.Rotation = self._initRot;
-        self._rb.SetVelocity(Vector3(0.0));
+        self._rb.Velocity = Vector3.Zero;
         self._rb.Gravity = self._initGravity;
         if (self._initLockPosRef != null)
         {
             self._lockPos = self._initLockPosRef.Position;
         }
+        self.MapObject.SetCollideWith(CollideWithEnum.All);
     }
 
     function OnGameStart()
@@ -1499,7 +1451,7 @@ component Movable
 
         if (self._carrier != null && self._lockPos == null)
         {
-            self._rb.Gravity = Vector3(0.0);
+            self._rb.Gravity = Vector3.Zero;
             targetPos = self._carrier.Position + Vector3.Up + (Camera.Forward * self._pickupDistance);
             currentPos = self.MapObject.Position;
             distance = Vector3.Distance(currentPos, targetPos);
@@ -1510,11 +1462,11 @@ component Movable
             elif (distance > self._pickupThreshold)
             {
                 direction = targetPos - currentPos;
-                currentVelocity = self._rb.GetVelocity();
+                currentVelocity = self._rb.Velocity;
                 force = direction * Main.SpringFactor - currentVelocity * Main.DampingFactor;
-                self._rb.AddForce(force);
+                self._rb.AddForce(force, ForceModeEnum.Acceleration);
             }
-            
+
             if (self.LockForward)
             {
                 direction = Camera.Forward;
@@ -1540,24 +1492,26 @@ component Movable
         }
         elif (self._lockPos != null)
         {
-            self._rb.Gravity = Vector3(0.0);
-            self._rb.SetVelocity(Vector3(0.0));
+            self._rb.Gravity = Vector3.Zero;
+            self._rb.Velocity = Vector3.Zero;
             self.MapObject.Position = self._lockPos;
         }
     }
 
     function Pickup(c)
     {
-        self._rb.Gravity = Vector3(0.0);
-        self._rb.SetVelocity(Vector3(0.0));
+        self.MapObject.SetCollideWith(CollideWithEnum.MapObjects);
+        self._rb.Gravity = Vector3.Zero;
+        self._rb.Velocity = Vector3.Zero;
         self._carrier = c;
         # self.TeleportToCarrier();
     }
-
+    
     function Drop()
     {
+        self.MapObject.SetCollideWith(CollideWithEnum.All);
         self._rb.Gravity = self._initGravity;
-        self._rb.SetVelocity(self._rb.GetVelocity() + self._carrier.Velocity);
+        self._rb.Velocity = self._rb.Velocity + self._carrier.Velocity;
         self._carrier = null;
     }
 
@@ -1573,7 +1527,7 @@ component Movable
             PlayerProxy._carrying = null;
             self._carrier = null;
         }
-        self._rb.SetVelocity(Vector3(0.0));
+        self._rb.Velocity = Vector3.Zero;
         self._rb.Gravity = Vector3(0.0);
         self._lockPos = v;
     }
@@ -1582,7 +1536,7 @@ component Movable
     {
         self._lockPos = null;
         self._rb.Gravity = self._initGravity;
-        self._rb.SetVelocity(Vector3(0.0));
+        self._rb.Velocity = Vector3.Zero;
     }
 
     function CanPickup()
@@ -1682,8 +1636,8 @@ component Controllable
             self._elapsedTime += Time.TickTime;
             t = Math.Clamp(self._elapsedTime / self._moveTime, 0.0, 1.0);
             self.MapObject.Position = Vector3.Lerp(
-                self._startPosition, 
-                self._targetPosition, 
+                self._startPosition,
+                self._targetPosition,
                 t
             );
 
@@ -1718,12 +1672,12 @@ component EasterEgg
             return;
         }
         EasterEggManager.SetFound(self.Name);
-        SoundManager.Play(PlayerSoundEnum.BLADENAPE1VAR1);
+        SoundManager.Play(HumanSoundEnum.BladeNape1Var1);
         self._once = true;
     }
 }
 
-component ObjLogger 
+component ObjLogger
 {
     function OnSecond()
     {
@@ -1821,7 +1775,7 @@ component SpeedRunCheck
     function OnCollisionEnter(obj)
     {
         if (
-            self._once || !PlayerProxy.SpeedRunMode || SpeedRunManager.SpeedRunFinished 
+            self._once || !PlayerProxy.SpeedRunMode || SpeedRunManager.SpeedRunFinished
             || (!PlayerProxy.SpeedRunMode && (SpeedRunManager._activeGroup == "" || SpeedRunManager._activeGroup != self.Group)))
         {
             return;
@@ -1976,7 +1930,9 @@ component Portal
 
     function Initialize()
     {
-        self._originalScale = self.MapObject.Parent.Scale;
+        # @type MapObject
+        parent = self.MapObject.Parent;
+        self._originalScale = parent.Scale;
         self._animationTimer.Reset(0.0);
     }
 
@@ -2023,7 +1979,9 @@ component Portal
 
     function OnTick()
     {
-        self.MapObject.Parent.Active = self._enabled;
+        # @type MapObject
+        parent = self.MapObject.Parent;
+        parent.Active = self._enabled;
         if (!self._enabled)
         {
             return;
@@ -2079,8 +2037,8 @@ component Portal
         localDirX = localDirX * -1;
         localDirZ = localDirZ * -1;
 
-        newDirection = (self._related.MapObject.Right * localDirX) 
-                    + (self._related.MapObject.Up * localDirY) 
+        newDirection = (self._related.MapObject.Right * localDirX)
+                    + (self._related.MapObject.Up * localDirY)
                     + (self._related.MapObject.Forward * localDirZ);
 
         return newDirection.Normalized;
@@ -2097,8 +2055,8 @@ component Portal
 
         localX = localX * -1;
 
-        return self._related.MapObject.Position 
-            + (self._related.MapObject.Right * localX) 
+        return self._related.MapObject.Position
+            + (self._related.MapObject.Right * localX)
             + (self._related.MapObject.Up * localY);
     }
 
@@ -2119,9 +2077,9 @@ component Portal
         accel = PlayerAccelerationTracker.GetAcceleration();
         vel = self._related.MapObject.Forward * accel;
         if (
-            PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.RUN
-            && PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.RUNTS
-            && PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.RUNBUFFED
+            PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.Run
+            && PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.RunTS
+            && PlayerProxy.GetCharacter().CurrentAnimation != HumanAnimationEnum.RunBuffed
         )
         {
             self._ApplyVelocity(humanObj, vel, 0.1);
@@ -2131,12 +2089,18 @@ component Portal
             humanObj.Velocity = vel;
         }
 
-        self._PlaySoundOnce(self._playerSoundTimer, PlayerSoundEnum.CHECKPOINT);
+        self._PlaySoundOnce(self._playerSoundTimer, HumanSoundEnum.Checkpoint);
     }
 
+    # @param mapObj MapObject
     function _HandleMapObjectCollision(mapObj)
     {
-        rb = mapObj.GetComponent("Rigidbody");
+        # TODO: Rigidbody bug. Example of successfull access
+        # TODO: UPD: Not successfull
+        rb = mapObj.Rigidbody;
+
+        # # @type IRigidbody
+        # rb = mapObj.GetComponent("Rigidbody");
         if (rb == null)
         {
             return;
@@ -2151,7 +2115,6 @@ component Portal
         self._ResetRelatedTimer();
 
         newPos = self._related.MapObject.Position + (self._related.MapObject.Forward * 1);
-        # accel = rb.GetVelocity().Magnitude;
         accel = comp.GetTrackedAcceleration();
         if (accel < 5.0)
         {
@@ -2160,17 +2123,21 @@ component Portal
 
         vel = self._related.MapObject.Forward * accel;
 
-        rb.SetVelocity(vel);
+        # rb.SetVelocity(vel);
+        rb.Velocity = vel;
+
         mapObj.Position = newPos;
 
-        self._PlaySoundOnce(self._companionSoundTimer, PlayerSoundEnum.CHECKPOINT);
+        self._PlaySoundOnce(self._companionSoundTimer, HumanSoundEnum.Checkpoint);
     }
 
     function _UpdateAnimation()
     {
         progress = 1.0 - (self._animationTimer.GetTime() / self._animationDuration);
         startScale = Vector3(0.0, 0.0, 0.0);
-        self.MapObject.Parent.Scale = Vector3.Lerp(startScale, self._originalScale, progress);
+        # @type MapObject
+        parent = self.MapObject.Parent;
+        parent.Scale = Vector3.Lerp(startScale, self._originalScale, progress);
     }
 
     function _ResetRelatedTimer()
@@ -2183,17 +2150,22 @@ component Portal
         obj.Position = newPos;
     }
 
+    # @param humanObj Human
+    # @param velocity Vector3
+    # @param secondsDelay float
     function _ApplyVelocity(humanObj, velocity, secondsDelay)
     {
         humanObj.Velocity = velocity;
         PlayerProxy.SetVelocityFor(velocity, secondsDelay);
     }
 
-    function _PlaySoundOnce(soundTimer, soundEnum)
+    # @param soundTimer Timer
+    # @param sound string
+    function _PlaySoundOnce(soundTimer, sound)
     {
         if (soundTimer.IsDone())
         {
-            SoundManager.Play(soundEnum);
+            SoundManager.Play(sound);
             soundTimer.Reset(self.CD);
         }
     }
@@ -2255,7 +2227,7 @@ component LaserSource
     _currentLaserPath = List();
     # @type List<ObjectSegment>
     _previousLaserPath = List();
-    
+
     # @type Vector3
     _rayCastOffset = null;
     _maxDistance = 10000;
@@ -2355,7 +2327,7 @@ component LaserSource
         laserSegment.StartPos = startPos;
         laserSegment.Direction = direction;
 
-        res = Physics.LineCast(startPos + self._rayCastOffset, startPos + (direction * self._maxDistance) + self._rayCastOffset, CollideWithEnum.ALL);
+        res = Physics.LineCast(startPos + self._rayCastOffset, startPos + (direction * self._maxDistance) + self._rayCastOffset, CollideWithEnum.All);
         laserSegment.HitResult = res;
         self._currentLaserPath.Add(laserSegment);
 
@@ -2365,7 +2337,7 @@ component LaserSource
             currentSegment = self._currentLaserPath.Get(self._currentLaserPath.Count - 1);
 
             if (self._CanMergeSegments(prevSegment, currentSegment))
-            {                
+            {
                 prevSegment.HitResult = currentSegment.HitResult;
 
                 self._currentLaserPath.RemoveAt(self._currentLaserPath.Count - 1);
@@ -2380,13 +2352,11 @@ component LaserSource
             {
                 # @type MapObject
                 mapObject = res.Collider;
-                # @type TargetPassThrough
                 passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.Lasers))
                 {
                     if (mapObject.Name == "LaserReceiver" || mapObject.Name == "LaserReceiver2")
                     {
-                        # @type LaserReceiver
                         laserReceiver = mapObject.GetComponent("LaserReceiver");
                         laserReceiver.Trigger();
                     }
@@ -2397,12 +2367,10 @@ component LaserSource
                 {
                     if (mapObject.Name == "Portal_BLUE_Visuals")
                     {
-                        # @type Portal
                         portalComp = mapObject.GetChild("Portal_BLUE").GetComponent("Portal");
                     }
                     else
                     {
-                        # @type Portal
                         portalComp = mapObject.GetChild("Portal_ORANGE").GetComponent("Portal");
                     }
 
@@ -2419,18 +2387,16 @@ component LaserSource
                 }
                 elif (mapObject.Name == "LaserReceiver" || mapObject.Name == "LaserReceiver2")
                 {
-                    # @type LaserReceiver
                     laserReceiver = mapObject.GetComponent("LaserReceiver");
                     laserReceiver.Trigger();
                 }
                 elif (mapObject.Name == "Turret")
                 {
-                    # @type Turret
                     turretComp = mapObject.GetComponent("Turret");
                     if (self._damageDelayTimer.IsDone())
                     {
                         turretComp.SetOnFire();
-                        SoundManager.Play(PlayerSoundEnum.BLADEBREAK);
+                        SoundManager.Play(HumanSoundEnum.BladeBreak);
                         self._damageDelayTimer.Reset(self._damageDelay);
                     }
                 }
@@ -2438,7 +2404,7 @@ component LaserSource
             elif (res.IsCharacter)
             {
                 # @type Character
-                char = res;
+                char = res.Collider;
                 if (char.IsMine)
                 {
                     if (self._damageDelayTimer.IsDone())
@@ -2446,13 +2412,13 @@ component LaserSource
                         PlayerProxy.GetDamaged("Laser", self._damage);
                         i = Random.RandomInt(0, 3);
                         if (i == 0){
-                            sfx = PlayerSoundEnum.DEATH1;
+                            sfx = HumanSoundEnum.Death1;
                         } elif (i == 1) {
-                            sfx = PlayerSoundEnum.DEATH5;
+                            sfx = HumanSoundEnum.Death5;
                         } elif (i == 2) {
-                            sfx = PlayerSoundEnum.LIMBHIT;
+                            sfx = HumanSoundEnum.LimbHit;
                         } else {
-                            sfx = PlayerSoundEnum.NAPEHIT;
+                            sfx = HumanSoundEnum.NapeHit;
                         }
                         SoundManager.Play(sfx);
                         self._damageDelayTimer.Reset(self._damageDelay);
@@ -2470,7 +2436,7 @@ component LaserSource
         {
             return true;
         }
-        
+
         if (self._IsPortalSegment(segmentA))
         {
             return false;
@@ -2504,7 +2470,6 @@ component LaserSource
             }
             elif (res.IsMapObject)
             {
-                # @type TargetPassThrough
                 passThrough = res.Collider.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.Lasers))
                 {
@@ -2551,7 +2516,7 @@ component LaserSource
             else
             {
                 # laserRotation = self._CalculateRotation(direction);
-                
+
                 # laser.Scale = Vector3(laser.Scale.X, laser.Scale.Y, 10000);
                 # laser.Position = startPos + direction * 5000 + self.MapObject.Up;
                 # laser.Rotation = laserRotation;
@@ -2632,7 +2597,6 @@ component LaserReceiver
     function Initialize()
     {
         self._redDot = self.MapObject.GetChild("LaserSource_RedDot");
-        # @type ActiveControl
         lightObjAC = self.MapObject.GetChild("LaserReceiver_Light").GetComponent("ActiveControl");
         if (self.ActivatableID == 0 || self.ActivatableID == self.MapObject.ID)
         {
@@ -2642,7 +2606,7 @@ component LaserReceiver
         {
             self._activatable = Map.FindMapObjectByID(self.ActivatableID).GetComponent("Activatable");
         }
-        
+
         lightObjAC.ActivatableID = self._activatable.MapObject.ID;
         lightObjAC.Initialize();
 
@@ -2685,7 +2649,7 @@ component LaserReceiver
 
         if (currentActive != self._prevActive)
         {
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
             self._prevActive = currentActive;
         }
     }
@@ -2726,7 +2690,9 @@ component LaunchPad
     function Initialize()
     {
         self._launch = false;
-        self._launchPadDot = self.MapObject.Parent.GetChild("LaunchPad_Dot");
+        # @type MapObject
+        parent = self.MapObject.Parent;
+        self._launchPadDot = parent.GetChild("LaunchPad_Dot");
         self._obj = null;
         self._vel = self.Direction.Normalized * self.Force;
         if (self.ActivatableID > 0)
@@ -2765,11 +2731,10 @@ component LaunchPad
         {
             # @type MapObject
             mapObject = obj;
-            # @type RigidbodyBuiltin
-            rb = mapObject.GetComponent("Rigidbody");
+            # TODO: Rigidbody bug. Example of successfull access
+            rb = mapObject.Rigidbody;
             if (rb != null)
             {
-                # @type Movable
                 m = mapObject.GetComponent("Movable");
                 if (m != null && m.IsCarried())
                 {
@@ -2777,8 +2742,8 @@ component LaunchPad
                 }
                 mapObject.Position = Vector3(self.MapObject.Position.X, mapObject.Position.Y , self.MapObject.Position.Z);
                 vel = self.Direction.Normalized * self.Force;
-                rb.SetVelocity(vel);
-                SoundManager.Play(PlayerSoundEnum.SWITCHBACK);
+                rb.Velocity = vel;
+                SoundManager.Play(HumanSoundEnum.Switchback);
             }
         }
     }
@@ -2797,8 +2762,8 @@ component LaunchPad
             if (
                 self.WaitForStop
                 && self._obj != null
-                && ((self._obj.CurrentAnimation != HumanAnimationEnum.IDLETSM
-                && self._obj.CurrentAnimation != HumanAnimationEnum.IDLETSF)
+                && ((self._obj.CurrentAnimation != HumanAnimationEnum.IdleTSM
+                && self._obj.CurrentAnimation != HumanAnimationEnum.IdleTSF)
                 || self._obj.Velocity.Magnitude != 0.0)
             )
             {
@@ -2814,7 +2779,7 @@ component LaunchPad
             self._obj.Position = self.MapObject.Position;
             self._obj.Velocity = self._vel;
             self._obj = null;
-            SoundManager.Play(PlayerSoundEnum.SWITCHBACK);
+            SoundManager.Play(HumanSoundEnum.Switchback);
         }
     }
 }
@@ -2841,7 +2806,7 @@ component HardLightBridgeSource
     _currentBridgePath = List();
     # @type List<ObjectSegment>
     _previousBridgePath = List();
-    
+
     _once = false;
 
     function Initialize()
@@ -2877,7 +2842,7 @@ component HardLightBridgeSource
         }
 
         self._once = false;
-        
+
         self._currentBridgePath = List();
 
         startPos = self.MapObject.Position + self.MapObject.Forward * self.MapObject.Scale.Z / 2 + self.MapObject.Up * -0.2 + self.MapObject.Forward * 0.3;
@@ -2920,9 +2885,9 @@ component HardLightBridgeSource
         bridgeSegment.Direction = direction;
 
         res = Physics.LineCast(
-            startPos + self._rayCastOffset, 
-            startPos + (direction * self._maxDistance) + self._rayCastOffset, 
-            CollideWithEnum.ALL
+            startPos + self._rayCastOffset,
+            startPos + (direction * self._maxDistance) + self._rayCastOffset,
+            CollideWithEnum.All
         );
         bridgeSegment.HitResult = res;
         self._currentBridgePath.Add(bridgeSegment);
@@ -2933,7 +2898,7 @@ component HardLightBridgeSource
             currentSegment = self._currentBridgePath.Get(self._currentBridgePath.Count - 1);
 
             if (self._CanMergeSegments(prevSegment, currentSegment))
-            {                
+            {
                 prevSegment.HitResult = currentSegment.HitResult;
 
                 self._currentBridgePath.RemoveAt(self._currentBridgePath.Count - 1);
@@ -2953,7 +2918,6 @@ component HardLightBridgeSource
             {
                 # @type MapObject
                 mapObject = res.Collider;
-                # @type TargetPassThrough
                 passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.HardLightBridges))
                 {
@@ -2964,6 +2928,7 @@ component HardLightBridgeSource
                 {
                     if (mapObject.Name == "Portal_BLUE_Visuals" || mapObject.Name == "Portal_ORANGE_Visuals")
                     {
+                        # @type Portal
                         portalComp = null;
                         if (mapObject.Name == "Portal_BLUE_Visuals")
                         {
@@ -2992,7 +2957,7 @@ component HardLightBridgeSource
         {
             return true;
         }
-        
+
         if (self._IsPortalSegment(segmentA))
         {
             return false;
@@ -3028,7 +2993,6 @@ component HardLightBridgeSource
             }
             elif (res.IsMapObject)
             {
-                # @type TargetPassThrough
                 passThrough = res.Collider.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.HardLightBridges))
                 {
@@ -3057,7 +3021,8 @@ component HardLightBridgeSource
             distance = self._maxDistance;
             if (res != null)
             {
-                distance = (startPos - res.Point).Magnitude;
+                difference = startPos - res.Point;
+                distance = difference.Magnitude;
             }
 
             bridge.Scale = Vector3(bridge.Scale.X, bridge.Scale.Y, distance + 0.1);
@@ -3150,7 +3115,7 @@ component HardLightBridgeSource
     function _CalculateRotationStable(direction)
     {
         dir = direction.Normalized;
-        currentUp = self.MapObject.Up; 
+        currentUp = self.MapObject.Up;
         q = Quaternion.LookRotation(dir, currentUp);
         return q.Euler;
     }
@@ -3324,8 +3289,8 @@ component Turret
 
     function Explode()
     {
-        Game.SpawnEffect(EffectEnum.SHIFTERTHUNDER, self.MapObject.Position, Vector3(), 0.001);
-        Game.SpawnEffect(EffectEnum.BOOM1, self.MapObject.Position, Vector3(), 0.05);
+        Game.SpawnEffect(EffectNameEnum.ShifterThunder, self.MapObject.Position, Vector3.Zero, 0.5);
+        Game.SpawnEffect(EffectNameEnum.Boom1, self.MapObject.Position, Vector3.Zero, 0.05);
         if (self._movableRef != null && self._movableRef.IsCarried())
         {
             PlayerProxy.DropCarrying();
@@ -3431,11 +3396,12 @@ component Turret
         self._currentLaserPath = List();
 
         startPos = self._eyeObj.Position + (self._eyeObj.Forward * (self._eyeObj.Scale.Y / 2) + (self._eyeObj.Forward * 0.01));
-        
+
         t = self._fovRef.GetTarget();
         if (t != null && !self._flipped)
         {
-            direction = (t.Position + (Vector3.Up * self._humanUpOffset) - startPos).Normalized;
+            difference = t.Position + (Vector3.Up * self._humanUpOffset) - startPos;
+            direction = difference.Normalized;
         }
         else
         {
@@ -3584,7 +3550,7 @@ component Turret
         soundsList.Add("turretlaunched10");
         soundsList.Add("turretlaunched11");
         self._AddCustomSounds(self._SOUND_TYPE_DROPPED, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turretshotbylaser01");
         soundsList.Add("turretshotbylaser02");
@@ -3597,7 +3563,7 @@ component Turret
         soundsList.Add("turretshotbylaser09");
         soundsList.Add("turretshotbylaser10");
         self._AddCustomSounds(self._SOUND_TYPE_SHOT_BY_LASER, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_autosearch_1");
         soundsList.Add("turret_autosearch_2");
@@ -3606,14 +3572,14 @@ component Turret
         soundsList.Add("turret_autosearch_5");
         soundsList.Add("turret_autosearch_6");
         self._AddCustomSounds(self._SOUND_TYPE_SEARCHING, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_search_1");
         soundsList.Add("turret_search_2");
         soundsList.Add("turret_search_3");
         soundsList.Add("turret_search_4");
         self._AddCustomSounds(self._SOUND_TYPE_TARGET_LOST, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_active_1");
         soundsList.Add("turret_active_2");
@@ -3624,7 +3590,7 @@ component Turret
         soundsList.Add("turret_active_7");
         soundsList.Add("turret_active_8");
         self._AddCustomSounds(self._SOUND_TYPE_TARGET_LOCKED, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_retire_1");
         soundsList.Add("turret_retire_2");
@@ -3634,7 +3600,7 @@ component Turret
         soundsList.Add("turret_retire_6");
         soundsList.Add("turret_retire_7");
         self._AddCustomSounds(self._SOUND_TYPE_RETIRED, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_disabled_1");
         soundsList.Add("turret_disabled_2");
@@ -3645,7 +3611,7 @@ component Turret
         soundsList.Add("turret_disabled_7");
         soundsList.Add("turret_disabled_8");
         self._AddCustomSounds(self._SOUND_TYPE_DISABLED, soundsList);
-        
+
         soundsList = List();
         soundsList.Add("turret_tipped_1");
         soundsList.Add("turret_tipped_2");
@@ -3654,7 +3620,7 @@ component Turret
         soundsList.Add("turret_tipped_5");
         soundsList.Add("turret_tipped_6");
         self._AddCustomSounds(self._SOUND_TYPE_TIPPED, soundsList);
-        
+
         self._soundsInited = true;
     }
 
@@ -3694,7 +3660,7 @@ component Turret
         laserSegment.StartPos = startPos;
         laserSegment.Direction = direction;
 
-        res = Physics.LineCast(startPos, startPos + (direction * self._maxDistance), CollideWithEnum.ALL);
+        res = Physics.LineCast(startPos, startPos + (direction * self._maxDistance), CollideWithEnum.All);
         laserSegment.HitResult = res;
         self._currentLaserPath.Add(laserSegment);
 
@@ -3704,7 +3670,7 @@ component Turret
             currentSegment = self._currentLaserPath.Get(self._currentLaserPath.Count - 1);
 
             if (self._CanMergeSegments(prevSegment, currentSegment))
-            {                
+            {
                 prevSegment.HitResult = currentSegment.HitResult;
 
                 self._currentLaserPath.RemoveAt(self._currentLaserPath.Count - 1);
@@ -3719,7 +3685,6 @@ component Turret
             {
                 # @type MapObject
                 mapObject = res.Collider;
-                # @type TargetPassThrough
                 passThrough = mapObject.GetComponent("TargetPassThrough");
                 if (passThrough != null && (passThrough.All || passThrough.TurretLasers))
                 {
@@ -3730,12 +3695,10 @@ component Turret
                 {
                     if (mapObject.Name == "Portal_BLUE_Visuals")
                     {
-                        # @type Portal
                         portalComp = mapObject.GetChild("Portal_BLUE").GetComponent("Portal");
                     }
                     else
                     {
-                        # @type Portal
                         portalComp = mapObject.GetChild("Portal_ORANGE").GetComponent("Portal");
                     }
 
@@ -3759,25 +3722,26 @@ component Turret
                         self._targetLocked = true;
                         i = Random.RandomInt(0, 3);
                         if (i == 0){
-                            sfx = PlayerSoundEnum.APGSHOT1;
-                            sfx2 = PlayerSoundEnum.DEATH1;
+                            sfx = HumanSoundEnum.APGShot1;
+                            sfx2 = HumanSoundEnum.Death1;
                         } elif (i == 1) {
-                            sfx = PlayerSoundEnum.APGSHOT2;
-                            sfx2 = PlayerSoundEnum.DEATH5;
+                            sfx = HumanSoundEnum.APGShot2;
+                            sfx2 = HumanSoundEnum.Death5;
                         } elif (i == 2) {
-                            sfx = PlayerSoundEnum.APGSHOT3;
-                            sfx2 = PlayerSoundEnum.LIMBHIT;
+                            sfx = HumanSoundEnum.APGShot3;
+                            sfx2 = HumanSoundEnum.LimbHit;
                         } else {
-                            sfx = PlayerSoundEnum.APGSHOT4;
-                            sfx2 = PlayerSoundEnum.NAPEHIT;
+                            sfx = HumanSoundEnum.APGShot4;
+                            sfx2 = HumanSoundEnum.NapeHit;
                         }
                         SoundManager.Play(sfx);
                         SoundManager.Play(sfx2);
                         self._damageDelayTimer.Reset(self._damageDelay);
-                        PlayerProxy.GetCharacter().AddForce((res.Point - startPos).Normalized * 5.5, ForceModeEnum.IMPULSE);
+                        difference = res.Point - startPos;
+                        PlayerProxy.GetCharacter().AddForce(difference.Normalized * 5.5, ForceModeEnum.Impulse);
                         PlayerProxy.GetDamaged("Turret", self._damage);
                     }
-                } 
+                }
                 else
                 {
                     newStartPos = res.Point + direction * 0.01;
@@ -3793,7 +3757,7 @@ component Turret
         {
             return true;
         }
-        
+
         if (self._IsPortalSegment(segmentA))
         {
             return false;
@@ -3954,20 +3918,20 @@ component Turret
                     self._previousLaserPath.Clear();
                     self._lightObj.Active = false;
                     self._broken = true;
-                    SoundManager.Play(PlayerSoundEnum.THUNDERSPEARLAUNCH);
+                    SoundManager.Play(HumanSoundEnum.ThunderspearLaunch);
                     return;
                 }
                 elif (self._damageDelayTimer.IsDone())
                 {
                     i = Random.RandomInt(0, 3);
                     if (i == 0){
-                        sfx = PlayerSoundEnum.APGSHOT1;
+                        sfx = HumanSoundEnum.APGShot1;
                     } elif (i == 1) {
-                        sfx = PlayerSoundEnum.APGSHOT2;
+                        sfx = HumanSoundEnum.APGShot2;
                     } elif (i == 2) {
-                        sfx = PlayerSoundEnum.APGSHOT3;
+                        sfx = HumanSoundEnum.APGShot3;
                     } else {
-                        sfx = PlayerSoundEnum.APGSHOT4;
+                        sfx = HumanSoundEnum.APGShot4;
                     }
                     SoundManager.Play(sfx);
                     self._damageDelayTimer.Reset(self._damageDelay);
@@ -4067,7 +4031,7 @@ component TurretFOV
     {
         self._resetTimer = Timer(0.0);
     }
-    
+
     # @param obj any
     function OnCollisionStay(obj)
     {
@@ -4115,7 +4079,7 @@ component WireMonitor
 
     # @type Activatable
     _activatable = null;
-    
+
     _previousActive = false;
 
     # @type Color
@@ -4252,7 +4216,7 @@ component PortalGunModifier
         PlayerProxy._weapon._isOrangeAvailable = self.EnableOrange;
         if (self.PlaySound)
         {
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
     }
 
@@ -4263,7 +4227,7 @@ component PortalGunModifier
         {
             return;
         }
-        
+
         if (PlayerProxy._weapon._isBlueAvailable == self.EnableBlue && PlayerProxy._weapon._isOrangeAvailable == self.EnableOrange)
         {
             return;
@@ -4273,7 +4237,7 @@ component PortalGunModifier
         PlayerProxy._weapon._isOrangeAvailable = self.EnableOrange;
         if (self.PlaySound)
         {
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
     }
 }
@@ -4321,7 +4285,7 @@ component EmancipationGrill
             if (comp != null)
             {
                 comp.Reset();
-                SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
+                SoundManager.Play(HumanSoundEnum.BladeNape4Var1);
             }
         }
     }
@@ -4603,11 +4567,10 @@ component LampRef
         }
         objC = Map.CopyMapObject(obj, true);
         light = objC.GetChild("Lamp_Light");
-        # @type PointLightBuiltin
+        # @type IPointLight
         lightC = light.GetComponent("PointLight");
         lightC.Intensity = self.Intensity;
         lightC.Range = self.Range;
-        # @type ActiveControl
         c = objC.AddComponent("ActiveControl");
         c.ActivatableID = self.ActivatableID;
         objC.Position = self.MapObject.Position;
@@ -4616,7 +4579,7 @@ component LampRef
     }
 }
 
-class PointLightBuiltin
+class IPointLight
 {
     Intensity = 0.0;
     Range = 0.0;
@@ -4650,7 +4613,6 @@ component ObjectRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = c.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4678,7 +4640,6 @@ component LaserReceiverRef
         }
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
-        # @type LaserReceiver
         c = objC.AddComponent("LaserReceiver");
         if (self.ActivatableID == 0)
         {
@@ -4691,7 +4652,6 @@ component LaserReceiverRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4715,7 +4675,6 @@ component LaserSourceRef
         obj = Map.FindMapObjectByName("LaserSource");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
-        # @type LaserSource
         c = objC.AddComponent("LaserSource");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4725,7 +4684,6 @@ component LaserSourceRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4740,7 +4698,7 @@ component HardLightBridgeRef
 
     CullingActivatableID = 0;
     CullingActivatableIDTooltip = "The ID of an object with an Activatable component for culling. Set to 0 to disable culling behavior.";
-    
+
     Active = false;
     ActiveTooltip = "Determines whether the component is active. Ignored if ActivatableID is set.";
 
@@ -4749,7 +4707,6 @@ component HardLightBridgeRef
         obj = Map.FindMapObjectByName("HardLightBridgeSource");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
-        # @type HardLightBridgeSource
         c = objC.AddComponent("HardLightBridgeSource");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4759,7 +4716,6 @@ component HardLightBridgeRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -4811,7 +4767,6 @@ component TurretRef
             return;
         }
 
-        # @type Turret
         c = self._ref.AddComponent("Turret");
         c.ActivatableID = self.ActivatableID;
         c.Active = self.Active;
@@ -4819,24 +4774,27 @@ component TurretRef
         c.ResetGroup = self.ResetGroup;
 
         c._fovRef = Map.CopyMapObject(
-            Map.FindMapObjectByName("Turret_FOV"), 
+            Map.FindMapObjectByName("Turret_FOV"),
             false
         ).GetComponent("TurretFOV");
 
 
         if (self.Rigidbody || self.Movable)
         {
-            # @type RigidbodyBuiltin
-            rb = self._ref.AddComponent("Rigidbody");
+            # TODO: Rigidbody bug. Fix this.
+            # self._ref.AddComponent("Rigidbody"); # This is working, fields are not mutable.
+            rb = self._ref.AddRigidbody();
+            # rb = self._ref.Rigidbody;
             rb.Mass = self.Mass;
             rb.Gravity = self.Gravity;
-            rb.FreezeRotation = self.FreezeRotation;
+            rb.FreezeAllRotations = self.FreezeRotation;
             rb.Interpolate = self.Interpolate;
+            # # @type IRigidbody
+            # rb = self._ref.AddComponent("Rigidbody"); # This is working, fields are not mutable.
         }
 
         if (self.Movable)
         {
-            # @type Movable
             m = self._ref.AddComponent("Movable");
             m.ResetGroup = self.ResetGroup;
             m.LockForward = self.LockForward;
@@ -4964,7 +4922,6 @@ component WeightedButtonRef
         objC.Active = true;
         objC.Position = self.MapObject.Position;
         objC.Rotation = self.MapObject.Rotation;
-        # @type WeightedButton
         wbComp = objC.AddComponent("WeightedButton");
         if (self.ActivatableID == 0)
         {
@@ -4974,7 +4931,6 @@ component WeightedButtonRef
         wbComp.Initialize();
 
         b = objC.GetChild("WeightedButton_Visuals_Button_MOCK");
-        # @type Slider
         s = b.AddComponent("Slider");
         s.ButtonID = self.ActivatableID;
         s.SlideVector = self.SlideVector;
@@ -4982,7 +4938,6 @@ component WeightedButtonRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5007,8 +4962,6 @@ component WheatleyRef
     _ref = null;
     # @type Follower
     _follower = null;
-    # @type RigidbodyBuiltin
-    _rb = null;
     # @type Movable
     _movable = null;
     # @type Controllable
@@ -5027,14 +4980,20 @@ component WheatleyRef
         }
         if (self.Movable)
         {
+            # TODO: Rigidbody bug. Fix this.
+            # objC.AddComponent("Rigidbody"); # This is working, fields are not mutable.
+            rb = objC.AddRigidbody();
+            # rb = objC.Rigidbody;
+            rb.Mass = self.Mass;
+            rb.Gravity = self.Gravity;
+            rb.FreezeAllRotations = self.FreezeRotation;
+            rb.Interpolate = self.Interpolate;
+            # # @type IRigidbody
+            # rb = objC.AddComponent("Rigidbody"); # This is working, fields are not mutable.
+            
             self._movable = objC.AddComponent("Movable");
             self._movable.LockPositionID = self.LockPositionID;
             self._movable.ResetGroup = self.ResetGroup;
-            self._rb = objC.AddComponent("Rigidbody");
-            self._rb.Mass = self.Mass;
-            self._rb.Gravity = self.Gravity;
-            self._rb.FreezeRotation = self.FreezeRotation;
-            self._rb.Interpolate = self.Interpolate;
             self._movable.Initialize();
         }
 
@@ -5047,7 +5006,6 @@ component WheatleyRef
 
         if (self.ActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.ActivatableID;
             acComp.Initialize();
@@ -5093,7 +5051,6 @@ component SlideDoorRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5104,18 +5061,16 @@ component SlideDoorRef
             return;
         }
 
-        # @type SoundPlayer
         sp = objC.AddComponent("SoundPlayer");
         sp.ActivatableID = self.ButtonID;
-        sp.ActivateSound = PlayerSoundEnum.REELIN;
-        sp.DeactivateSound = PlayerSoundEnum.REELIN;
+        sp.ActivateSound = HumanSoundEnum.ReelIn;
+        sp.DeactivateSound = HumanSoundEnum.ReelIn;
         sp.Initialize();
-        
+
         for (child in objC.GetChildren())
         {
             if (child.Name == "SlideDoor_Left")
             {
-                # @type Slider
                 comp = child.GetComponent("Slider");
                 comp.ButtonID = self.ButtonID;
                 comp.AnimationDuration = self.AnimationDuration;
@@ -5123,7 +5078,6 @@ component SlideDoorRef
             }
             elif (child.Name == "SlideDoor_Right")
             {
-                # @type Slider
                 comp = child.GetComponent("Slider");
                 comp.ButtonID = self.ButtonID;
                 comp.AnimationDuration = self.AnimationDuration;
@@ -5147,7 +5101,6 @@ component SlideWallRef
         objC.Position = self.MapObject.Position;
         objC.Rotation = self.MapObject.Rotation;
         objC.Scale = self.MapObject.Scale;
-        # @type Slider
         sComp = objC.AddComponent("Slider");
         sComp.ButtonID = self.ActivatableID;
         sComp.SlideVector = self.SlideVector;
@@ -5159,7 +5112,7 @@ component LaunchPadRef
 {
     ActivatableID = 0;
     ActivatableIDTooltip = "The ID of an object with an Activatable component. Set to 0 to always be active.";
-    
+
     CullingActivatableID = 0;
     CullingActivatableIDTooltip = "The ID of an object with an Activatable component for culling. Set to 0 to disable culling behavior.";
 
@@ -5183,7 +5136,6 @@ component LaunchPadRef
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
         reg = objC.GetChild("LaunchPad_Region");
-        # @type LaunchPad
         c = reg.AddComponent("LaunchPad");
         c.ActivatableID = self.ActivatableID;
         c.Direction = self.Direction;
@@ -5197,7 +5149,6 @@ component LaunchPadRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5231,7 +5182,6 @@ component CompanionRef
         self._ref = Map.CopyMapObject(obj, true);
         self._ref.Active = true;
 
-        # @type TargetPassThrough
         pt = self._ref.AddComponent("TargetPassThrough");
         pt.All = false;
         pt.Portals = true;
@@ -5244,22 +5194,25 @@ component CompanionRef
         #     pt.Portals = true;
         #     pt.HardLightBridges = true;
         # }
-        
+
         if (self.Rigidbody || self.Movable)
         {
-            # @type RigidbodyBuiltin
-            rb = self._ref.AddComponent("Rigidbody");
+            # TODO: Rigidbody bug. Fix this.
+            # self._ref.AddComponent("Rigidbody"); # This is working, fields are not mutable.
+            rb = self._ref.AddRigidbody();
+            # rb = self._ref.Rigidbody;
             rb.Mass = self.Mass;
             rb.Gravity = self.Gravity;
-            rb.FreezeRotation = self.FreezeRotation;
+            rb.FreezeAllRotations = self.FreezeRotation;
             rb.Interpolate = self.Interpolate;
+            # # @type IRigidbody
+            # rb = self._ref.AddComponent("Rigidbody"); # This is working, fields are not mutable.
         }
 
         self._ref.Position = self.MapObject.Position;
         self._ref.Rotation = self.MapObject.Rotation;
         if (self.Movable)
         {
-            # @type Movable
             m = self._ref.AddComponent("Movable");
             m.ResetGroup = self.ResetGroup;
             m.LockForward = self.LockForward;
@@ -5269,7 +5222,6 @@ component CompanionRef
         if (self.ActivatableID > 0)
         {
             self._activatable = Map.FindMapObjectByID(self.ActivatableID).GetComponent("Activatable");
-            # @type ActiveControl
             acComp = self._ref.AddComponent("ActiveControl");
             acComp.ActivatableID = self.ActivatableID;
             acComp.Initialize();
@@ -5289,7 +5241,6 @@ component WireMonitorRef
         obj = Map.FindMapObjectByName("WireMonitor");
         objC = Map.CopyMapObject(obj, true);
         objC.Active = true;
-        # @type WireMonitor
         c = objC.AddComponent("WireMonitor");
         c.ButtonID = self.ButtonID;
         objC.Position = self.MapObject.Position;
@@ -5298,7 +5249,6 @@ component WireMonitorRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = objC.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5382,10 +5332,8 @@ component CubeDispencerRef
         reg = objC.GetChild("CubeDispenserRegionButton");
         objC.Scale = self.MapObject.Scale;
 
-        # @type Activatable
         ac = reg.AddComponent("Activatable");
         ac.Initialize();
-        # @type RegionButton
         rbComp = reg.AddComponent("RegionButton");
         rbComp.DeactivateDelay = 0;
         rbComp.Reverse = false;
@@ -5399,7 +5347,6 @@ component CubeDispencerRef
 
         if (self.CullingActivatableID > 0)
         {
-            # @type ActiveControl
             acComp = reg.AddComponent("ActiveControl");
             acComp.ActivatableID = self.CullingActivatableID;
             acComp.Initialize();
@@ -5449,7 +5396,7 @@ class Timer
     {
         return self._time;
     }
-    
+
     # @return float
     function GetInitialTime()
     {
@@ -5489,7 +5436,7 @@ class Logger
 {
     LogLevel = 0;
     Prefix = "";
-    
+
     _traceColor = "e8e8e8";
     _debugColor = "00FFFF";
     _errorColor = "FF0000";
@@ -5505,7 +5452,7 @@ class Logger
         self.LogLevel = logLevel;
         self.Prefix = prefix;
     }
-    
+
     function Trace(msg)
     {
         if (self.LogLevel > -1)
@@ -5664,17 +5611,17 @@ class RigidBodyAccelerationTracker
     # @type RigidbodyBuiltin
     _rb = null;
     _savedAcceleration = 0.0;
-    
+
     # @type Timer
     _resetTimer = Timer(0.0);
     _resetTime = 0.3;
 
-    # @parm obj MapObject
+    # @parm rb RigidbodyBuiltin
     function Init(rb)
     {
         self._rb = rb;
     }
-    
+
     function OnTick()
     {
         self._resetTimer.UpdateOnTick();
@@ -5683,7 +5630,7 @@ class RigidBodyAccelerationTracker
             self._savedAcceleration = 0.0;
         }
 
-        currentAcceleration = self._rb.GetVelocity().Magnitude;
+        currentAcceleration = self._rb.Velocity.Magnitude;
 
         if (currentAcceleration > 1.0)
         {
@@ -5704,8 +5651,8 @@ class RigidBodyAccelerationTracker
 class MapObjectPoolData
 {
     # @type List<MapObject>
-    pool = null;    
-    limit = 0;   
+    pool = null;
+    limit = 0;
     # @type CommonBuilder
     builder = null;
 
@@ -5728,7 +5675,8 @@ class ProjectileData
 {
     # @type MapObject
     Obj = null;
-    EndPos = 0.0;
+    # @type Vector3
+    EndPos = Vector3(0.0);
 
     function Init(obj, endPos)
     {
@@ -5873,13 +5821,13 @@ class PortalGun
             self._isOrangeActive = false;
         }
 
-        SoundManager.Play(PlayerSoundEnum.GASBURST);
+        SoundManager.Play(HumanSoundEnum.GasBurst);
     }
 
     function _SetupWeaponAndKeys()
     {
-        self._character.SetWeapon(WeaponEnum.TS);
-        self._character.SetSpecial(SpecialEnum.POTATO);
+        self._character.SetWeapon(WeaponEnum.Thunderspear);
+        self._character.SetSpecial(SpecialEnum.Potato);
         Input.SetKeyDefaultEnabled(InputManager.BluePortal, false);
         Input.SetKeyDefaultEnabled(InputManager.OrangePortal, false);
         Input.SetKeyDefaultEnabled(InputManager.ResetPortals, false);
@@ -5918,7 +5866,7 @@ class PortalGun
 
         self._PlayFireAnimation();
 
-        res = Physics.LineCast(startPos, endPos, CollideWithEnum.MAP_OBJECTS);
+        res = Physics.LineCast(startPos, endPos, CollideWithEnum.MapObjects);
         if (res == null)
         {
             self._RejectPortal(t);
@@ -5927,7 +5875,7 @@ class PortalGun
 
         self._ProcessLineCastResult(t, res, direction, startPos, distance);
     }
-    
+
     function _PlayFireAnimation()
     {
         self._objEnd.LocalPosition = self._objEndIPos;
@@ -5984,19 +5932,19 @@ class PortalGun
         {
             self._isBlueActive = true;
             self._cdTimerBlue.Reset(self._cd);
-            SoundManager.Play(PlayerSoundEnum.HOOKRETRACTLEFT);
+            SoundManager.Play(HumanSoundEnum.HookRetractLeft);
         }
         elif (t == PortalEnum.ORANGE)
         {
             self._isOrangeActive = true;
             self._cdTimerOrange.Reset(self._cd);
-            SoundManager.Play(PlayerSoundEnum.HOOKRETRACTRIGHT);
+            SoundManager.Play(HumanSoundEnum.HookRetractRight);
         }
     }
 
     function _RejectPortal(t)
     {
-        SoundManager.Play(PlayerSoundEnum.NOGAS);
+        SoundManager.Play(HumanSoundEnum.NoGas);
         if (t == PortalEnum.BLUE)
         {
             self._cdTimerBlue.Reset(self._cd);
@@ -6048,7 +5996,7 @@ class PortalGun
 
         if (self._character.Velocity.Magnitude > 1.0)
         {
-            targetPosition += Camera.Forward * 0.15; 
+            targetPosition += Camera.Forward * 0.15;
         }
 
         distance = Vector3.Distance(currentPosition, targetPosition);
@@ -6081,7 +6029,8 @@ class PortalGun
 
             deltaTime = Time.FrameTime;
 
-            direction = (projectile.EndPos - obj.Position).Normalized;
+            difference = projectile.EndPos - obj.Position;
+            direction = difference.Normalized;
             moveDistance = self._projectileSpeed * deltaTime;
 
             if (Vector3.Distance(obj.Position, projectile.EndPos) <= moveDistance)
@@ -6113,7 +6062,7 @@ class PortalGun
 
         angleUp   = Vector3.Angle(forward, Vector3.Up);
         angleDown = Vector3.Angle(forward, Vector3.Down);
-        threshold = 10.0; 
+        threshold = 10.0;
         isPortalVertical = false;
         if (angleUp < threshold || angleDown < threshold)
         {
@@ -6135,7 +6084,7 @@ class PortalGun
             right = Vector3.Cross(forward, upOnPlane).Normalized;
             up = Vector3.Cross(right, forward).Normalized;
             return Quaternion.LookRotation(forward, up).Euler;
-        } 
+        }
         else
         {
             return Quaternion.LookRotation(forward, Vector3.Up).Euler;
@@ -6248,7 +6197,7 @@ class AirMovementAbility
     # @type Human
     _owner = null;
     _force = 1.0;
-    _forceType = "Force";
+    _forceType = ForceModeEnum.Force;
     _gravityEffect = 9.81;
     _maxAirSpeed = 15.0;
     _posOffset = Vector3(0, 0.5, 0);
@@ -6266,7 +6215,7 @@ class AirMovementAbility
     function SetDefaultSettings()
     {
         self._force = 50.0;
-        self._forceType = ForceModeEnum.FORCE;
+        self._forceType = ForceModeEnum.Force;
         self._gravityEffect = 9.81;
         self._maxAirSpeed = 15.0;
     }
@@ -6274,7 +6223,7 @@ class AirMovementAbility
     function SetQuakeSettings()
     {
         self._force = 10.0;
-        self._forceType = ForceModeEnum.IMPULSE;
+        self._forceType = ForceModeEnum.Impulse;
         self._gravityEffect = 9.81;
         self._maxAirSpeed = 15.0;
     }
@@ -6282,10 +6231,12 @@ class AirMovementAbility
     function SetPortalSettings()
     {
         self._force = 30.0;
-        self._forceType = ForceModeEnum.FORCE;
+        self._forceType = ForceModeEnum.Force;
         self._gravityEffect = 9.81 * 2.0;
         self._maxAirSpeed = 10.0;
     }
+
+    function OnFrameHandler(){}
 
     function OnTickHandler()
     {
@@ -6296,14 +6247,14 @@ class AirMovementAbility
 
         if (self._gravityEffect != 0.0)
         {
-            self._owner.AddForce(Vector3(0, self._gravityEffect * -1, 0), ForceModeEnum.FORCE);
+            self._owner.AddForce(Vector3(0, self._gravityEffect * -1, 0), ForceModeEnum.Force);
         }
 
         if (
-            !Input.GetKeyHold(KeyBindsEnum.GENERAL_FORWARD) 
-            && !Input.GetKeyHold(KeyBindsEnum.GENERAL_BACK)
-            && !Input.GetKeyHold(KeyBindsEnum.GENERAL_LEFT)
-            && !Input.GetKeyHold(KeyBindsEnum.GENERAL_RIGHT)
+            !Input.GetKeyHold(InputGeneralEnum.Forward)
+            && !Input.GetKeyHold(InputGeneralEnum.Back)
+            && !Input.GetKeyHold(InputGeneralEnum.Left)
+            && !Input.GetKeyHold(InputGeneralEnum.Right)
         )
         {
             return;
@@ -6321,28 +6272,28 @@ class AirMovementAbility
         forwardVelocity = Vector3.Dot(currentVelocity, cameraForward);
         leftVelocity = Vector3.Dot(currentVelocity, cameraLeft);
 
-        if (Input.GetKeyHold(KeyBindsEnum.GENERAL_FORWARD))
+        if (Input.GetKeyHold(InputGeneralEnum.Forward))
         {
             if (forwardVelocity < self._maxAirSpeed)
             {
                 movementForce += cameraForward * self._force;
             }
         }
-        if (Input.GetKeyHold(KeyBindsEnum.GENERAL_BACK))
+        if (Input.GetKeyHold(InputGeneralEnum.Back))
         {
             if (forwardVelocity > self._maxAirSpeed * -1)
             {
                 movementForce += cameraForward * self._force * -1;
             }
         }
-        if (Input.GetKeyHold(KeyBindsEnum.GENERAL_LEFT))
+        if (Input.GetKeyHold(InputGeneralEnum.Left))
         {
             if (leftVelocity < self._maxAirSpeed)
             {
                 movementForce += cameraLeft * self._force;
             }
         }
-        if (Input.GetKeyHold(KeyBindsEnum.GENERAL_RIGHT))
+        if (Input.GetKeyHold(InputGeneralEnum.Right))
         {
             if (leftVelocity > self._maxAirSpeed * -1)
             {
@@ -6382,7 +6333,7 @@ class BunnyHopAbility
 
         self._bunnyHopTimer.UpdateOnFrame();
 
-        if (!Input.GetKeyHold(KeyBindsEnum.HUMAN_JUMP) || !self._bunnyHopTimer.IsDone())
+        if (!Input.GetKeyHold(InputHumanEnum.Jump) || !self._bunnyHopTimer.IsDone())
         {
             return;
         }
@@ -6396,7 +6347,7 @@ class BunnyHopAbility
         }
 
         self._wasInAir = self._isInAir;
-        
+
         if (self._isInAir)
         {
             return;
@@ -6410,9 +6361,11 @@ class BunnyHopAbility
 
         reversedVelocity = Vector3(self._landingVelocity.X, velY, self._landingVelocity.Z);
         self._owner.Velocity = reversedVelocity;
-        self._bunnyHopTimer.Reset(0.0); 
-        self._owner.PlaySound(PlayerSoundEnum.JUMP);
+        self._bunnyHopTimer.Reset(0.0);
+        self._owner.PlaySound(HumanSoundEnum.Jump);
     }
+
+    function OnTickHandler(){}
 }
 
 class JumpAbility
@@ -6424,12 +6377,12 @@ class JumpAbility
     function Init(jumpForce)
     {
         self._jumpForce = jumpForce;
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_JUMP, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.Jump, false);
     }
 
     function Destroy()
     {
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_JUMP, true);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.Jump, true);
     }
 
     function GetName()
@@ -6444,19 +6397,21 @@ class JumpAbility
         {
             return;
         }
-        
+
         h = PlayerProxy.GetCharacter();
         if (h == null)
         {
             return;
         }
 
-        if (h.Grounded && self._timer.IsDone() && Input.GetKeyHold(KeyBindsEnum.HUMAN_JUMP))
+        if (h.Grounded && self._timer.IsDone() && Input.GetKeyHold(InputHumanEnum.Jump))
         {
-            h.AddForce(Vector3(0, self._jumpForce, 0), ForceModeEnum.FORCE);
+            h.AddForce(Vector3(0, self._jumpForce, 0), ForceModeEnum.Force);
             self._timer.Reset(self._delay);
         }
     }
+
+    function OnTickHandler(){}
 }
 
 class ZoomAbility
@@ -6521,6 +6476,8 @@ class ZoomAbility
 
         # self._HandleTransitionOnFrame();
     }
+
+    function OnTickHandler(){}
 
     function _SetTargetFOV(newTargetFOV)
     {
@@ -6639,7 +6596,7 @@ extension PlayerProxy
                     Main.GravityMultiplier / 100.0,
                     Main.MaxAirSpeed / 100.0
                 );
-                
+
                 if (Main.AirMovementPreset == AirMovementPreset.PORTAL)
                 {
                     airMovement.SetPortalSettings();
@@ -6698,7 +6655,7 @@ extension PlayerProxy
         {
             return;
         }
-        
+
         self.UpdateRegenerationOnTick();
 
         for (a in self._abilities)
@@ -6748,9 +6705,9 @@ extension PlayerProxy
 
         self._weapon.OnFrame();
 
-        if (Network.MyPlayer.Character.CurrentAnimation == HumanAnimationEnum.WALLRUN)
+        if (Network.MyPlayer.Character.CurrentAnimation == HumanAnimationEnum.WallRun)
         {
-            Network.MyPlayer.Character.PlayAnimation(HumanAnimationEnum.AIR2, 0.00001);
+            Network.MyPlayer.Character.PlayAnimation(HumanAnimationEnum.Air2, 0.00001);
             self.LockMovementFor(Time.FrameTime);
         }
 
@@ -6773,7 +6730,7 @@ extension PlayerProxy
 
     function ForceFPV()
     {
-        Camera.SetCameraMode("FPS");
+        Camera.SetCameraMode(CameraModeEnum.FPS);
         Camera.FollowDistance = 0.0;
     }
 
@@ -6799,7 +6756,7 @@ extension PlayerProxy
 
     function SetSpeed(spd, dodgeSpd)
     {
-        if (self._character.State == PlayerStateEnum.GROUNDDODGE)
+        if (self._character.State == HumanStateEnum.GroundDodge)
         {
             self._character.Speed = dodgeSpd;
         }
@@ -6827,11 +6784,11 @@ extension PlayerProxy
         {
             return;
         }
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_FORWARD, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_BACK, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_LEFT, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_RIGHT, false);
-        # Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_JUMP, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Forward, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Back, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Left, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Right, false);
+        # Input.SetKeyDefaultEnabled(InputHumanEnum.Jump, false);
         self._movementLocked = true;
     }
 
@@ -6851,11 +6808,11 @@ extension PlayerProxy
         {
             return;
         }
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_FORWARD, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_BACK, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_LEFT, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_RIGHT, true);
-        # Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_JUMP, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Forward, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Back, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Left, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Right, true);
+        # Input.SetKeyDefaultEnabled(InputHumanEnum.Jump, true);
         self._movementLocked = false;
     }
 
@@ -6890,7 +6847,6 @@ extension PlayerProxy
             # @type MapObject
             mapObject = res.Collider;
 
-            # @type Movable
             movable = mapObject.GetComponent("Movable");
             if (movable != null && movable.CanPickup())
             {
@@ -6899,7 +6855,6 @@ extension PlayerProxy
                 return;
             }
 
-            # @type Button
             btn = mapObject.GetComponent("Button");
             if (btn != null)
             {
@@ -6936,7 +6891,7 @@ extension PlayerProxy
     function _CastPTAwareRay(startPos, direction, distance)
     {
         endPos = startPos + direction * distance;
-        res = Physics.LineCast(startPos, endPos, CollideWithEnum.MAP_OBJECTS);
+        res = Physics.LineCast(startPos, endPos, CollideWithEnum.MapObjects);
         if (res == null)
         {
             return null;
@@ -6950,7 +6905,6 @@ extension PlayerProxy
         # @type MapObject
         collider = res.Collider;
 
-        # @type TargetPassThrough
         pt = collider.GetComponent("TargetPassThrough");
         if (pt != null && pt.All)
         {
@@ -7019,11 +6973,11 @@ extension PlayerProxy
 extension PlayerAccelerationTracker
 {
     _savedAcceleration = 0.0;
-    
+
     # @type Timer
     _resetTimer = Timer(0.0);
     _resetTime = 0.3;
-    
+
     function OnFrame()
     {
         character = PlayerProxy.GetCharacter();
@@ -7119,10 +7073,8 @@ extension PortalStorage
         portalBlueVisuals = Map.CopyMapObject(self._blueRef, true);
         portalBlue = portalBlueVisuals.GetChild("Portal_BLUE");
 
-        # @type Portal
         portalOrangeComponent = portalOrange.GetComponent("Portal");
 
-        # @type Portal
         portalBlueComponent = portalBlue.GetComponent("Portal");
 
         portalOrangeComponent.UID = id;
@@ -7208,57 +7160,57 @@ extension InputManager
 
     function InitKeybinds()
     {
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_RELOAD, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION1, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION2, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION3, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION4, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_CHANGECAMERA, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackDefault, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackSpecial, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.Reload, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.ItemMenu, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function1, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function2, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function3, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function4, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.SkipCutscene, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.ChangeCamera, false);
 
-        self.BluePortal = KeyBindsEnum.HUMAN_ATTACKDEFAULT;
-        self.OrangePortal = KeyBindsEnum.HUMAN_ATTACKSPECIAL;
-        self.ResetPortals = KeyBindsEnum.HUMAN_RELOAD;
-        self.Interact = KeyBindsEnum.HUMAN_HOOKRIGHT;
-        self.TeleportGUI = KeyBindsEnum.INTERACTION_FUNCTION1;
-        self.AdminPanelGUI = KeyBindsEnum.INTERACTION_FUNCTION2;
-        self.QualityPreset = KeyBindsEnum.INTERACTION_FUNCTION3;
-        self.SpeedRunGUI = KeyBindsEnum.INTERACTION_FUNCTION4;
-        self.SkipCutscene = KeyBindsEnum.GENERAL_SKIPCUTSCENE;
-        self.Zoom = KeyBindsEnum.GENERAL_CHANGECAMERA;
-        self.ZoomIn = KeyBindsEnum.HUMAN_REELOUT;
-        self.ZoomOut = KeyBindsEnum.HUMAN_REELIN;
+        self.BluePortal = InputHumanEnum.AttackDefault;
+        self.OrangePortal = InputHumanEnum.AttackSpecial;
+        self.ResetPortals = InputHumanEnum.Reload;
+        self.Interact = InputHumanEnum.HookRight;
+        self.TeleportGUI = InputInteractionEnum.Function1;
+        self.AdminPanelGUI = InputInteractionEnum.Function2;
+        self.QualityPreset = InputInteractionEnum.Function3;
+        self.SpeedRunGUI = InputInteractionEnum.Function4;
+        self.SkipCutscene = InputGeneralEnum.SkipCutscene;
+        self.Zoom = InputGeneralEnum.ChangeCamera;
+        self.ZoomIn = InputHumanEnum.ReelOut;
+        self.ZoomOut = InputHumanEnum.ReelIn;
     }
 
     function OnSpawn()
     {
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_RELOAD, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION1, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION2, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION3, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_FUNCTION4, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, false);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_CHANGECAMERA, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackDefault, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackSpecial, false);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.Reload, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.ItemMenu, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function1, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function2, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function3, false);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.Function4, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.SkipCutscene, false);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.ChangeCamera, false);
     }
 
     function OnDie()
     {
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKSPECIAL, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_RELOAD, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.INTERACTION_ITEMMENU, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_SKIPCUTSCENE, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_CHANGECAMERA, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_FORWARD, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_BACK, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_LEFT, true);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_RIGHT, true);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackDefault, true);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.AttackSpecial, true);
+        Input.SetKeyDefaultEnabled(InputHumanEnum.Reload, true);
+        Input.SetKeyDefaultEnabled(InputInteractionEnum.ItemMenu, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.SkipCutscene, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.ChangeCamera, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Forward, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Back, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Left, true);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Right, true);
     }
 }
 
@@ -7288,7 +7240,6 @@ extension TeleportGUI
 
         for (obj in Map.FindMapObjectsByComponent("TeleportReference"))
         {
-            # @type TeleportReference
             c = obj.GetComponent("TeleportReference");
             grp = c.Group;
             if (grp == "")
@@ -7450,7 +7401,7 @@ extension AdminPanelGUI
         }
 
         key = String.Replace(btn, self.ID + ":", "");
-        
+
         target = null;
         for (p in Network.Players)
         {
@@ -7490,7 +7441,7 @@ extension SpeedRunGUI
         {
             UI.AddPopupButton(self.ID, self.ID + ":" + k, k);
         }
-        
+
         UIRouter.RegisterHandler(self);
 
         self._inited = true;
@@ -7609,7 +7560,7 @@ extension UIManager
     _topCenterActive = "";
     _topRight = "";
     _topRightActive = "";
-    
+
     _middleLeft = "";
     _middleLeftActive = "";
     _middleCenter = "";
@@ -7652,52 +7603,52 @@ extension UIManager
     {
         if (self._topLeft != self._topLeftActive)
         {
-            UI.SetLabel(UILabelTypeEnum.TOPLEFT, self._topLeft);
+            UI.SetLabel(UILabelEnum.TopLeft, self._topLeft);
             self._topLeftActive = self._topLeft;
         }
 
         if (self._topCenter != self._topCenterActive)
         {
-            UI.SetLabel(UILabelTypeEnum.TOPCENTER, self._topCenter);
+            UI.SetLabel(UILabelEnum.TopCenter, self._topCenter);
             self._topCenterActive = self._topCenter;
         }
 
         if (self._topRight != self._topRightActive)
         {
-            UI.SetLabel(UILabelTypeEnum.TOPRIGHT, self._topRight);
+            UI.SetLabel(UILabelEnum.TopRight, self._topRight);
             self._topRightActive = self._topRight;
         }
 
         if (self._middleLeft != self._middleLeftActive)
         {
-            UI.SetLabel(UILabelTypeEnum.MIDDLELEFT, self._middleLeft);
+            UI.SetLabel(UILabelEnum.MiddleLeft, self._middleLeft);
             self._middleLeftActive = self._middleLeft;
         }
 
         if (self._middleCenter != self._middleCenterActive)
         {
-            UI.SetLabel(UILabelTypeEnum.MIDDLECENTER, self._middleCenter);
+            UI.SetLabel(UILabelEnum.MiddleCenter, self._middleCenter);
             self._middleCenterActive = self._middleCenter;
         }
 
         if (self._middleRight != self._middleRightActive)
         {
-             UI.SetLabel(UILabelTypeEnum.MIDDLERIGHT, self._middleRight);
+             UI.SetLabel(UILabelEnum.MiddleRight, self._middleRight);
              self._middleRightActive = self._middleRight;
         }
 
         if (self._bottomRight != self._bottomRightActive)
         {
-            UI.SetLabel(UILabelTypeEnum.BOTTOMRIGHT, self._bottomRight);
+            UI.SetLabel(UILabelEnum.BottomRight, self._bottomRight);
             self._bottomRightActive = self._bottomRight;
         }
     }
 
     function _BuildEasterEggs()
     {
-        str = I18n.Get("easter_eggs.title") + ": " 
-            + EasterEggManager.GetFound() 
-            + "/" 
+        str = I18n.Get("easter_eggs.title") + ": "
+            + EasterEggManager.GetFound()
+            + "/"
             + EasterEggManager.GetTotal();
         str = HTML.Color(HTML.Size(str, 24), ColorEnum.PastelCream);
         return str;
@@ -7723,7 +7674,7 @@ extension UIManager
         {
             bluePortalColor = ColorEnum.BluePortal;
         }
-        
+
         if (PlayerProxy._weapon._isOrangeAvailable)
         {
             if (PlayerProxy._weapon._isOrangeActive)
@@ -7739,7 +7690,7 @@ extension UIManager
         {
             orangePortalColor = bluePortalColor;
         }
-        
+
         return String.Newline
         + String.Newline
         + String.Newline
@@ -7749,7 +7700,7 @@ extension UIManager
         + String.Newline
         + String.Newline
         + HTML.Size(HTML.Bold(
-            HTML.Color("(", bluePortalColor) 
+            HTML.Color("(", bluePortalColor)
             + "     "
             + "     "
             + HTML.Color(")", orangePortalColor)
@@ -7796,10 +7747,10 @@ extension UIManager
                     + "[" + Input.GetKeyName(InputManager.ResetPortals) + "] " + HTML.Color(I18n.Get("input.reset_portals"), ColorEnum.PastelCream);
                 }
             }
-            
+
             str += String.Newline
                 + "[" + Input.GetKeyName(InputManager.Interact) + "] " + HTML.Color(I18n.Get("input.interact"), ColorEnum.PastelCream);
-            
+
             if (!PlayerProxy.SpeedRunMode)
             {
                 str += String.Newline
@@ -7825,8 +7776,8 @@ extension UIManager
     function _BuildCredits()
     {
         return HTML.Color(
-                "Portal 2 Custom Logic & Map" 
-                + String.Newline 
+                "Portal 2 Custom Logic & Map"
+                + String.Newline
                 + "by Jagerente"
             , ColorEnum.PastelCream);
     }
@@ -8013,7 +7964,7 @@ extension SpeedRunManager
         }
 
         return self._lastSavedLabel;
-        
+
         # return "No active speedrun" + String.Newline;
     }
 
@@ -8026,7 +7977,7 @@ extension SpeedRunManager
         currentValStr = String.FormatFloat(currentVal, 2);
 
         bestRes = LocalBestManager.GetLocalBest(self._activeGroup);
-        
+
 
         bestSegmentVal = 0.0;
         if (bestRes != null && self._activeSegment != "")
@@ -8379,7 +8330,7 @@ extension LocalBestManager
 # extension LeaderboardManager
 # {
 #     # @type Dict
-#     Results = null; 
+#     Results = null;
 
 #     # @return void
 #     function Initialize()
@@ -8603,7 +8554,7 @@ extension SoundManager
     # @type Dict<string,Dict<string,Transform>>
     _levels = Dict();
     _customInited = false;
-    
+
     function Initialize()
     {
         self._customManager = Map.FindMapObjectByName("soundmanager");
@@ -8636,7 +8587,7 @@ extension SoundManager
         sequencesList.Add("announcer_generated_btn_interact");
         sequencesList.Add("prehub20");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-3-0";
         sequencesList = List();
         sequencesList.Add("sp_intro_03_intro12");
@@ -8651,23 +8602,23 @@ extension SoundManager
         levelName = "Level_1-4-1";
         sequencesList.Add("testchamber09");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-5-0";
         sequencesList = List();
         sequencesList.Add("testchamber02");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-6-0";
         sequencesList = List();
         sequencesList.Add("testchamber10");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-6-1";
         sequencesList = List();
         sequencesList.Add("prehub17");
         sequencesList.Add("prehub18");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-7-0";
         sequencesList = List();
         sequencesList.Add("sp_intro_03_intro02");
@@ -8689,7 +8640,7 @@ extension SoundManager
         sequencesList.Add("demospherefall04");
         sequencesList.Add("demospherethud03");
         sequencesList.Add("demospherethud06");
-        
+
         sequencesList.Add("demospherefirstdoorwaysequence01");
         sequencesList.Add("demospherefirstdoorwaysequence04");
         sequencesList.Add("demospherefirstdoorwaysequence05");
@@ -8724,7 +8675,7 @@ extension SoundManager
         sequencesList.Add("raildroppostfall20");
         sequencesList.Add("raildroppickup02");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_1-8-0";
         sequencesList = List();
         sequencesList.Add("wakeup_powerup02");
@@ -8756,7 +8707,7 @@ extension SoundManager
         sequencesList.Add("sp_a2_intro1_found07");
         sequencesList.Add("sp_a2_intro1_found08");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-1-0";
         sequencesList = List();
         sequencesList.Add("sarcasmcore01");
@@ -8766,28 +8717,28 @@ extension SoundManager
         sequencesList.Add("sp_laser_redirect_intro_entry03");
         sequencesList.Add("sp_a2_laser_intro_ending02");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-2-0";
         sequencesList = List();
         sequencesList.Add("sp_a2_laser_stairs_intro02");
         sequencesList.Add("sp_a2_laser_stairs_intro03");
         sequencesList.Add("sp_laser_powered_lift_completion02");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-3-0";
         sequencesList = List();
         sequencesList.Add("sp_a2_dual_lasers_intro01");
         sequencesList.Add("sp_laser_redirect_intro_completion01");
         sequencesList.Add("sp_laser_redirect_intro_completion03");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-4-0";
         sequencesList = List();
         sequencesList.Add("sp_laser_over_goo_entry01");
         sequencesList.Add("sp_a2_laser_over_goo_intro01");
         sequencesList.Add("sp_laser_over_goo_completion01");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-5-0";
         sequencesList = List();
         sequencesList.Add("faith_plate_intro01");
@@ -8801,7 +8752,7 @@ extension SoundManager
         sequencesList.Add("cavejohnson_generated_book_easter");
         sequencesList.Add("cavejohnson_generated_book_easter2");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_2-7-0";
         sequencesList = List();
         sequencesList.Add("fizzlecube01");
@@ -8835,20 +8786,20 @@ extension SoundManager
         sequencesList.Add("sp_catapult_fling_sphere_peek_failurethree01");
         sequencesList.Add("sp_a2_pit_flings06");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_3-2-0";
         sequencesList = List();
         sequencesList.Add("sp_a2_ricochet01");
         sequencesList.Add("glados_generated_deers");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_3-3-0";
         sequencesList = List();
         sequencesList.Add("sp_a2_bridge_intro01");
         sequencesList.Add("sp_a2_bridge_intro03");
         sequencesList.Add("sp_a2_bridge_intro04");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_3-4-0";
         sequencesList = List();
         sequencesList.Add("sp_a2_bridge_the_gap01");
@@ -8869,7 +8820,7 @@ extension SoundManager
         sequencesList = List();
         sequencesList.Add("turret_intro01");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_3-6-0";
         sequencesList = List();
         sequencesList.Add("testchambermisc21");
@@ -8884,7 +8835,7 @@ extension SoundManager
         sequencesList.Add("sp_a2_turret_blocker_future_starter01");
         sequencesList.Add("sp_a2_turret_blocker_future_starter02");
         self.AddCustomSounds(levelName, sequencesList);
-        
+
         levelName = "Level_3-8-0";
         sequencesList = List();
         sequencesList.Add("testchambermisc31");
@@ -9040,7 +8991,7 @@ extension ObjectPoolManager
     function Initialize()
     {
         self._pools = Dict();
-        self._lineRendererPool = Dict();
+        self._lineRendererPool = List();
         self._inited = true;
     }
 
@@ -9085,7 +9036,7 @@ extension ObjectPoolManager
 
         if (self._lineRendererPool.Count < self._lineRendererPoolSize)
         {
-            line = LineRenderer.CreateLineRenderer();
+            line = LineRenderer();
             self._lineRendererPool.Add(line);
             return line;
         }
@@ -9162,7 +9113,7 @@ extension ObjectPoolManager
         {
             self.Initialize();
         }
-        
+
         if (self._pools.Contains(objectType))
         {
             pool = self._pools.Get(objectType);
@@ -9209,20 +9160,22 @@ class CubeBuilder
         ref = Map.FindMapObjectByName(self._type);
         obj = Map.CopyMapObject(ref, true);
 
-        # @type TargetPassThrough
         pt = obj.AddComponent("TargetPassThrough");
         pt.All = false;
         pt.Portals = true;
         pt.HardLightBridges = true;
 
-        # @type RigidbodyBuiltin
-        rb = obj.AddComponent("Rigidbody");
+        # TODO: Rigidbody bug. Fix this.
+        # obj.AddComponent("Rigidbody"); # This is working, fields are not mutable.
+        rb = obj.AddRigidbody();
+        # rb = obj.Rigidbody;
         rb.Mass = 1.0;
         rb.Gravity = Vector3(0, -20, 0);
-        rb.FreezeRotation = false;
+        rb.FreezeAllRotations = false;
         rb.Interpolate = true;
+        # # @type IRigidbody
+        # rb = obj.AddComponent("Rigidbody"); # This is working, fields are not mutable.
 
-        # @type Movable
         m = obj.AddComponent("Movable");
         m.ResetGroup = "";
         m.LockForward = true;
@@ -9328,20 +9281,20 @@ extension CutsceneManager
     {
         return self._cutscenesState.Get(k, 0);
     }
-    
+
     # @param k string
     # @param v int
     function SetState(k, v)
     {
         return self._cutscenesState.Set(k, v);
     }
-    
+
     # @param k string
     function GetCanPlay(k)
     {
         return self._cutscenesCanPlay.Get(k, true);
     }
-    
+
     # @param k string
     # @param v bool
     function SetCanPlay(k, v)
@@ -9509,483 +9462,11 @@ extension UIRouter
 ## INGAME
 #######################
 
-extension KeyBindsEnum
-{
-    GENERAL_FORWARD = "General/Forward";
-    GENERAL_BACK = "General/Back";
-    GENERAL_LEFT = "General/Left";
-    GENERAL_RIGHT = "General/Right";
-    GENERAL_UP = "General/Up";
-    GENERAL_DOWN = "General/Down";
-    GENERAL_AUTORUN = "General/Autorun";
-    GENERAL_PAUSE = "General/Pause";
-    GENERAL_HIDEUI = "General/HideUI";
-    GENERAL_RESTARTGAME = "General/RestartGame";
-    GENERAL_CHANGECHARACTER = "General/ChangeCharacter";
-    GENERAL_CHAT = "General/Chat";
-    GENERAL_PUSHTOTALK = "General/PushToTalk";
-    GENERAL_CHANGECAMERA = "General/ChangeCamera";
-    GENERAL_MINIMAPMAXIMIZE = "General/MinimapMaximize";
-    GENERAL_SPECTATEPREVIOUSPLAYER = "General/SpectatePreviousPlayer";
-    GENERAL_SPECTATENEXTPLAYER = "General/SpectateNextPlayer";
-    GENERAL_SKIPCUTSCENE = "General/SkipCutscene";
-    GENERAL_TOGGLESCOREBOARD = "General/ToggleScoreboard";
-    GENERAL_TAPSCOREBOARD = "General/TapScoreboard";
-    GENERAL_TAPSCOREBOARDTOOLTIP = "General/TapScoreboardTooltip";
-    GENERAL_HIDECURSOR = "General/HideCursor";
-    HUMAN_ATTACKDEFAULT = "Human/AttackDefault";
-    HUMAN_ATTACKSPECIAL = "Human/AttackSpecial";
-    HUMAN_HOOKLEFT = "Human/HookLeft";
-    HUMAN_HOOKRIGHT = "Human/HookRight";
-    HUMAN_HOOKBOTH = "Human/HookBoth";
-    HUMAN_DASH = "Human/Dash";
-    HUMAN_REELIN = "Human/ReelIn";
-    HUMAN_REELOUT = "Human/ReelOut";
-    HUMAN_DODGE = "Human/Dodge";
-    HUMAN_FLARE1 = "Human/Flare1";
-    HUMAN_FLARE2 = "Human/Flare2";
-    HUMAN_FLARE3 = "Human/Flare3";
-    HUMAN_JUMP = "Human/Jump";
-    HUMAN_RELOAD = "Human/Reload";
-    HUMAN_SALUTE = "Human/Salute";
-    HUMAN_HORSEMOUNT = "Human/HorseMount";
-    HUMAN_HORSEWALK = "Human/HorseWalk";
-    HUMAN_HORSEJUMP = "Human/HorseJump";
-    HUMAN_NAPELOCK = "Human/NapeLock";
-    HUMAN_DASHDOUBLETAP = "Human/DashDoubleTap";
-    HUMAN_AUTOUSEGAS = "Human/AutoUseGas";
-    HUMAN_AUTOUSEGASTOOLTIP = "Human/AutoUseGasTooltip";
-    HUMAN_REELOUTSCROLLSMOOTHING = "Human/ReelOutScrollSmoothing";
-    HUMAN_REELOUTSCROLLSMOOTHINGTOOLTIP = "Human/ReelOutScrollSmoothingTooltip";
-    HUMAN_SWAPTSATTACKSPECIAL = "Human/SwapTSAttackSpecial";
-    HUMAN_SWAPTSATTACKSPECIALTOOLTIP = "Human/SwapTSAttackSpecialTooltip";
-    HUMAN_AUTOREFILLGAS = "Human/AutoRefillGas";
-    HUMAN_REELINHOLDING = "Human/ReelInHolding";
-    HUMAN_REELINHOLDINGTOOLTIP = "Human/ReelInHoldingTooltip";
-    TITAN_COVERNAPE = "Titan/CoverNape";
-    TITAN_KICK = "Titan/Kick";
-    TITAN_JUMP = "Titan/Jump";
-    TITAN_SIT = "Titan/Sit";
-    TITAN_WALK = "Titan/Walk";
-    TITAN_SPRINT = "Titan/Sprint";
-    INTERACTION_INTERACT = "Interaction/Interact";
-    INTERACTION_INTERACT2 = "Interaction/Interact2";
-    INTERACTION_INTERACT3 = "Interaction/Interact3";
-    INTERACTION_ITEMMENU = "Interaction/ItemMenu";
-    INTERACTION_EMOTEMENU = "Interaction/EmoteMenu";
-    INTERACTION_MENUNEXT = "Interaction/MenuNext";
-    INTERACTION_QUICKSELECT1 = "Interaction/QuickSelect1";
-    INTERACTION_QUICKSELECT2 = "Interaction/QuickSelect2";
-    INTERACTION_QUICKSELECT3 = "Interaction/QuickSelect3";
-    INTERACTION_QUICKSELECT4 = "Interaction/QuickSelect4";
-    INTERACTION_QUICKSELECT5 = "Interaction/QuickSelect5";
-    INTERACTION_QUICKSELECT6 = "Interaction/QuickSelect6";
-    INTERACTION_QUICKSELECT7 = "Interaction/QuickSelect7";
-    INTERACTION_QUICKSELECT8 = "Interaction/QuickSelect8";
-    INTERACTION_QUICKSELECT9 = "Interaction/QuickSelect9";
-    INTERACTION_FUNCTION1 = "Interaction/Function1";
-    INTERACTION_FUNCTION2 = "Interaction/Function2";
-    INTERACTION_FUNCTION3 = "Interaction/Function3";
-    INTERACTION_FUNCTION4 = "Interaction/Function4";
-}
-
-extension CollideWithEnum 
-{
-    ENTITIES = "Entities";
-    CHARACTERS = "Characters";
-    TITANS = "Titans";
-    HUMANS = "Humans";
-    PROJECTILES = "Projectiles";
-    HITBOXES = "Hitboxes";
-    MAP_OBJECTS = "MapObjects";
-    ALL = "All";
-}
-
-extension WeaponEnum
-{
-    BLADES = "Blades";
-    APG = "APG";
-    AHSS = "AHSS";
-    TS = "Thunderspears";
-}
-
 extension ObjectTypeEnum
 {
     HUMAN = "Human";
     Titan = "Titan";
     MAP_OBJECT = "MapObject";
-}
-
-extension SpecialEnum
-{
-    POTATO = "Potato";
-    ESCAPE = "Escape";
-    DANCE = "Dance";
-    DISTRACT = "Distract";
-    SMELL = "Smell";
-    SUPPLY = "Supply";
-    SMOKEBOMB = "SmokeBomb";
-    CARRY = "Carry";
-    SWITCHBACK = "Switchback";
-    CONFUSE = "Confuse";
-    AHSSTWINSHOT = "AHSSTwinShot";
-    DOWNSTRIKE = "DownStrike";
-    SPIN1 = "Spin1";
-    SPIN2 = "Spin2";
-    SPIN3 = "Spin3";
-    BLADETHROW = "BladeThrow";
-    EREN = "Eren";
-    ANNIE = "Annie";
-    STOCK = "Stock";
-    NONE = "None";
-}
-
-extension PlayerSoundEnum
-{
-    BLADEBREAK = "BladeBreak";
-    BLADEHIT = "BladeHit";
-    OLDBLADEHIT = "OldBladeHit";
-    NAPEHIT = "NapeHit";
-    LIMBHIT = "LimbHit";
-    OLDNAPEHIT = "OldNapeHit";
-    BLADERELOADAIR = "BladeReloadAir";
-    BLADERELOADGROUND = "BladeReloadGround";
-    GUNRELOAD = "GunReload";
-    BLADESWING1 = "BladeSwing1";
-    BLADESWING2 = "BladeSwing2";
-    BLADESWING3 = "BladeSwing3";
-    BLADESWING4 = "BladeSwing4";
-    OLDBLADESWING = "OldBladeSwing";
-    DODGE = "Dodge";
-    FLARELAUNCH = "FlareLaunch";
-    THUNDERSPEARLAUNCH = "ThunderspearLaunch";
-    GASBURST = "GasBurst";
-    HOOKLAUNCH = "HookLaunch";
-    OLDHOOKLAUNCH = "OldHookLaunch";
-    HOOKRETRACTLEFT = "HookRetractLeft";
-    HOOKRETRACTRIGHT = "HookRetractRight";
-    HOOKIMPACT = "HookImpact";
-    HOOKIMPACTLOUD = "HookImpactLoud";
-    GASSTART = "GasStart";
-    GASLOOP = "GasLoop";
-    GASEND = "GasEnd";
-    REELIN = "ReelIn";
-    REELOUT = "ReelOut";
-    CRASHLAND = "CrashLand";
-    JUMP = "Jump";
-    LAND = "Land";
-    NOGAS = "NoGas";
-    REFILL = "Refill";
-    SLIDE = "Slide";
-    FOOTSTEP1 = "Footstep1";
-    FOOTSTEP2 = "Footstep2";
-    DEATH1 = "Death1";
-    DEATH2 = "Death2";
-    DEATH3 = "Death3";
-    DEATH4 = "Death4";
-    DEATH5 = "Death5";
-    CHECKPOINT = "Checkpoint";
-    GUNEXPLODE = "GunExplode";
-    GUNEXPLODELOUD = "GunExplodeLoud";
-    WATERSPLASH = "WaterSplash";
-    SWITCHBACK = "Switchback";
-    APGSHOT1 = "APGShot1";
-    APGSHOT2 = "APGShot2";
-    APGSHOT3 = "APGShot3";
-    APGSHOT4 = "APGShot4";
-    BLADENAPE1VAR1 = "BladeNape1Var1";
-    BLADENAPE1VAR2 = "BladeNape1Var2";
-    BLADENAPE1VAR3 = "BladeNape1Var3";
-    BLADENAPE2VAR1 = "BladeNape2Var1";
-    BLADENAPE2VAR2 = "BladeNape2Var2";
-    BLADENAPE2VAR3 = "BladeNape2Var3";
-    BLADENAPE3VAR1 = "BladeNape3Var1";
-    BLADENAPE3VAR2 = "BladeNape3Var2";
-    BLADENAPE3VAR3 = "BladeNape3Var3";
-    BLADENAPE4VAR1 = "BladeNape4Var1";
-    BLADENAPE4VAR2 = "BladeNape4Var2";
-    BLADENAPE4VAR3 = "BladeNape4Var3";
-    AHSSGUNSHOT1 = "AHSSGunShot1";
-    AHSSGUNSHOT2 = "AHSSGunShot2";
-    AHSSGUNSHOT3 = "AHSSGunShot3";
-    AHSSGUNSHOT4 = "AHSSGunShot4";
-    AHSSGUNSHOTDOUBLE1 = "AHSSGunShotDouble1";
-    AHSSGUNSHOTDOUBLE2 = "AHSSGunShotDouble2";
-    AHSSNAPE1VAR1 = "AHSSNape1Var1";
-    AHSSNAPE1VAR2 = "AHSSNape1Var2";
-    AHSSNAPE2VAR1 = "AHSSNape2Var1";
-    AHSSNAPE2VAR2 = "AHSSNape2Var2";
-    AHSSNAPE3VAR1 = "AHSSNape3Var1";
-    AHSSNAPE3VAR2 = "AHSSNape3Var2";
-    TSLAUNCH1 = "TSLaunch1";
-    TSLAUNCH2 = "TSLaunch2";
-}
-
-extension UILabelTypeEnum
-{
-    TOPCENTER = "TopCenter";
-    TOPLEFT = "TopLeft";
-    TOPRIGHT = "TopRight";
-    MIDDLECENTER = "MiddleCenter";
-    MIDDLELEFT = "MiddleLeft";
-    MIDDLERIGHT = "MiddleRight";
-    BOTTOMLEFT = "BottomLeft";
-    BOTTOMRIGHT = "BottomRight";
-}
-
-extension ForceModeEnum
-{
-    FORCE = "Force";
-    ACCELERATION = "Acceleration";
-    IMPULSE = "Impulse";
-    VELOCITYCHANGE = "VelocityChange";
-}
-
-extension PlayerStatusEnum
-{
-    ALIVE = "Alive";
-    DEAD = "Dead";
-    SPECTATING = "Spectating";
-}
-
-extension PlayerStateEnum
-{
-    IDLE = "Idle";
-    ATTACK = "Attack";
-    GROUNDDODGE = "GroundDodge";
-    AIRDODGE = "AirDodge";
-    RELOAD = "Reload";
-    REFILL = "Refill";
-    DIE = "Die";
-    GRAB = "Grab";
-    EMOTEACTION = "EmoteAction";
-    SPECIALATTACK = "SpecialAttack";
-    SPECIALACTION = "SpecialAction";
-    SLIDE = "Slide";
-    RUN = "Run";
-    LAND = "Land";
-    MOUNTINGHORSE = "MountingHorse";
-    STUN = "Stun";
-    WALLSLIDE = "WallSlide";
-}
-
-extension HumanAnimationEnum
-{
-    HORSEMOUNT = "Armature|horse_geton";
-    HORSEDISMOUNT = "Armature|horse_getoff";
-    HORSEIDLE = "Armature|horse_idle";
-    HORSERUN = "Armature|horse_run";
-    IDLEF = "Armature|idle_F";
-    IDLEM = "Armature|idle_M";
-    IDLEAHSSM = "Armature|idle_AHSS_F";
-    IDLEAHSSF = "Armature|idle_AHSS_M";
-    IDLETSF = "Armature|idle_TS_F";
-    IDLETSM = "Armature|idle_TS_M";
-    JUMP = "Armature|jump";
-    RUN = "Armature|run";
-    RUNTS = "Armature|run_TS";
-    RUNBUFFED = "Armature|run_sasha";
-    DODGE = "Armature|dodge";
-    LAND = "Armature|dash_land";
-    SLIDE = "Armature|slide";
-    GRABBED = "Armature|grabbed";
-    DASH = "Armature|dash";
-    REFILL = "Armature|resupply";
-    TOROOF = "Armature|toRoof";
-    WALLRUN = "Armature|wallrun";
-    ONWALL = "Armature|onWall";
-    CHANGEBLADE = "Armature|changeBlade";
-    CHANGEBLADEAIR = "Armature|changeBlade_air";
-    AHSSHOOKFORWARDBOTH = "Armature|AHSS_hook_both";
-    AHSSHOOKFORWARDL = "Armature|AHSS_hook_L";
-    AHSSHOOKFORWARDR = "Armature|AHSS_hook_R";
-    AHSSSHOOTR = "Armature|AHSS_shoot_R";
-    AHSSSHOOTL = "Armature|AHSS_shoot_L";
-    AHSSSHOOTBOTH = "Armature|AHSS_shooth_both";
-    AHSSSHOOTRAIR = "Armature|AHSS_shoot_air_R";
-    AHSSSHOOTLAIR = "Armature|AHSS_shoot_air_L";
-    AHSSSHOOTBOTHAIR = "Armature|AHSS_shooth_air_both";
-    AHSSGUNRELOADBOTH = "Armature|AHSS_reload_both";
-    AHSSGUNRELOADBOTHAIR = "Armature|AHSS_reload_air_both";
-    TSSHOOTR = "Armature|TS_shoot_R";
-    TSSHOOTL = "Armature|TS_shoot_L";
-    TSSHOOTRAIR = "Armature|TS_shoot_air_R";
-    TSSHOOTLAIR = "Armature|TS_shoot_air_L";
-    AIRHOOKLJUST = "Armature|air_hook_l_just";
-    AIRHOOKRJUST = "Armature|air_hook_r_just";
-    AIRHOOKL = "Armature|air_hook_l";
-    AIRHOOKR = "Armature|air_hook_r";
-    AIRHOOK = "Armature|air_hook";
-    AIRRELEASE = "Armature|air_release";
-    AIRFALL = "Armature|air_fall";
-    AIRRISE = "Armature|air_rise";
-    AIR2 = "Armature|air2";
-    AIR2RIGHT = "Armature|air2_right";
-    AIR2LEFT = "Armature|air2_left";
-    AIR2BACKWARD = "Armature|air2_backward";
-    ATTACK1HOOKL1 = "Armature|attack1_hook_l1";
-    ATTACK1HOOKL2 = "Armature|attack1_hook_l2";
-    ATTACK1HOOKR1 = "Armature|attack1_hook_r1";
-    ATTACK1HOOKR2 = "Armature|attack1_hook_r2";
-    ATTACK1 = "Armature|attack1";
-    ATTACK2 = "Armature|attack2";
-    ATTACK4 = "Armature|attack4";
-    SPECIALARMIN = "Armature|special_armin";
-    SPECIALMARCO0 = "Armature|special_marco_0";
-    SPECIALMARCO1 = "Armature|special_marco_1";
-    SPECIALSASHA = "Armature|special_sasha";
-    SPECIALMIKASA1 = "Armature|attack_3_1";
-    SPECIALMIKASA2 = "Armature|attack_3_2";
-    SPECIALLEVI = "Armature|special_levi";
-    SPECIALPETRA = "Armature|special_petra";
-    SPECIALJEAN = "Armature|grabbed_jean";
-    SPECIALSHIFTER = "Armature|special_shift_0";
-    EMOTESALUTE = "Armature|emote_salute";
-    EMOTENO = "Armature|emote_no";
-    EMOTEYES = "Armature|emote_yes";
-    EMOTEWAVE = "Armature|emote_wave";
-}
-
-extension EffectEnum
-{
-    THUNDERSPEAREXPLODE = "ThunderspearExplode";
-    GASBURST = "GasBurst";
-    GROUNDSHATTER = "GroundShatter";
-    BLOOD1 = "Blood1";
-    BLOOD2 = "Blood2";
-    PUNCHHIT = "PunchHit";
-    GUNEXPLODE = "GunExplode";
-    CRITICALHIT = "CriticalHit";
-    TITANSPAWN = "TitanSpawn";
-    TITANDIE1 = "TitanDie1";
-    TITANDIE2 = "TitanDie2";
-    BOOM1 = "Boom1";
-    BOOM2 = "Boom2";
-    BOOM3 = "Boom3";
-    BOOM4 = "Boom4";
-    BOOM5 = "Boom5";
-    BOOM6 = "Boom6";
-    BOOM7 = "Boom7";
-    SPLASH = "Splash";
-    TITANBITE = "Bite";
-    SHIFTERTHUNDER = "ShifterThunder";
-    BLADETHROWHIT = "BladeThrowHit";
-    APGTRAIL = "APGTrail";
-    SINGLESPLASH = "Splash";
-    SPLASH1 = "Splash1";
-    SPLASH2 = "Splash2";
-    SPLASH3 = "Splash3";
-    WATERWAKE = "WaterWake";
-}
-
-extension IconEnum
-{
-    ACROS1 = "Acros1";
-    ANNIE1 = "Annie1";
-    ANNIE2 = "Annie2";
-    ANNIE3 = "Annie3";
-    ANNIE4 = "Annie4";
-    ANNIE5 = "Annie5";
-    ARMIN1 = "Armin1";
-    BERTHOLDT1 = "Bertholdt1";
-    CARULA1 = "Carula1";
-    CONNY1 = "Conny1";
-    CONNY2 = "Conny2";
-    DAKROS1 = "Dakros1";
-    EREN1 = "Eren1";
-    EREN2 = "Eren2";
-    EREN3 = "Eren3";
-    ERWIN1 = "Erwin1";
-    ERWIN2 = "Erwin2";
-    ERWIN3 = "Erwin3";
-    ERWIN4 = "Erwin4";
-    FALCO1 = "Falco1";
-    FENGLEE1 = "Fenglee1";
-    FOUNDING1 = "Founding1";
-    FRIEDA1 = "Frieda1";
-    FRIEDA2 = "Frieda2";
-    GABI1 = "Gabi1";
-    GISKETCH1 = "Gisketch1";
-    GUNTHER1 = "Gunther1";
-    HANGE1 = "Hange1";
-    HANNES1 = "Hannes1";
-    HANNES2 = "Hannes2";
-    HISTORIA1 = "Historia1";
-    HISTORIA2 = "Historia2";
-    HISTORIA3 = "Historia3";
-    HISTORIA4 = "Historia4";
-    HISTORIA5 = "Historia5";
-    HISTORIA6 = "Historia6";
-    HISTORIA7 = "Historia7";
-    HISTORIA8 = "Historia8";
-    HITCH1 = "Hitch1";
-    IAN1 = "Ian1";
-    ILSE1 = "Ilse1";
-    ISABEL1 = "Isabel1";
-    JEAN1 = "Jean1";
-    KEITH1 = "Keith1";
-    KENNY1 = "Kenny1";
-    KENNY2 = "Kenny2";
-    LEVI1 = "Levi1";
-    LEVI2 = "Levi2";
-    LEVI3 = "Levi3";
-    LEVI4 = "Levi4";
-    LEVI5 = "Levi5";
-    LEVI6 = "Levi6";
-    LEVI7 = "Levi7";
-    LEVI8 = "Levi8";
-    LEVI9 = "Levi9";
-    LEVI10 = "Levi10";
-    LEVI11 = "Levi11";
-    LEVI12 = "Levi12";
-    LEVI13 = "Levi13";
-    MIKASA1 = "Mikasa1";
-    MIKASA2 = "Mikasa2";
-    MIKASA3 = "Mikasa3";
-    MIKASA4 = "Mikasa4";
-    MIKASA5 = "Mikasa5";
-    NANABA1 = "Nanaba1";
-    NICK1 = "Nick1";
-    PETRA1 = "Petra1";
-    PETRA2 = "Petra2";
-    PIECK1 = "Pieck1";
-    PIECK2 = "Pieck2";
-    PIXIS1 = "Pixis1";
-    REINER1 = "Reiner1";
-    REVOLUTION1 = "Revolution1";
-    RICO1 = "Rico1";
-    RICO2 = "Rico2";
-    RICECAKE1 = "Ricecake1";
-    SASHA1 = "Sasha1";
-    SASHA2 = "Sasha2";
-    SASHA3 = "Sasha3";
-    SASHA4 = "Sasha4";
-    URI1 = "Uri1";
-    YELENA1 = "Yelena1";
-    YELENA2 = "Yelena2";
-    YELENA3 = "Yelena3";
-    YMIR1 = "Ymir1";
-    YMIR2 = "Ymir2";
-    YMIR104 = "104Ymir1";
-    ZEKE1 = "Zeke1";
-    ZEKE2 = "Zeke2";
-    TITAN1 = "Titan1";
-    TITAN2 = "Titan2";
-    TITAN3 = "Titan3";
-    TITAN4 = "Titan4";
-    TITAN5 = "Titan5";
-    TITAN6 = "Titan6";
-    TITAN7 = "Titan7";
-    TITAN8 = "Titan8";
-    TITAN9 = "Titan9";
-    TITAN10 = "Titan10";
-    TITAN11 = "Titan11";
-    TITAN12 = "Titan12";
-    TITAN13 = "Titan13";
-    TITAN14 = "Titan14";
-    TITAN15 = "Titan15";
-    TITAN16 = "Titan16";
-    TITAN17 = "Titan17";
 }
 
 #######################
@@ -10093,7 +9574,7 @@ class TeleportAccessMessageHandler
 # }
 
 
-extension I18n 
+extension I18n
 {
     ChineseLanguage = "简体中文";
     EnglishLanguage = "English";
@@ -10146,7 +9627,7 @@ extension I18n
     # @return Dict<string,string>
     function _LoadLanguagePack()
     {
-        return self._languages.Get(UI.GetLanguage(), self._languages.Get(self._defaultLanguage));
+        return self._languages.Get(Locale.CurrentLanguage, self._languages.Get(self._defaultLanguage));
     }
 }
 
@@ -10191,9 +9672,9 @@ class EnglishLanguagePack
         self._pack.Set("input.zoom", "Zoom");
         self._pack.Set("input.zoom_in_out", "Zoom In / Out");
         self._pack.Set("input.quality", "Quality Preset");
-        self._pack.Set("notes.settings", "Recommended Render Distance: 250" 
-                + String.Newline 
-                + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / Settings / Graphics / Render distance");
+        self._pack.Set("notes.settings", "Recommended Render Distance: 250"
+                + String.Newline
+                + "[" + Input.GetKeyName(InputGeneralEnum.Pause) + "] / Settings / Graphics / Render distance");
         self._pack.Set("easter_eggs.title", "Easter Eggs Found");
 
         # Cutscenes
@@ -10203,38 +9684,38 @@ class EnglishLanguagePack
         self._pack.Set("Level_1-1-0-prehub10", "The portal will open, and emergency testing will begin in three, two, one...");
 
         self._pack.Set("Level_1-1-0-prehub11", "Cubes and button-based testing remains an important tool for science, even in a dire emergency. Press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + " to grab the " + HTML.Color("cube", ColorEnum.PastelBlue) + " and put it on the " + HTML.Color("button.", ColorEnum.PastelRed));
-        
+
         self._pack.Set("Level_1-1-0-testchamber07", "You have just passed through an " + HTML.Color("Aperture Science Material Emancipation Grill", ColorEnum.PastelBlue) + ", which vaporizes most " + HTML.Color("Aperture Science", ColorEnum.PastelBlue) + " equipment that touches it.");
-        
+
         self._pack.Set("Level_1-2-0-announcer_generated_btn_interact", "To interact with buttons, target the " + HTML.Color("red part", ColorEnum.PastelRed) + " and press " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + ".");
-        
+
         self._pack.Set("Level_1-2-0-good02", "Good.");
 
         self._pack.Set("Level_1-2-0-prehub20_1", "Before re-entering a relaxation vault at the conclusion of testing, please take a moment to write down the results of your test.");
         self._pack.Set("Level_1-2-0-prehub20_2", "An Aperture Science Re-Integration Associate will revive you for an interview when society has been rebuild.");
-        
+
         self._pack.Set("Level_1-3-0-sp_intro_03_intro12", "Hey-hey, you made it!");
         self._pack.Set("Level_1-3-0-sp_intro_03_intro09", "There should be a " + HTML.Color("Portal Device", ColorEnum.BluePortal) + " on that podium over there.");
-        
+
         self._pack.Set("Level_1-4-0-prehub42", "This next test is very dangerous. To help you remain tranquil in the face of almost certain death, smooth jazz will be deployed in three...two...one...");
-        self._pack.Set("Level_1-4-1-testchamber09_1", "Great work! " 
+        self._pack.Set("Level_1-4-1-testchamber09_1", "Great work! "
             + String.Newline
             + "Because this message is prerecorded, many observations related to your perfomance are speculation on our part.");
         self._pack.Set("Level_1-4-1-testchamber09_2", "Please, disregard any undeserved compliments.");
-        
+
         self._pack.Set("Cutscene_Level_1_4_2", "EH EREH???...");
 
         self._pack.Set("Level_1-5-0-testchamber02_1", "If the Enrichment Center is currently being bombarded with fireballs, metiorites, or other objects from space...");
         self._pack.Set("Level_1-5-0-testchamber02_2", "...please avoid unsheltered testing areas wherever a lack of shelter from space-debris DOES NOT appear to be a deliberate part of the test.");
-        
+
         self._pack.Set("Level_1-6-0-testchamber10", "This next test applies the " +  HTML.Color("Principles of Momentum", ColorEnum.PastelOrange) + " to movement through portals. If the laws of physics no longer apply in the future, God help you.");
-        
+
         self._pack.Set("Level_1-6-1-prehub17", "If you are a non-employee who has discovered this facility amid the ruins of civilization, welcome! And remember: Testing is the future, and future starts with you.");
-        
+
         self._pack.Set("Level_1-6-1-prehub18_1", "Good work getting this far, future-starter!");
         self._pack.Set("Level_1-6-1-prehub18_2", "That said, if you are simple-minded, old, or irradiated in such a way that the future should not start with you...");
         self._pack.Set("Level_1-6-1-prehub18_3", "...please return to your primitive tribe, and send back someone better qualified for testing.");
-        
+
         self._pack.Set("Level_1-7-0-sp_intro_03_intro02", "Hey! Oi oi! I'm up here!");
         self._pack.Set("Level_1-7-0-demosphereintro04_1", "Oh, brilliant. You DID find a " + HTML.Color("Portal Gun", ColorEnum.BluePortal)+ "!");
         self._pack.Set("Level_1-7-0-demosphereintro04_2", "You know what? It just goes to show: people with brain damage are the real heroes in the end aren't they? At the end of the day. Brave.");
@@ -10252,14 +9733,14 @@ class EnglishLanguagePack
         self._pack.Set("Level_1-7-0-raildropintro01_1", "Okay, listen, let me, lay something on you here. It's pretty heavy.");
         self._pack.Set("Level_1-7-0-raildropintro01_2", "They told me NEVER NEVER EVER to disengage myself from my Management Rail. Or I would die.");
         self._pack.Set("Level_1-7-0-raildropintro01_3", "But we're out of options here. So... " + HTML.Color("get ready to catch me", ColorEnum.PastelOrange) + " , alright. On the off chance that I'm not dead the moment I pop off this thing.");
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch02-1", HTML.Color("On three", ColorEnum.PastelRed) + ". Ready?");
         self._pack.Set("Level_1-7-0-demospherecatch02-2", HTML.Color("One...", ColorEnum.PastelBlue));
         self._pack.Set("Level_1-7-0-demospherecatch02-3", HTML.Color("Two...", ColorEnum.PastelOrange));
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch05-1", HTML.Color("THREE!", ColorEnum.PastelRed));
         self._pack.Set("Level_1-7-0-demospherecatch05-2", "That's high, It's TOO high, isn't it, really, that...");
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch07-1", "Alright, going on three, just gives you too much time to think about it.");
         self._pack.Set("Level_1-7-0-demospherecatch07-2", "Let's uh, go on " + HTML.Color("ONE", ColorEnum.PastelRed) + " this time.");
         self._pack.Set("Level_1-7-0-demospherecatch07-3", "Okay, ready?");
@@ -10304,7 +9785,7 @@ class EnglishLanguagePack
         self._pack.Set("gloriousfreedom03_1", "Look at this! No rail to tell us where to go! Oh, this is brilliant. We can go where ever we want!");
         self._pack.Set("gloriousfreedom03_2", "Hold on though where are we going? Seriously. Hang on, let me just get my bearings.");
         self._pack.Set("gloriousfreedom03_3", "Just follow the rail, actually.");
-        
+
         self._pack.Set("gladosgantry20", "Probably ought to bring you up to speed on something right now.");
         self._pack.Set("gladosgantry21", "In order to escape, we're going to have to go through HER chamber.");
         self._pack.Set("gladosgantry22", "And, she will probably kill us if, um, she's awake.");
@@ -10381,7 +9862,7 @@ class EnglishLanguagePack
         self._pack.Set("sp_trust_fling_entry01", "Well, have fun soaring through the air without a care in the world.");
         self._pack.Set("sp_trust_fling_entry02", "I have to go to the wing that was made entirely of glass, and pickup 15 acres of broken glass. By myself.");
 
-        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "You open the book to find the message: " 
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "You open the book to find the message: "
             + String.Newline
             + HTML.Color("'Aperture Science'", "a1c1f1") + " Employees Only. Minimum IQ: 200. Yours? Questionable."
             + String.Newline
@@ -10501,7 +9982,7 @@ class EnglishLanguagePack
 
         self._pack.Set("testchambermisc33_1", "I'll bet you think I forgot about your surprise.");
         self._pack.Set("testchambermisc33_2", "I didn't. In fact, we're headed to your surprise right now. After all these years. I'm getting choked up just thinking about it.");
-        
+
         self._pack.Set("testchambermisc34", "Initiating surprise in three... two... one.");
         self._pack.Set("testchambermisc35", "I made it all up.");
         self._pack.Set("testchambermisc41", "Surprise.");
@@ -10556,9 +10037,9 @@ class RussianLanguagePack
         self._pack.Set("input.zoom", "Зум");
         self._pack.Set("input.zoom_in_out", "Приблизить / Отдалить");
         self._pack.Set("input.quality", "Качество");
-        self._pack.Set("notes.settings", "Рекоммендованная дальность прорисовки: 250" 
-                + String.Newline 
-                + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / Настройки / Графика / Дальность прорисовки");
+        self._pack.Set("notes.settings", "Рекоммендованная дальность прорисовки: 250"
+                + String.Newline
+                + "[" + Input.GetKeyName(InputGeneralEnum.Pause) + "] / Настройки / Графика / Дальность прорисовки");
         self._pack.Set("easter_eggs.title", "Пасхалок найдено");
     }
 }
@@ -10603,7 +10084,7 @@ class ChineseLanguagePack
         self._pack.Set("input.zoom", "缩放");
         self._pack.Set("input.zoom_in_out", "放大/缩小");
         self._pack.Set("input.quality", "画质预设");
-        self._pack.Set("notes.settings", "推荐渲染距离：250" + String.Newline + "[" + Input.GetKeyName(KeyBindsEnum.GENERAL_PAUSE) + "] / 设置 / 图形 / 渲染距离");
+        self._pack.Set("notes.settings", "推荐渲染距离：250" + String.Newline + "[" + Input.GetKeyName(InputGeneralEnum.Pause) + "] / 设置 / 图形 / 渲染距离");
         self._pack.Set("easter_eggs.title", "已发现彩蛋");
 
         # Cutscenes
@@ -10613,36 +10094,36 @@ class ChineseLanguagePack
         self._pack.Set("Level_1-1-0-prehub10", "系统广播：传送门将会打开，紧急测试即将开始。3，2，1。");
 
         self._pack.Set("Level_1-1-0-prehub11", "基于方块和按钮的测试即使在严重紧急情况下仍然是科学的重要工具。按 " + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + " 来拾取" + HTML.Color("方块", ColorEnum.PastelBlue) + "并将其放在" + HTML.Color("按钮。", ColorEnum.PastelRed));
-        
+
         self._pack.Set("Level_1-1-0-testchamber07", "您刚刚穿过一个 " + HTML.Color("Aperture Science 物质释放格栅", ColorEnum.PastelBlue) + "，它会蒸发任何接触到的 " + HTML.Color("Aperture Science", ColorEnum.PastelBlue) + " 设备。");
-        
+
         self._pack.Set("Level_1-2-0-announcer_generated_btn_interact", "要与按钮互动，请将目标对准" + HTML.Color("红色部件", ColorEnum.PastelRed) + "，然后按" + HTML.Color("[" + Input.GetKeyName(InputManager.Interact) + "]", ColorEnum.PastelOrange) + "。");
-        
+
         self._pack.Set("Level_1-2-0-good02", "很好。");
 
         self._pack.Set("Level_1-2-0-prehub20_1", "在您于测试尾声重新进入休息室之前，请抽空写下您的测验结果。");
         self._pack.Set("Level_1-2-0-prehub20_2", "光圈科技重返社会协会的同仁将会在社会重建完成时唤醒您以进行访谈。");
-        
+
         self._pack.Set("Level_1-3-0-sp_intro_03_intro12", "嘿嘿！你成功了！");
         self._pack.Set("Level_1-3-0-sp_intro_03_intro09", "在那边的平台上应该要有一个" + HTML.Color("传送装置", ColorEnum.BluePortal) + "。");
-        
+
         self._pack.Set("Level_1-4-0-prehub42", "下一个测试非常危险。为了帮助您在几乎必死无疑的的时刻能保持平静，我们将立刻播放舒缓的爵士乐。3，2，1。[舒缓的爵士乐]");
         self._pack.Set("Level_1-4-1-testchamber09_1", "做的不错！因为这个消息是预先录制的，我们涉及您表现的任何意见均属猜测。");
         self._pack.Set("Level_1-4-1-testchamber09_2", "请忽略任何不当的恭维。");
-        
+
         self._pack.Set("Cutscene_Level_1_4_2", "EH EREH???...");
 
         self._pack.Set("Level_1-5-0-testchamber02_1", "如果丰富学习中心目前正遭受火球、陨石或其他太空物体的轰炸，");
         self._pack.Set("Level_1-5-0-testchamber02_2", "请避免进入无遮蔽的测试区域，无遮蔽之处并非测试中刻意安排的部分。");
-        
+
         self._pack.Set("Level_1-6-0-testchamber10", "下一个测试需要应用" + HTML.Color("动量转化定律", ColorEnum.PastelOrange) + "。如果此物理定律在未来不再适用，就请上帝帮助您吧。");
-        
+
         self._pack.Set("Level_1-6-1-prehub17", "如果您是在文明的废墟中发现这一设施的非本公司的同仁，欢迎！记住：测试就等同于未来，而未来就从您手中展开。");
-        
+
         self._pack.Set("Level_1-6-1-prehub18_1", "做得不错，未来的先锋英雄！");
         self._pack.Set("Level_1-6-1-prehub18_2", "不过，如果您头脑简单、年事已高，或因辐射而不适合开启未来……");
         self._pack.Set("Level_1-6-1-prehub18_3", "……请回到您的原始部落，派遣一个更符合测试条件的人来。");
-        
+
         self._pack.Set("Level_1-7-0-sp_intro_03_intro02", "嘿！喂喂！我在这里！");
         self._pack.Set("Level_1-7-0-demosphereintro04_1", "太棒了，你竟然找到了 " + HTML.Color("传送枪", ColorEnum.BluePortal) + "！");
         self._pack.Set("Level_1-7-0-demosphereintro04_2", "你知道吗？这正说明：到头来，脑子有问题的人才是真正的英雄，不是吗？勇气可嘉。");
@@ -10661,14 +10142,14 @@ class ChineseLanguagePack
         self._pack.Set("Level_1-7-0-raildropintro01_2", "他们跟我说过绝对绝对不能脱离控制轨道，否则我会死。");
         self._pack.Set("Level_1-7-0-raildropintro01_3", "但我们已经别无选择……所以……" + HTML.Color("准备好接住我", ColorEnum.PastelOrange) + "，行吗？万一我脱轨后没死的话。");
 
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch02-1", HTML.Color("数到三", ColorEnum.PastelRed) + "。准备好了吗？");
         self._pack.Set("Level_1-7-0-demospherecatch02-2", HTML.Color("一...", ColorEnum.PastelBlue));
         self._pack.Set("Level_1-7-0-demospherecatch02-3", HTML.Color("二...", ColorEnum.PastelOrange));
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch05-1", HTML.Color("三！", ColorEnum.PastelRed));
         self._pack.Set("Level_1-7-0-demospherecatch05-2", "那也太高了，实在是太高了，不是吗，真的，那...");
-        
+
         self._pack.Set("Level_1-7-0-demospherecatch07-1", "好吧，数到三似乎给了你太多犹豫和思考的时间。");
         self._pack.Set("Level_1-7-0-demospherecatch07-2", "那我们，呃，这次数到" + HTML.Color("一", ColorEnum.PastelRed) + "吧。");
         self._pack.Set("Level_1-7-0-demospherecatch07-3", "准备好了没？");
@@ -10714,7 +10195,7 @@ class ChineseLanguagePack
         self._pack.Set("gloriousfreedom03_1", "你看！没有轨道告诉我们该往哪走！哦，太棒了。我们可以随心所欲地去任何地方！");
         self._pack.Set("gloriousfreedom03_2", "等等，我们要去哪？说真的。等一下，我先拿一下我的轴承。");
         self._pack.Set("gloriousfreedom03_3", "嗯。其实，我们应该跟着轨道走。");
-        
+
         self._pack.Set("gladosgantry20", "也许现在应该要快点跟你说明最新的情况。");
         self._pack.Set("gladosgantry21", "为了能逃走，我们必须经过她的测试室。");
         self._pack.Set("gladosgantry22", "她八成会杀了我们，如果，呃，如果她醒着的话。");
@@ -10797,7 +10278,7 @@ class ChineseLanguagePack
         self._pack.Set("sp_trust_fling_entry01", "好好无忧无虑地遨游天际吧。");
         self._pack.Set("sp_trust_fling_entry02", "我得去那个全部是玻璃做的侧房里扫掉十五英亩的碎玻璃，就我一个人。");
 
-        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "你打开书，发现上面写着：" 
+        self._pack.Set("Cutscene_EasterEgg_StrangeBook_1_1", "你打开书，发现上面写着："
             + String.Newline
             + "“仅限光圈科技员工阅读。最低智商：200。你的？可疑。”"
             + String.Newline
@@ -10920,7 +10401,7 @@ class ChineseLanguagePack
 
         self._pack.Set("testchambermisc33_1", "我敢打赌你一定觉得我忘了要给你的惊喜。");
         self._pack.Set("testchambermisc33_2", "我没有。事实上，我们现在正要去看你的惊喜。经历了这么多年，我光是想想就感动得想哭。");
-        
+
         self._pack.Set("testchambermisc34", "惊喜揭晓倒数：三、二、一。");
         self._pack.Set("testchambermisc35", "全都是我编的。");
         self._pack.Set("testchambermisc41", " 惊喜来啰。");
@@ -10970,7 +10451,7 @@ cutscene Cutscene_Level_0_END
         Cutscene.HideDialogue();
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
         Cutscene.ShowDialogue(icon, title, "Congratulations! You have reached the end...for now.");
         CutsceneManager.Wait(4.0);
@@ -10996,13 +10477,13 @@ cutscene Cutscene_Level_0_END
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(IconEnum.TITAN14, title, 
+        Cutscene.ShowDialogue(ProfileIconEnum.Titan14, title,
             HTML.Color("*Disabling your pause button*", ColorEnum.PastelRed)
             + String.Newline
             + HTML.Color("Actually, why do we have to leave right now?", ColorEnum.PastelRed)
         );
-        SoundManager.Play(PlayerSoundEnum.FLARELAUNCH);
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_PAUSE, false);
+        SoundManager.Play(HumanSoundEnum.FlareLaunch);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Pause, false);
         Game.SetPlaylist("Battle");
         CutsceneManager.Wait(6.0);
         while (!CutsceneManager.IsTimerDone())
@@ -11015,7 +10496,7 @@ cutscene Cutscene_Level_0_END
             # wait Time.TickTime;
         }
 
-        Cutscene.ShowDialogue(IconEnum.TITAN14, title, HTML.Color("Do you have any ideas how good this feels? Looking at you. Struggling with puzzles...", ColorEnum.PastelRed));
+        Cutscene.ShowDialogue(ProfileIconEnum.Titan14, title, HTML.Color("Do you have any ideas how good this feels? Looking at you. Struggling with puzzles...", ColorEnum.PastelRed));
         CutsceneManager.Wait(5.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11043,7 +10524,7 @@ cutscene Cutscene_Level_0_END
         Game.SetPlaylist("Peaceful");
         Cutscene.ShowDialogue(icon, title, HTML.Color("*Enabling teleport menu.*", ColorEnum.PastelBlue) + String.Newline + HTML.Color("*Enabling pause button.*", ColorEnum.PastelBlue));
         Network.MyPlayer.SetCustomProperty("TELEPORT_ACCESS", 1);
-        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+        SoundManager.Play(HumanSoundEnum.Checkpoint);
         CutsceneManager.Wait(1.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11055,8 +10536,8 @@ cutscene Cutscene_Level_0_END
             # wait Time.TickTime;
         }
 
-        Input.SetKeyDefaultEnabled(KeyBindsEnum.GENERAL_PAUSE, true);
-        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+        Input.SetKeyDefaultEnabled(InputGeneralEnum.Pause, true);
+        SoundManager.Play(HumanSoundEnum.Checkpoint);
         CutsceneManager.Wait(1.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -11130,7 +10611,7 @@ cutscene Cutscene_Level_1_1_0
         Cutscene.HideDialogue();
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
         SoundManager.PlayCustom("Level_1-1-0", "prehub06");
         Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-1-0-prehub06"));
@@ -11187,13 +10668,13 @@ cutscene Cutscene_Level_1_1_0
             # wait Time.TickTime;
         }
         SoundManager.StopCustom("Level_1-1-0", "prehub10");
-        
+
         if (self._activatable != null)
         {
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
             self._activatable.Activate();
         }
-        
+
         CutsceneManager.OnCutsceneComplete(self._name);
     }
 
@@ -11233,7 +10714,7 @@ cutscene Cutscene_Level_1_1_1
         Cutscene.HideDialogue();
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-1-0", "prehub11");
@@ -11251,7 +10732,7 @@ cutscene Cutscene_Level_1_1_1
 
         if (self._activatable != null)
         {
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
             self._activatable.Activate();
         }
 
@@ -11316,7 +10797,7 @@ cutscene Cutscene_Level_1_1_2
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-1-0", "testchamber07");
@@ -11373,7 +10854,7 @@ cutscene Cutscene_Level_1_2_0
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-2-0", "announcer_generated_btn_interact");
@@ -11430,7 +10911,7 @@ cutscene Cutscene_Level_1_2_1
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-2-0", "good02");
@@ -11529,7 +11010,7 @@ cutscene Cutscene_Level_1_3_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         c1Obj = Map.FindMapObjectByName("CameraRef 1-3-0");
@@ -11568,7 +11049,7 @@ cutscene Cutscene_Level_1_3_0
             }
             Camera.LookAt(wObj.Position);
         }
-        
+
         Camera.SetPosition(c2Obj.Position);
         Camera.LookAt(pObj.Position);
         Camera.SetVelocity(Camera.Forward * 0.5);
@@ -11627,7 +11108,7 @@ cutscene Cutscene_Level_1_4_0
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-4-0", "prehub42");
@@ -11698,7 +11179,7 @@ cutscene Cutscene_Level_1_4_1
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-4-1", "testchamber09");
@@ -11767,7 +11248,7 @@ cutscene Cutscene_Level_1_4_2
 
         self.InitActivatable();
 
-        icon = IconEnum.YMIR1;
+        icon = ProfileIconEnum.Ymir1;
         title = Network.MyPlayer.Name;
 
         Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_Level_1_4_2"));
@@ -11781,7 +11262,7 @@ cutscene Cutscene_Level_1_4_2
             }
             # wait Time.TickTime;
         }
-        
+
         if (self._activatable != null)
         {
             self._activatable.Activate();
@@ -11821,7 +11302,7 @@ cutscene Cutscene_Level_1_5_0
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-5-0", "testchamber02");
@@ -11884,7 +11365,7 @@ cutscene Cutscene_Level_1_6_0
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-0", "testchamber10");
@@ -11923,7 +11404,7 @@ cutscene Cutscene_Level_1_6_1
     _name = "Cutscene_Level_1_6_1";
     # @type Activatable
     _activatable = null;
-    
+
     function InitActivatable()
     {
         if (self._activatable != null)
@@ -11941,7 +11422,7 @@ cutscene Cutscene_Level_1_6_1
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-1", "prehub17");
@@ -11998,7 +11479,7 @@ cutscene Cutscene_Level_1_6_2
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-6-1", "prehub18");
@@ -12075,10 +11556,10 @@ cutscene Cutscene_Level_1_7_0
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
         SoundManager.PlayCustom("Level_1-7-0", "sp_intro_03_intro02");
         Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-sp_intro_03_intro02"));
@@ -12134,7 +11615,7 @@ cutscene Cutscene_Level_1_7_0
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
         CutsceneManager.Wait(5.5);
         while (!CutsceneManager.SkipSent())
@@ -12153,7 +11634,7 @@ cutscene Cutscene_Level_1_7_0
                 SoundManager.StopCustom("Level_1-7-0", "demosphereintro15");
 
                 index = Random.RandomInt(1, 9);
-                
+
                 if (index == 1)
                 {
                     addTime = 1.0;
@@ -12206,7 +11687,7 @@ cutscene Cutscene_Level_1_7_0
                 CutsceneManager.Wait(3.0 + addTime);
             }
         }
-        
+
         Cutscene.HideDialogue();
         SoundManager.StopCustom("Level_1-7-0", "sp_intro_03_intro02");
         SoundManager.StopCustom("Level_1-7-0", "demosphereintro04");
@@ -12267,7 +11748,6 @@ cutscene Cutscene_Level_1_7_1
 
         obj = Map.FindMapObjectByName(self._name);
         self._activatable = obj.GetComponent("Activatable");
-        # @type WheatleyRef
         wheatleyComp = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef");
         self._wheatley = wheatleyComp._ref;
         self._wheatleyMovable = self._wheatley.GetComponent("Movable");
@@ -12279,10 +11759,10 @@ cutscene Cutscene_Level_1_7_1
     {
         CutsceneManager.SetCanPlay("Cutscene_Level_1_7_2", false);
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "raildropintro01");
@@ -12422,7 +11902,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.PlayCustom("Level_1-7-0", "demospherefall04");
         Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherefall04-1"));
         self._wheatleyMovable.UnlockPos();
-        SoundManager.Play(PlayerSoundEnum.FLARELAUNCH);
+        SoundManager.Play(HumanSoundEnum.FlareLaunch);
         wait 0.3;
         Cutscene.ShowDialogue(icon, title, I18n.Get("Level_1-7-0-demospherefall04-2"));
         CutsceneManager.Wait(1.3);
@@ -12464,8 +11944,8 @@ cutscene Cutscene_Level_1_7_1
             # wait Time.TickTime;
         }
         self._secretLockerActivatable.Activate();
-        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
-        SoundManager.Play(PlayerSoundEnum.REELIN);
+        SoundManager.Play(HumanSoundEnum.Checkpoint);
+        SoundManager.Play(HumanSoundEnum.ReelIn);
         CutsceneManager.Wait(2.3);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -12496,7 +11976,7 @@ cutscene Cutscene_Level_1_7_1
                 SoundManager.StopCustom("Level_1-7-0", "demospherefirstdoorwaysequence08");
 
                 index = Random.RandomInt(1, 6);
-                
+
                 if (index == 1)
                 {
                     addTime = 3.7;
@@ -12583,7 +12063,7 @@ cutscene Cutscene_Level_1_7_1
                 SoundManager.StopCustom("Level_1-7-0", "demospherefirstdoorwaysequence20");
 
                 index = Random.RandomInt(1, 7);
-                
+
                 if (index == 1)
                 {
                     addTime = 3.2;
@@ -12656,8 +12136,8 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "turnaroundnow01");
 
         self._secretPanelActivatable.Activate();
-        SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
-        SoundManager.Play(PlayerSoundEnum.REELIN);
+        SoundManager.Play(HumanSoundEnum.Checkpoint);
+        SoundManager.Play(HumanSoundEnum.ReelIn);
 
         SoundManager.PlayCustom("Level_1-7-0", "secretpanelopens07");
         Cutscene.ShowDialogue(icon, title, I18n.Get("secretpanelopens07"));
@@ -12674,7 +12154,7 @@ cutscene Cutscene_Level_1_7_1
         SoundManager.StopCustom("Level_1-7-0", "secretpanelopens07");
 
         self._secretLockerActivatable.Deactivate();
-        SoundManager.Play(PlayerSoundEnum.FLARELAUNCH);
+        SoundManager.Play(HumanSoundEnum.FlareLaunch);
         Cutscene.HideDialogue();
 
         SoundManager.PlayCustom("Level_1-7-0", "callingoutinitial14");
@@ -12716,7 +12196,7 @@ cutscene Cutscene_Level_1_7_1
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall17");
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall19");
                 SoundManager.StopCustom("Level_1-7-0", "raildroppostfall20");
-                
+
                 SoundManager.PlayCustom("Level_1-7-0", "raildroppickup02");
                 Cutscene.ShowDialogue(icon, title, I18n.Get("raildroppickup02"));
                 CutsceneManager.Wait(1.0);
@@ -12885,10 +12365,10 @@ cutscene Cutscene_Level_1_7_2
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "gloriousfreedom03");
@@ -12966,10 +12446,10 @@ cutscene Cutscene_Level_1_7_3
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-7-0", "gladosgantry20");
@@ -12985,7 +12465,7 @@ cutscene Cutscene_Level_1_7_3
             # wait Time.TickTime;
         }
         SoundManager.StopCustom("Level_1-7-0", "gladosgantry20");
-        
+
 
         SoundManager.PlayCustom("Level_1-7-0", "gladosgantry21");
         Cutscene.ShowDialogue(icon, title, I18n.Get("gladosgantry21"));
@@ -13052,7 +12532,6 @@ cutscene Cutscene_Level_1_8_1
 
         obj = Map.FindMapObjectByName(self._name);
         self._activatable = obj.GetComponent("Activatable");
-        # @type WheatleyRef
         wheatleyComp = Map.FindMapObjectByName("WheatleyRef 1-7-0").GetComponent("WheatleyRef");
         self._wheatley = wheatleyComp._ref;
         self._wheatleyMovable = self._wheatley.GetComponent("Movable");
@@ -13062,12 +12541,12 @@ cutscene Cutscene_Level_1_8_1
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
         self._activatable.Activate();
 
         Game.SetPlaylist("Battle");
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
 
         SoundManager.PlayCustom("Level_1-8-0", "wakeup_powerup02");
@@ -13084,7 +12563,7 @@ cutscene Cutscene_Level_1_8_1
         }
         SoundManager.StopCustom("Level_1-8-0", "wakeup_powerup02");
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "sp_a1_wakeup_hacking11");
@@ -13115,7 +12594,7 @@ cutscene Cutscene_Level_1_8_1
         }
         SoundManager.StopCustom("Level_1-8-0", "fgb_hello01");
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup01");
@@ -13132,7 +12611,7 @@ cutscene Cutscene_Level_1_8_1
         }
         SoundManager.StopCustom("Level_1-8-0", "chellgladoswakeup01");
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "sp_a1_wakeup_hacking03");
@@ -13150,7 +12629,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.StopCustom("Level_1-8-0", "sp_a1_wakeup_hacking03");
 
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup04");
@@ -13178,7 +12657,7 @@ cutscene Cutscene_Level_1_8_1
             # wait Time.TickTime;
         }
         SoundManager.StopCustom("Level_1-8-0", "chellgladoswakeup04");
-        
+
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup05");
         Cutscene.ShowDialogue(icon, title, I18n.Get("chellgladoswakeup05_1"));
         CutsceneManager.Wait(3.2);
@@ -13205,7 +12684,7 @@ cutscene Cutscene_Level_1_8_1
         }
         SoundManager.StopCustom("Level_1-8-0", "chellgladoswakeup05");
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         SoundManager.PlayCustom("Level_1-8-0", "demospherepowerup07");
@@ -13239,7 +12718,7 @@ cutscene Cutscene_Level_1_8_1
         SoundManager.PlayCustom("Level_1-8-0", "sp_a2_wheatley_ows_long03");
         Cutscene.ShowDialogue(icon, title, I18n.Get("sp_a2_wheatley_ows_long03"));
         self._wheatleyMovable.Reset();
-        SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
+        SoundManager.Play(HumanSoundEnum.BladeNape4Var1);
         CutsceneManager.Wait(2.0);
         while (!CutsceneManager.IsTimerDone())
         {
@@ -13252,7 +12731,7 @@ cutscene Cutscene_Level_1_8_1
         }
         SoundManager.StopCustom("Level_1-8-0", "sp_a2_wheatley_ows_long03");
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-8-0", "chellgladoswakeup06");
@@ -13353,10 +12832,10 @@ cutscene Cutscene_Level_1_9_0
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_incinerator_01_01");
@@ -13424,10 +12903,10 @@ cutscene Cutscene_Level_1_9_1
     coroutine Start()
     {
         Cutscene.HideDialogue();
-        
+
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_1-9-0", "sp_a2_intro1_found01");
@@ -13665,9 +13144,9 @@ cutscene Cutscene_Level_2_1_0
 
         self.InitActivatable();
 
-        icon = IconEnum.KENNY2;
+        icon = ProfileIconEnum.Kenny2;
         title = "Jagerente";
-        
+
         SoundManager.PlayCustom("Level_2-1-0", "sarcasmcore01");
         Cutscene.ShowDialogue(icon, title, I18n.Get("sarcasmcore01"));
         CutsceneManager.Wait(2.0);
@@ -13682,7 +13161,7 @@ cutscene Cutscene_Level_2_1_0
         }
         SoundManager.StopCustom("Level_2-1-0", "sarcasmcore01");
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-1-0", "sp_laser_redirect_intro_entry02");
@@ -13715,7 +13194,7 @@ cutscene Cutscene_Level_2_1_0
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
 
         CutsceneManager.Wait(3.5);
@@ -13767,7 +13246,7 @@ cutscene Cutscene_Level_2_1_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-1-0", "sp_a2_laser_intro_ending02");
@@ -13787,7 +13266,7 @@ cutscene Cutscene_Level_2_1_1
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
 
         CutsceneManager.OnCutsceneComplete(self._name);
@@ -13825,7 +13304,7 @@ cutscene Cutscene_Level_2_2_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-2-0", "sp_a2_laser_stairs_intro02");
@@ -13883,7 +13362,7 @@ cutscene Cutscene_Level_2_2_0
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
 
         CutsceneManager.OnCutsceneComplete(self._name);
@@ -13922,7 +13401,7 @@ cutscene Cutscene_Level_2_2_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-2-0", "sp_laser_powered_lift_completion02");
@@ -13964,7 +13443,7 @@ cutscene Cutscene_Level_2_2_1
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
 
         CutsceneManager.OnCutsceneComplete(self._name);
@@ -14002,7 +13481,7 @@ cutscene Cutscene_Level_2_3_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         if (self._activatable != null)
@@ -14070,7 +13549,7 @@ cutscene Cutscene_Level_2_3_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-3-0", "sp_laser_redirect_intro_completion01");
@@ -14115,7 +13594,7 @@ cutscene Cutscene_Level_2_3_1
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+            SoundManager.Play(HumanSoundEnum.Checkpoint);
         }
 
         CutsceneManager.OnCutsceneComplete(self._name);
@@ -14154,7 +13633,7 @@ cutscene Cutscene_Level_2_4_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-4-0", "sp_laser_over_goo_entry01");
@@ -14172,7 +13651,7 @@ cutscene Cutscene_Level_2_4_0
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.REELIN);
+            SoundManager.Play(HumanSoundEnum.ReelIn);
         }
         CutsceneManager.Wait(0.3);
         while (!CutsceneManager.IsTimerDone())
@@ -14247,7 +13726,7 @@ cutscene Cutscene_Level_2_4_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-4-0", "sp_laser_over_goo_completion01");
@@ -14275,7 +13754,7 @@ cutscene Cutscene_Level_2_4_1
             # wait Time.TickTime;
         }
         SoundManager.StopCustom("Level_2-4-0", "sp_laser_over_goo_completion01");
-        
+
         if (self._activatable != null)
         {
             self._activatable.Activate();
@@ -14319,14 +13798,14 @@ cutscene Cutscene_Level_2_5_0
         if (self._activatable != null)
         {
             self._activatable.Activate();
-            SoundManager.Play(PlayerSoundEnum.REELIN);
+            SoundManager.Play(HumanSoundEnum.ReelIn);
         }
         wait 1.0;
-        
+
         if (self._activatable != null)
         {
             self._activatable.Deactivate();
-            SoundManager.Play(PlayerSoundEnum.REELIN);
+            SoundManager.Play(HumanSoundEnum.ReelIn);
         }
 
         CutsceneManager.OnCutsceneComplete(self._name);
@@ -14363,7 +13842,7 @@ cutscene Cutscene_Level_2_5_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-5-0", "faith_plate_intro01");
@@ -14403,7 +13882,7 @@ cutscene Cutscene_Level_2_5_1
             # wait Time.TickTime;
         }
         SoundManager.StopCustom("Level_2-5-0", "faith_plate_intro01");
-        
+
         if (self._activatable != null)
         {
             self._activatable.Activate();
@@ -14449,7 +13928,7 @@ cutscene Cutscene_Level_2_6_0
             self._activatable.Activate();
         }
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-6-0", "sp_catapult_intro_completion01");
@@ -14518,7 +13997,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
     {
         Cutscene.HideDialogue();
 
-        icon = IconEnum.YMIR1;
+        icon = ProfileIconEnum.Ymir1;
         title = Network.MyPlayer.Name;
         isEmployee = PlayerProxy.IsApertureScienceEmployee();
         if (!isEmployee)
@@ -14536,7 +14015,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 # wait Time.TickTime;
             }
             SoundManager.StopCustom("Level_2-6-0", "cavejohnson_generated_book_easter");
-        }            
+        }
         else
         {
             SoundManager.PlayCustom("Level_2-6-0", "cavejohnson_generated_book_easter2");
@@ -14587,7 +14066,7 @@ cutscene Cutscene_EasterEgg_StrangeBook
                 }
                 # wait Time.TickTime;
             }
-            
+
             Cutscene.ShowDialogue(icon, title, I18n.Get("Cutscene_EasterEgg_StrangeBook_1_6"));
             CutsceneManager.Wait(8.5);
             while (!CutsceneManager.IsTimerDone())
@@ -14638,7 +14117,7 @@ cutscene Cutscene_Level_2_7_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         state = CutsceneManager.GetState(self._name);
@@ -14649,7 +14128,7 @@ cutscene Cutscene_Level_2_7_0
             if (self._activatable != null)
             {
                 self._activatable.Activate();
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
             }
 
             wait 0.5;
@@ -14680,7 +14159,7 @@ cutscene Cutscene_Level_2_7_0
             if (obj != null)
             {
                 obj.Reset();
-                SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
+                SoundManager.Play(HumanSoundEnum.BladeNape4Var1);
             }
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube01");
@@ -14714,7 +14193,7 @@ cutscene Cutscene_Level_2_7_0
             if (self._activatable != null)
             {
                 self._activatable.Activate();
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
             }
 
             wait 1.5;
@@ -14745,7 +14224,7 @@ cutscene Cutscene_Level_2_7_0
             if (obj != null)
             {
                 obj.Reset();
-                SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
+                SoundManager.Play(HumanSoundEnum.BladeNape4Var1);
             }
 
             SoundManager.PlayCustom("Level_2-7-0", "fizzlecube05");
@@ -14767,7 +14246,7 @@ cutscene Cutscene_Level_2_7_0
             if (self._activatable != null)
             {
                 self._activatable.Activate();
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
             }
             wait 1.5;
             if (self._activatable != null)
@@ -14836,7 +14315,7 @@ cutscene Cutscene_Level_2_7_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings03");
@@ -14924,13 +14403,12 @@ component Cutscene_Level_2_7_2
 
         self._activatable.Deactivate();
 
-        # @type Movable
         movable = mapObject.GetComponent("Movable");
         movable.Reset();
-        SoundManager.Play(PlayerSoundEnum.BLADENAPE4VAR1);
+        SoundManager.Play(HumanSoundEnum.BladeNape4Var1);
         self._timer.Reset(9.5);
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-7-0", "sp_a2_pit_flings06");
@@ -14997,7 +14475,7 @@ cutscene Cutscene_Level_2_8_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_2-8-0", "sp_a2_fizzler_intro01");
@@ -15119,7 +14597,7 @@ cutscene Cutscene_Level_3_1_0
                 self._activatable.Deactivate();
             }
 
-            icon = IconEnum.TITAN10;
+            icon = ProfileIconEnum.Titan10;
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek01");
@@ -15147,7 +14625,7 @@ cutscene Cutscene_Level_3_1_0
             }
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek01");
 
-            icon = IconEnum.TITAN16;
+            icon = ProfileIconEnum.Titan16;
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failureone01");
@@ -15206,7 +14684,7 @@ cutscene Cutscene_Level_3_1_0
 
             if (self._activatable != null)
             {
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
                 self._activatable.Activate();
             }
 
@@ -15222,7 +14700,7 @@ cutscene Cutscene_Level_3_1_0
                 self._activatable.Deactivate();
             }
 
-            icon = IconEnum.TITAN10;
+            icon = ProfileIconEnum.Titan10;
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek02");
@@ -15250,7 +14728,7 @@ cutscene Cutscene_Level_3_1_0
             }
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek02");
 
-            icon = IconEnum.TITAN16;
+            icon = ProfileIconEnum.Titan16;
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo01");
@@ -15308,7 +14786,7 @@ cutscene Cutscene_Level_3_1_0
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failuretwo03");
             if (self._activatable != null)
             {
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
                 self._activatable.Activate();
             }
 
@@ -15324,7 +14802,7 @@ cutscene Cutscene_Level_3_1_0
                 self._activatable.Deactivate();
             }
 
-            icon = IconEnum.TITAN10;
+            icon = ProfileIconEnum.Titan10;
             title = "Wheatley";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek03");
@@ -15352,7 +14830,7 @@ cutscene Cutscene_Level_3_1_0
             }
             SoundManager.StopCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek03");
 
-            icon = IconEnum.TITAN16;
+            icon = ProfileIconEnum.Titan16;
             title = "GLaDOS";
 
             SoundManager.PlayCustom("Level_3-1-0", "sp_catapult_fling_sphere_peek_failurethree01");
@@ -15384,7 +14862,7 @@ cutscene Cutscene_Level_3_1_0
 
             if (self._activatable != null)
             {
-                SoundManager.Play(PlayerSoundEnum.CHECKPOINT);
+                SoundManager.Play(HumanSoundEnum.Checkpoint);
                 self._activatable.Activate();
             }
 
@@ -15437,7 +14915,7 @@ cutscene Cutscene_Level_3_2_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-2-0", "sp_a2_ricochet01");
@@ -15516,7 +14994,7 @@ cutscene Cutscene_Level_3_2_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-2-0", "glados_generated_deers");
@@ -15584,7 +15062,7 @@ cutscene Cutscene_Level_3_3_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-3-0", "sp_a2_bridge_intro01");
@@ -15663,7 +15141,7 @@ cutscene Cutscene_Level_3_3_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-3-0", "sp_a2_bridge_intro03");
@@ -15787,7 +15265,7 @@ cutscene Cutscene_Level_3_4_0
 
         self._wheatley.MoveTo(self._wPos.Get(0).Position, 0.1);
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_a2_bridge_the_gap02");
@@ -15840,7 +15318,7 @@ cutscene Cutscene_Level_3_4_0
         }
         SoundManager.StopCustom("Level_3-4-0", "sp_a2_bridge_the_gap02");
 
-        icon = IconEnum.TITAN10;
+        icon = ProfileIconEnum.Titan10;
         title = "Wheatley";
 
         self._wheatley.MoveTo(self._wPos.Get(1).Position, 0.25);
@@ -15980,7 +15458,7 @@ cutscene Cutscene_Level_3_4_0
         self._wheatley.MoveTo(self._wPos.Get(0).Position, 0.25);
         wait 0.25;
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "sp_sphere_2nd_encounter_entrytwo01");
@@ -16067,7 +15545,7 @@ cutscene Cutscene_Level_3_4_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-4-0", "testchambermisc19");
@@ -16161,7 +15639,7 @@ cutscene Cutscene_Level_3_5_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-5-0", "turret_intro01");
@@ -16245,7 +15723,7 @@ cutscene Cutscene_Level_3_6_0
             self._activatable.Activate();
         }
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-6-0", "testchambermisc21");
@@ -16319,7 +15797,7 @@ cutscene Cutscene_Level_3_6_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-6-0", "testchambermisc23");
@@ -16423,7 +15901,7 @@ cutscene Cutscene_Level_3_7_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-7-0", "sp_a2_turret_intro01");
@@ -16577,7 +16055,7 @@ cutscene Cutscene_Level_3_7_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-7-0", "testchambermisc30");
@@ -16682,7 +16160,7 @@ cutscene Cutscene_Level_3_8_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-8-0", "testchambermisc31");
@@ -16808,7 +16286,7 @@ cutscene Cutscene_Level_3_8_1
         SoundManager.StopCustom("Level_3-8-0", "sp_a2_laser_vs_turret_r1");
         CutsceneManager.SetCanPlay("Cutscene_Level_3_8_EasterEgg", true);
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-8-0", "testchambermisc24");
@@ -16867,7 +16345,7 @@ cutscene Cutscene_Level_3_9_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-9-0", "testchambermisc39");
@@ -16949,7 +16427,7 @@ cutscene Cutscene_Level_3_9_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_3-9-0", "testchambermisc33");
@@ -17023,7 +16501,7 @@ cutscene Cutscene_Level_4_1_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-1-0", "testchambermisc34");
@@ -17152,7 +16630,7 @@ cutscene Cutscene_Level_4_1_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-1-0", "sp_a2_column_blocker03");
@@ -17249,7 +16727,7 @@ cutscene Cutscene_Level_4_2_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-2-0", "sp_a2_column_blocker05");
@@ -17307,7 +16785,7 @@ cutscene Cutscene_Level_4_2_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-2-0", "sp_a2_dilemma01");
@@ -17365,7 +16843,7 @@ cutscene Cutscene_Level_4_3_0
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-3-0", "a2_triple_laser01");
@@ -17438,7 +16916,7 @@ cutscene Cutscene_Level_4_3_1
 
         self.InitActivatable();
 
-        icon = IconEnum.TITAN16;
+        icon = ProfileIconEnum.Titan16;
         title = "GLaDOS";
 
         SoundManager.PlayCustom("Level_4-3-0", "a2_triple_laser03");
