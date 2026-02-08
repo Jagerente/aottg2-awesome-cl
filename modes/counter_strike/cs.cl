@@ -1,10 +1,3 @@
-/*
-    Custom Logic made by Jagerente
-    https://jagerente.dev/
-
-    Version 1.0.0
-*/
-
 class Main
 {
     # Gameplay Settings
@@ -170,6 +163,8 @@ class Main
     AWPMaxAmmo = 12;
     AWPDistance = 512;
 
+    ShowHitboxex = false;
+
     # Game State Variables
     _hasSpawned = false;
     _roundTimeLeft = 0.0;
@@ -184,22 +179,37 @@ class Main
     _shoppingItems = List();
     _logger = Logger(1, "[MAIN]");
 
+    # @type List<BombPlant>
     _bombPlantRegions = List();
+    # @type List<MapObject>
     _shoppingRegions = List();
+    # @type List<ShoppingZone>
     _shoppingZones = List();
+    # @type List<MapObject>
     _escortRegions = List();
+    # @type Dict<int,HostageProxy>
     _hostages = Dict();
     _savedFOV = null;
 
+    # @type Dict<string,ISpecial>
     _specials = Dict();
+    # @type Dict<string,Weapon>
     _weapons = Dict();
+    # @type Dict<int,MapObject>
     _highlights = Dict();
-    _hitboxes = Dict();
-    _hitboxHumans = Dict();
+    # @type Dict<int,MapObject>
+    # @type Dict<int,HumanTransformCache>
+    _humanTransformCache = Dict();
+    # @type HitboxManager
+    _hitboxManager = null;
 
+    # @type MapObject
     _blueHighlightRef = null;
+    # @type MapObject
     _redHighlightRef = null;
+    # @type MapObject
     _hitboxHeadRef = null;
+    # @type MapObject
     _fragGrenadeRef = null;
 
     _respawnTimer = Timer(0.0);
@@ -211,20 +221,47 @@ class Main
         self._preparationTimeLeft = self.PreparationTime;
     }
 
+    function OnChatInput(message)
+    {
+        if (Network.IsMasterClient)
+        {
+            if (String.StartsWith(message, "/money"))
+            {
+                amount = String.Substring(message, 7);
+                amount = Math.Clamp(Convert.ToInt(amount), 0, 16000);
+                PlayerProxy.SetBalance(amount);
+                self._logger.Debug(HTML.Color("Balance set to " + amount + "G", ColorEnum.Yellowgreen));
+                return false;
+            }
+        }
+    }
+
     function OnGameStart()
 	{
+        self._blueHighlightRef = Map.CreateMapObjectRaw("Scene,General/EditorPointLight,0,0,1,1,0,0,BlueHighlightReference,0,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:0/0/255/255|Intensity:6|Range:1.5");
+        self._redHighlightRef = Map.CreateMapObjectRaw("Scene,General/EditorPointLight,0,0,1,1,0,0,RedHighlightReference,20,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:255/0/0/255|Intensity:6|Range:1.5");
+        _visibleStr = "0";
+        if (self.ShowHitboxex)
+        {
+            _visibleStr = "1";
+        }
+        hitboxHeadRef = Map.CreateMapObjectRaw("Scene,Geometry/Cube1,0,0,1,1," + _visibleStr + ",0,Hitbox_HEAD,40,-200,0,0,0,0,0.7,0.7,0.7,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,");
+        self._hitboxManager = HitboxManager(hitboxHeadRef);
+        self._fragGrenadeRef = Map.CreateMapObjectRaw("Scene,Geometry/Hedron1,0,0,1,0,1,0,FragGrenade,60,-200,0,0,0,0,0.5,0.5,0.5,Physical,MapObjects,Default,Transparent|0/67/0/255|Misc/None|1/1|0/0,Rigidbody|Mass:1|Gravity:0/-20/0|FreezeRotation:false|Interpolate:false,PointLight|Color:139/0/0/255|Intensity:15|Range:3");
+        explosionRegionRef = Map.CreateMapObjectRaw("Scene,Geometry/Sphere1,0,0,1,0,1,0,FragGrenade_ExplosionRegion,60,-200,0,0,0,0,25,25,25,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,FragGrenadeZone|");
+        explosionRegionRef.Parent = self._fragGrenadeRef;
+
         InputManager.InitKeybinds();
         self.initRouter();
-
-        self._blueHighlightRef = Map.FindMapObjectByName("BlueHighlightReference");
-        self._redHighlightRef = Map.FindMapObjectByName("RedHighlightReference");
-        self._hitboxHeadRef = Map.FindMapObjectByName("Hitbox_HEAD");
-        self._fragGrenadeRef = Map.FindMapObjectByName("FragGrenade");
+    
+        LineRendererPool.Initialize(10);
         
+        WeaponTracerManager.Initialize();
+    
         if (RoundManager.GetRoundsCount() > self.MaxRounds)
         {
-            RoundManager.SetRoundsWon(TeamEnum.BLUE, 0);
-            RoundManager.SetRoundsWon(TeamEnum.RED, 0);
+            RoundManager.SetRoundsWon(TeamEnum.Blue, 0);
+            RoundManager.SetRoundsWon(TeamEnum.Red, 0);
             PlayerProxy.ResetInited();
         }
         TipsProvider.InitList();
@@ -272,28 +309,40 @@ class Main
 
     function OnCharacterSpawn(character)
     {
-        if (character.IsMine && character.Type == ObjectTypeEnum.HUMAN)
+        if (character.Type == ObjectTypeEnum.HUMAN)
         {
-            PlayerProxy.OnSpawn(character);
-
-            self.initShops();
-
-            self._savedFOV = Camera.FOV;
-
-            if (self._preparationTimeLeft > 0)
+            # @type Human
+            human = character;
+            cache = HumanTransformCache(human);
+            self._humanTransformCache.Set(human.Player.ID, cache);
+            
+            if (!human.IsMainCharacter)
             {
-                Cutscene.Start("PreparationCutscene", false);
+                self._hitboxManager.OnCharacterSpawn(human, cache);
             }
+            else
+            {
+                PlayerProxy.OnSpawn(character);
 
-            PositionLocker.SetPosition(character.Position);
+                self.initShops();
 
-            self._shoppingTimer.Reset(self.ShoppingTime);
+                self._savedFOV = Camera.FOV;
+
+                if (self._preparationTimeLeft > 0)
+                {
+                    Cutscene.Start("PreparationCutscene", false);
+                }
+
+                PositionLocker.SetPosition(character.Position);
+
+                self._shoppingTimer.Reset(self.ShoppingTime);
+            }
         }
     }
 
     function OnCharacterDamaged(victim, killer, killerName, damage)
     {
-        if (victim.IsMine)
+        if (victim.IsMainCharacter)
         {
             PlayerProxy.OnDamaged(damage);
         }
@@ -301,6 +350,13 @@ class Main
 
     function OnCharacterDie(victim, killer, killerName)
     {
+        if (victim.Type == ObjectTypeEnum.HUMAN)
+        {
+            self._humanTransformCache.Remove(victim.Player.ID);
+            
+            self._hitboxManager.OnCharacterDie(victim);
+        }
+
         highlight = self._highlights.Get(victim.Player.ID, null);
         if (highlight != null)
         {
@@ -308,25 +364,17 @@ class Main
             self._highlights.Remove(victim.Player.ID);
         }
 
-        if (victim.IsMine && victim.Type == ObjectTypeEnum.HUMAN)
+        if (victim.IsMainCharacter && victim.Type == ObjectTypeEnum.HUMAN)
         {
             PlayerProxy.OnDie();
             Camera.SetFOV(self._savedFOV);
             self._respawnTimer.Reset(self.DeathmatchRespawnTime);
         }
         elif (
-            (killer != null && killer.IsMine && killer.Type == ObjectTypeEnum.HUMAN)
+            (killer != null && killer.IsMainCharacter && killer.Type == ObjectTypeEnum.HUMAN)
             || killerName == Network.MyPlayer.Name
         )
         {
-            hitboxHead = self._hitboxes.Get(victim.Player.ID, null);
-            if (hitboxHead != null)
-            {
-                self._hitboxHumans.Remove(hitboxHead.ID);
-                Map.DestroyMapObject(hitboxHead, false);
-                self._hitboxes.Remove(victim.Player.ID);
-            }
-
             if (self.GameMode != GameModeEnum.DEATHMATCH)
             {
                 reward = PlayerProxy.GetSelectedWeapon().GetKillReward();
@@ -354,13 +402,9 @@ class Main
             self._highlights.Remove(player.ID);
         }
         
-        hitboxHead = self._hitboxes.Get(player.ID, null);
-        if (hitboxHead != null)
-        {
-            self._hitboxHumans.Remove(hitboxHead.ID);
-            Map.DestroyMapObject(hitboxHead, false);
-            self._hitboxes.Remove(player.ID);
-        }
+        self._hitboxManager.OnPlayerLeave(player);
+
+        self._humanTransformCache.Remove(player.ID);
     }
 
     function OnSecond()
@@ -390,7 +434,8 @@ class Main
     function OnFrame()
     {
         self.updatePlayersHighlightning();
-        self.updatePlayersHitboxes();
+        
+        self._hitboxManager.OnFrame();
 
         if (self.GameMode != GameModeEnum.DEATHMATCH && self._preparationTimeLeft > 0 && self._preparationTimeLeft < self.PreparationTime - 0.5)
         {
@@ -412,6 +457,8 @@ class Main
         {
             h.OnTick();
         }
+        
+        WeaponTracerManager.OnTick();
 
 		if (Game.IsEnding)
 		{
@@ -552,6 +599,7 @@ class Main
         {
             if (self.GameMode == GameModeEnum.BOMB_PLANT)
             {
+                # @type BombPlant
                 plant = obj.GetComponent("BombPlant");
                 if (self.PlantingDelay > 0.0)
                 {
@@ -603,9 +651,9 @@ class Main
     function initWeapons()
     {
         bladesWeapon = Weapon(
-            WeaponEnum.BLADES, 
+            WeaponEnum.Blade, 
             "Blades", 
-            WeaponEnum.BLADES, 
+            WeaponEnum.Blade, 
             self.BladesDamage, 
             -1, 
             self.BladesMaxDurability,
@@ -626,7 +674,7 @@ class Main
         ));
 
         self._weapons.Set(
-            WeaponEnum.BLADES, 
+            WeaponEnum.Blade, 
             bladesWeapon
         );
         uspsWeapon = Weapon(
@@ -671,7 +719,7 @@ class Main
             Weapon(
                 CustomWeaponEnum.RPG, 
                 "RPG", 
-                WeaponEnum.TS, 
+                WeaponEnum.Thunderspear, 
                 self.RPGDamage, 
                 -1,
                 self.RPGMaxRounds,
@@ -687,7 +735,7 @@ class Main
         deadlyBladesWeapon = Weapon(
             CustomWeaponEnum.DEADLY_BLADES, 
             "Deadly Blades", 
-            WeaponEnum.BLADES, 
+            WeaponEnum.Blade, 
             self.DeadlyBladesDamage, 
             -1,
             self.DeadlyBladesMaxDurability,
@@ -845,7 +893,7 @@ class Main
             {
                 self._shoppingItems.Add(ArmorShoppingItem(self.ArmorPrice, self.ArmorValue));
             }
-            if (self.GameMode == GameModeEnum.BOMB_PLANT && PlayerProxy.GetTeam() == TeamEnum.BLUE)
+            if (self.GameMode == GameModeEnum.BOMB_PLANT && PlayerProxy.GetTeam() == TeamEnum.Blue)
             {
                 if (self.EnableDefuseKit)
                 {
@@ -894,6 +942,7 @@ class Main
         for (obj in Map.FindMapObjectsByName("ShoppingRegion"))
         {
             self._shoppingRegions.Add(obj);
+            # @type ShoppingZone
             shoppingZone = obj.GetComponent("ShoppingZone");
             if (self.GameMode == GameModeEnum.DEATHMATCH)
             {
@@ -961,7 +1010,7 @@ class Main
         if (self.GameMode == GameModeEnum.DEATHMATCH)
         {
             self._respawnTimer.UpdateOnTick();
-            if (Network.MyPlayer.Status == PlayerStatusEnum.DEAD && self.GameMode == GameModeEnum.DEATHMATCH)
+            if (Network.MyPlayer.Status == PlayerStatusEnum.Dead && self.GameMode == GameModeEnum.DEATHMATCH)
             {
                 if (self._respawnTimer.IsDone())
                 {
@@ -980,7 +1029,7 @@ class Main
             {
                 for (p in Network.Players)
                 {
-                    if (p.Status == PlayerStatusEnum.DEAD)
+                    if (p.Status == PlayerStatusEnum.Dead)
                     {
                         Game.SpawnPlayer(p, false);
                     }
@@ -1033,18 +1082,18 @@ class Main
 
         for (p in Network.Players)
         {
-            if (p.Team == TeamEnum.BLUE)
+            if (p.Team == TeamEnum.Blue)
             {
                 self._blueTeamTotal += 1;
-                if (p.Status == PlayerStatusEnum.DEAD)
+                if (p.Status == PlayerStatusEnum.Dead)
                 {
                     self._blueTeamDead += 1;
                 }
             }
-            elif (p.Team == TeamEnum.RED)
+            elif (p.Team == TeamEnum.Red)
             {
                 self._redTeamTotal += 1;
-                if (p.Status == PlayerStatusEnum.DEAD)
+                if (p.Status == PlayerStatusEnum.Dead)
                 {
                     self._redTeamDead += 1;
                 }
@@ -1052,11 +1101,11 @@ class Main
         }
         for (p in Game.PlayerHumans)
         {
-            if (p.Team == TeamEnum.BLUE)
+            if (p.Team == TeamEnum.Blue)
             {
                 self._blueTeamAlive += 1;
             }
-            elif (p.Team == TeamEnum.RED)
+            elif (p.Team == TeamEnum.Red)
             {
                 self._redTeamAlive += 1;
             }
@@ -1203,8 +1252,8 @@ class Main
 
     function buildRoundsWonLabel()
     {
-        redCountLabel = "RED: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.RED));
-        blueCountLabel = "BLUE: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.BLUE));
+        redCountLabel = "RED: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.Red));
+        blueCountLabel = "BLUE: " + Convert.ToString(RoundManager.GetRoundsWon(TeamEnum.Blue));
 
         return HTML.Color(redCountLabel, ColorEnum.RedTeam) 
         + " | " 
@@ -1488,11 +1537,11 @@ class Main
             if (highlight == null)
             {
                 highlightRef = null;
-                if (human.Team == TeamEnum.BLUE)
+                if (human.Team == TeamEnum.Blue)
                 {
                     highlightRef = self._blueHighlightRef;
                 }
-                elif (human.Team == TeamEnum.RED)
+                elif (human.Team == TeamEnum.Red)
                 {
                     highlightRef = self._redHighlightRef;
                 }
@@ -1511,49 +1560,6 @@ class Main
         }
     }
 
-    function updatePlayersHitboxes()
-    {
-        for (human in Game.PlayerHumans)
-        {
-            if (!human.IsMine)
-            {
-                hitboxHead = self._hitboxes.Get(human.Player.ID, null);
-                if (hitboxHead == null)
-                {
-                    hitboxHeadRef = self._hitboxHeadRef;
-                    if (hitboxHeadRef != null)
-                    {
-                        hitboxHead = Map.CopyMapObject(hitboxHeadRef, false);
-                        self._hitboxes.Set(human.Player.ID, hitboxHead);
-                        self._hitboxHumans.Set(hitboxHead.ID, human);
-                    }
-                }
-
-                if (hitboxHead != null)
-                {
-                    baseOffset = Vector3(0, 1.4, 0);
-                    horizontalVelocityMagnitude = Math.Sqrt(human.Velocity.X * human.Velocity.X + human.Velocity.Z * human.Velocity.Z);
-                    if (horizontalVelocityMagnitude > 0.2 || human.State == "Land")
-                    {
-                        # thetaRadians = human.Rotation.Y;
-                        # forwardVector = Vector3(Math.Sin(thetaRadians), 0, Math.Cos(thetaRadians));
-                        forwardVector = Vector3.GetRotationDirection(human.Rotation, Vector3.Forward);
-                        offsetAmount = 0.5;
-                        rotationOffset = forwardVector.Scale(offsetAmount);
-                        baseOffset.X = baseOffset.X + rotationOffset.X;
-                        baseOffset.Y = baseOffset.Y + rotationOffset.Y - 0.3;
-                        baseOffset.Z = baseOffset.Z + rotationOffset.Z;
-                    }
-
-                    hitboxHead.Position = Vector3(
-                        human.Position.X + baseOffset.X,
-                        human.Position.Y + baseOffset.Y,
-                        human.Position.Z + baseOffset.Z
-                    );
-                }
-            }
-        }
-    }
 
     function printGameInfo()
     {
@@ -1585,6 +1591,7 @@ class Main
         Router.RegisterHandler(SyncRoomDataMessage.TOPIC, SyncRoomDataMessageHandler());
         Router.RegisterHandler(SyncAllRoomDataMessage.TOPIC, SyncAllRoomDataMessageHandler());
         Router.RegisterHandler(RoundEndMessage.TOPIC, RoundEndMessageHandler());
+        Router.RegisterHandler(WeaponTracerMessage.TOPIC, WeaponTracerMessageHandler());
     }
 }
 
@@ -1599,8 +1606,12 @@ extension PlayerProxy
     _selectedWeapon = null;
     _previousSelectedWeapon = null;
     _justBoughtWeapons = Dict();
+    # @type List<IAbility>
     _abilities = List();
     _currentCharacter = null;
+
+    # @type HumanTransformCache
+    _transformCache = null;
 
     function InitUser()
     {
@@ -1632,7 +1643,7 @@ extension PlayerProxy
         if (!self.IsInited())
         {
             self.SetBalance(Main.StartBalance);
-            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.Blade, null));
             self.SetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY, null);
             self.RemoveThrowables();
             self.SetInited();
@@ -1640,7 +1651,7 @@ extension PlayerProxy
 
         if (self.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY) == null)
         {
-            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));        
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.Blade, null));        
         }
     }
 
@@ -1659,9 +1670,16 @@ extension PlayerProxy
         Network.MyPlayer.SetCustomProperty("inited", 0);
     }
 
+    # @return Human
     function GetHuman()
     {
         return self._currentCharacter;
+    }
+
+    # @return HumanTransformCache
+    function Transform()
+    {
+        return self._transformCache;
     }
 
     function GetTeam()
@@ -1672,16 +1690,17 @@ extension PlayerProxy
     function OnSpawn(character)
     {
         self._currentCharacter = character;
+        self._transformCache = HumanTransformCache(character);
         self.InitUser();
 
         if (Main.GameMode == GameModeEnum.BOMB_PLANT)
         {
-            if (self.GetTeam() == TeamEnum.RED)
+            if (self.GetTeam() == TeamEnum.Red)
             {
                 self.AddBomb();
                 self.RemoveDefuseKit();
             }
-            elif (self.GetTeam() == TeamEnum.BLUE)
+            elif (self.GetTeam() == TeamEnum.Blue)
             {
                 self.RemoveBomb();
             }
@@ -1718,10 +1737,21 @@ extension PlayerProxy
 
     function OnDie()
     {
+        w = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY);
+        if (w != null)
+        {
+            w.Reset();
+        }
+        w = self.GetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY);
+        if (w != null)
+        {
+            w.Reset();
+        }
+
         self.ResetArmor();
         if (Main.GameMode != GameModeEnum.DEATHMATCH)
         {
-            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.BLADES, null));
+            self.SetWeaponInSlot(ItemSlotEnum.WEAPON_PRIMARY, Main._weapons.Get(WeaponEnum.Blade, null));
             self.SetWeaponInSlot(ItemSlotEnum.WEAPON_SECONDARY, null);
         }
 
@@ -1748,6 +1778,7 @@ extension PlayerProxy
         self._lastRounds = null;
         self._lastAmmo = null;
         self._currentCharacter = null;
+        self._transformCache = null;
     }
 
     function OnTick()
@@ -1796,7 +1827,7 @@ extension PlayerProxy
                 self._justBoughtWeapons.Set(self._selectedWeapon.GetID(), false);
             }
 
-            if (Main.GameMode == GameModeEnum.HOSTAGE && Network.MyPlayer.Team == TeamEnum.RED)
+            if (Main.GameMode == GameModeEnum.HOSTAGE && Network.MyPlayer.Team == TeamEnum.Red)
             {
                 startPos = Camera.Position + Camera.Forward.Normalized * 0.7;
                 endPos = startPos + Camera.Forward.Normalized * 3;
@@ -1804,14 +1835,16 @@ extension PlayerProxy
                 res = Physics.LineCast(
                     startPos, 
                     endPos, 
-                    CollideWithEnum.TITANS
+                    CollideWithEnum.Titans
                 );
                 if (res != null)
                 {
                     UI.SetLabelForTime(UILabelTypeEnum.MIDDLECENTER, "Press [" + Input.GetKeyName(InputManager.EscortHostage) + "] to escort the hostage.", 0.1);
                     if (Input.GetKeyDown(InputManager.EscortHostage))
                     {
-                        Main.SendHostageEscortRequestMessage(res.Collider.ViewID);
+                        # @type Titan
+                        titan = res.Collider;
+                        Main.SendHostageEscortRequestMessage(titan.ViewID);
                     }
                 }
             }
@@ -1835,16 +1868,20 @@ extension PlayerProxy
         }
     }
 
+    # @return List<IAbility>
     function GetAbilities()
     {
         return self._abilities;
     }
 
+    # @param a IAbility
     function AddAbility(a)
     {
         self._abilities.Add(a);
     }
 
+    # @param name string
+    # @return int
     function GetThrowables(name)
     {
         count = Network.MyPlayer.GetCustomProperty("throwables:" + name);
@@ -1856,16 +1893,20 @@ extension PlayerProxy
         return Math.Max(0, count);
     }
 
+    # @param name string
+    # @param count int
     function SetThrowables(name, count)
     {
         Network.MyPlayer.SetCustomProperty("throwables:" + name, Math.Max(0, count));
     }
 
+    # @param name string
     function AddThrowable(name)
     {
         self.SetThrowables(name, self.GetThrowables(name) + 1);
     }
 
+    # @param name string
     function DecreaseThrowable(name)
     {
         self.SetThrowables(name, self.GetThrowables(name) - 1);
@@ -1875,8 +1916,8 @@ extension PlayerProxy
     {
         self.SetThrowables(ThrowableEnum.FRAG_GRENADE, 0);
     }
-    
 
+    # @return bool
     function HasWatchedGuide()
     {
         return Network.MyPlayer.GetCustomProperty("watched_guide") == 1;
@@ -1887,6 +1928,7 @@ extension PlayerProxy
         Network.MyPlayer.SetCustomProperty("watched_guide", 1);
     }
 
+    # @return int
     function GetBalance()
     {
         balance = Network.MyPlayer.GetCustomProperty("balance");
@@ -1898,37 +1940,45 @@ extension PlayerProxy
         return balance;
     }
 
+    # @param value int
     function SetBalance(value)
     {
         Network.MyPlayer.SetCustomProperty("balance", Math.Clamp(value, 0, 16000));
     }
 
+    # @param value int
     function IncreaseBalance(value)
     {
         Network.MyPlayer.SetCustomProperty("balance", Math.Min(16000, self.GetBalance() + value));
     }
 
+    # @param value int
     function DecreaseBalance(value)
     {
         Network.MyPlayer.SetCustomProperty("balance", Math.Max(0, self.GetBalance() - value));
     }
 
+    # @return string
     function GetStatus()
     {
         return Network.MyPlayer.Status;
     }
 
+    # @return bool
     function IsAlive()
     {
-        return Network.MyPlayer.Status == PlayerStatusEnum.ALIVE && self.GetHuman() != null;
+        return Network.MyPlayer.Status == PlayerStatusEnum.Alive && self.GetHuman() != null;
     }
 
+    # @param slot int
+    # @return Weapon
     function GetWeaponInSlot(slot)
     {
         weaponID = Network.MyPlayer.GetCustomProperty("weapon:" + slot);
         return Main._weapons.Get(weaponID, null);
     }
 
+    # @return bool
     function HasDefuseKit()
     {
         return Network.MyPlayer.GetCustomProperty("inventory:defuse_kit") == 1;
@@ -1954,6 +2004,7 @@ extension PlayerProxy
         }
     }
 
+    # @return int
     function GetArmorDurability()
     {
         armor = Network.MyPlayer.GetCustomProperty("inventory:armor");
@@ -1965,6 +2016,7 @@ extension PlayerProxy
         return armor;
     }
 
+    # @param value int
     function SetArmorDurability(value)
     {
         Network.MyPlayer.SetCustomProperty("inventory:armor", value);
@@ -1977,6 +2029,7 @@ extension PlayerProxy
         Network.MyPlayer.SetCustomProperty("inventory:armor", 0);
     }
 
+    # @param value int
     function DecreaseArmorDurability(value)
     {
         Network.MyPlayer.SetCustomProperty(
@@ -1985,6 +2038,7 @@ extension PlayerProxy
         );
     }
 
+    # @return bool
     function HasBomb()
     {
         return Network.MyPlayer.GetCustomProperty("inventory:bomb") == 1;
@@ -2000,6 +2054,8 @@ extension PlayerProxy
         Network.MyPlayer.SetCustomProperty("inventory:bomb", 0);
     }
 
+    # @param slot int
+    # @param weapon Weapon
     function SetWeaponInSlot(slot, weapon)
     {
         weaponID = "";
@@ -2011,11 +2067,14 @@ extension PlayerProxy
         Network.MyPlayer.SetCustomProperty("weapon:" + slot, weaponID);
     }
 
+    # @return Weapon
     function GetSelectedWeapon()
     {
         return self._selectedWeapon;
     }
 
+    # @param slot int
+    # @return bool
     function SelectWeapon(slot)
     {
         if (!self.IsAlive())
@@ -2078,6 +2137,7 @@ extension PlayerProxy
         return true;
     }
 
+    # @param weaponID string
     function AddWeapon(weaponID)
     {
         weapon = Main._weapons.Get(weaponID, null);
@@ -2103,6 +2163,7 @@ extension PlayerProxy
         self.SelectWeapon(weapon.GetSlot());
     }
 
+    # @return string
     function GetSpecial()
     {
         human = self.GetHuman();
@@ -2114,6 +2175,7 @@ extension PlayerProxy
         return human.CurrentSpecial;
     }
 
+    # @param special string
     function SetSpecial(special)
     {
         human = self.GetHuman();
@@ -2125,6 +2187,7 @@ extension PlayerProxy
         human.SetSpecial(special);
     }
 
+    # @return int
     function GetMaxHealth()
     {
         if (Network.MyPlayer == null || Network.MyPlayer.Character == null)
@@ -2135,16 +2198,19 @@ extension PlayerProxy
         return Network.MyPlayer.Character.MaxHealth;
     }
     
+    # @return int
     function GetMaxHealthWithoutArmor()
     {
         return Main.MaxHealth;
     }
 
+    # @param health int
     function SetMaxHealth(health)
     {
         Network.MyPlayer.Character.MaxHealth = health;
     }
 
+    # @return int
     function GetCurrentHealth()
     {
         if (Network.MyPlayer == null || Network.MyPlayer.Character == null)
@@ -2155,11 +2221,13 @@ extension PlayerProxy
         return Network.MyPlayer.Character.Health;
     }
 
+    # @return int
     function GetCurrentHealthWithoutArmor()
     {
         return self.GetCurrentHealth() - self.GetArmorDurability();
     }
 
+    # @param health int
     function SetCurrentHealth(health)
     {
         Network.MyPlayer.Character.Health = health;
@@ -2267,6 +2335,7 @@ extension PlayerProxy
 
 extension SoundManager
 {
+    # @param name string
     function Play(name)
     {
         char = PlayerProxy.GetHuman();
@@ -2289,9 +2358,12 @@ class HostageProxy
     _lockingPos = Vector3();
     _lockingTimer = Timer(0.0);
 
+    # @param p Vector3
+    # @param r float
+    # @param s float
     function Init(p, r, s)
     {
-        self._titan = Game.SpawnTitanAt(TitanTypeEnum.PUNK, p, r);
+        self._titan = Game.SpawnTitanAt(TitanTypeEnum.Punk, p, r);
         self._titan.Size = s;
         self._titan.DetectRange = 0;
         self._titan.FocusRange = 0;
@@ -2300,11 +2372,14 @@ class HostageProxy
         self._titan.TurnSpeed = 100.0;
     }
 
+    # @return int
     function GetViewID()
     {
         return self._titan.ViewID;
     }
 
+    # @param pos Vector3
+    # @param time float
     function Lock(pos, time)
     {
         self._lockingPos = pos;
@@ -2312,21 +2387,25 @@ class HostageProxy
         self._locking = true;
     }
 
+    # @return Player
     function GetEscorter()
     {
         return self._escorter;
     }
 
+    # @param p Player
     function SetEscorter(p)
     {
         self._escorter = p;
     }
 
+    # @return bool
     function IsEscorted()
     {
         return self._escorted;
     }
 
+    # @param b bool
     function SetEscorted(b)
     {
         self._escorted = b;
@@ -2350,7 +2429,7 @@ class HostageProxy
         if (
             !self._escorted 
             && self._escorter != null 
-            && self._escorter.Status == PlayerStatusEnum.ALIVE
+            && self._escorter.Status == PlayerStatusEnum.Alive
             && Vector3.Distance(self._escorter.Character.Position, self._titan.Position) > 3.0
         )
         {
@@ -2372,6 +2451,16 @@ extension AirMovementPreset
     NONE = "None";
     DEFAULT = "Default";
     QUAKE = "Quake";
+}
+
+class IAbility
+{
+    # @return string
+    function GetName(){}
+    # @return string
+    function GetInfoString(){}
+    function OnTickHandler(){}
+    function OnFrameHandler(){}
 }
 
 class AirMovementAbility
@@ -2402,7 +2491,7 @@ class AirMovementAbility
     function SetDefaultSettings()
     {
         self._force = 50.0;
-        self._forceType = ForceModeEnum.FORCE;
+        self._forceType = ForceModeEnum.Force;
         self._gravityEffect = 9.81;
         self._maxAirSpeed = 15.0;
     }
@@ -2410,7 +2499,7 @@ class AirMovementAbility
     function SetQuakeSettings()
     {
         self._force = 10.0;
-        self._forceType = ForceModeEnum.IMPULSE;
+        self._forceType = ForceModeEnum.Impulse;
         self._gravityEffect = 9.81;
         self._maxAirSpeed = 15.0;
     }
@@ -2425,7 +2514,7 @@ class AirMovementAbility
 
         position = h.Position + Vector3(0, 0.5, 0);
         targetPosition = Vector3(position.X, position.Y - 5, position.Z);
-        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MapObjects);
 
         isInAir = res == null || res.Distance > 0.6;
         cameraForward = Camera.Forward.Normalized;
@@ -2436,7 +2525,7 @@ class AirMovementAbility
 
         if (isInAir)
         {
-            h.AddForce(Vector3(0, self._gravityEffect * -1, 0), ForceModeEnum.FORCE);
+            h.AddForce(Vector3(0, self._gravityEffect * -1, 0), ForceModeEnum.Force);
 
             movementForce = Vector3(0, 0, 0);
             currentVelocity = h.Velocity;
@@ -2480,10 +2569,7 @@ class AirMovementAbility
         }
     }
 
-    function OnFrameHandler()
-    {
-        
-    }
+    function OnFrameHandler(){}
 }
 
 class AirDashAbility
@@ -2517,6 +2603,8 @@ class AirDashAbility
         return text;
     }
 
+    function OnTickHandler(){}
+
     function OnFrameHandler()
     {
         h = PlayerProxy.GetHuman();
@@ -2534,7 +2622,7 @@ class AirDashAbility
 
         position = h.Position + Vector3(0, 0.5, 0);
         targetPosition = Vector3(position.X, position.Y - 5, position.Z);
-        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MapObjects);
 
         isInAir = res == null || res.Distance > 0.6;
         if (isInAir)
@@ -2584,7 +2672,7 @@ class AirDashAbility
 
             if (movementForce != Vector3(0, 0, 0))
             {
-                h.AddForce(movementForce, ForceModeEnum.IMPULSE);
+                h.AddForce(movementForce, ForceModeEnum.Impulse);
                 # h.PlayAnimation(animation);
                 self._cdTimer.Reset(self._cooldown);
             }
@@ -2615,10 +2703,7 @@ class BunnyHopAbility
         return "[" + Input.GetKeyName(KeyBindsEnum.HUMAN_JUMP) + "] (hold)";
     }
 
-    function OnTickHandler()
-    {
-        
-    }
+    function OnTickHandler(){}
 
     function OnFrameHandler()
     {
@@ -2633,16 +2718,22 @@ class BunnyHopAbility
 
         position = h.Position + Vector3(0, 0.5, 0);
         targetPosition = Vector3(position.X, position.Y - 0.67, position.Z);
-        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MAP_OBJECTS);
+        res = Physics.LineCast(position, targetPosition, CollideWithEnum.MapObjects);
 
-        self._isInAir = res == null
-                        || res.Collider.Name == "BombPlantRegion" 
-                        || res.Collider.Name == "ShoppingRegion" 
-                        || res.Collider.Name == "ExplosionKillRegion"
-                        || res.Collider.Name == "TeamTPRegion"
-                        || res.Collider.Name == "FragGrenade_ExplosionRegion"
-                        || res.Collider.Name == "FragGrenade"
-                        || res.Collider.Name == "HostageEscortRegion";
+        self._isInAir = res == null;
+        if (res != null)
+        {
+            # @type MapObject
+            mapObject = res.Collider;
+
+            self._isInAir = mapObject.Name == "BombPlantRegion" 
+                        || mapObject.Name == "ShoppingRegion" 
+                        || mapObject.Name == "ExplosionKillRegion"
+                        || mapObject.Name == "TeamTPRegion"
+                        || mapObject.Name == "FragGrenade_ExplosionRegion"
+                        || mapObject.Name == "FragGrenade"
+                        || mapObject.Name == "HostageEscortRegion";
+        }
 
         if (!self._isInAir && self._wasInAir)
         {
@@ -2671,6 +2762,17 @@ class BunnyHopAbility
 #######################
 # SHOPPING ITEMS
 #######################
+
+class IShoppingItem
+{
+    # @return int
+    function GetAmount(){}
+    # @return string
+    function GetName(){}
+    # @return int
+    function GetPrice(){}
+    function Purchase(){}
+}
 
 class ArmorShoppingItem
 {
@@ -2829,9 +2931,9 @@ extension FragGrenadeThrowable
         right = Vector3.Cross(direction, Vector3.Up).Normalized;
         cosTheta = Math.Cos(pitchAngleDegrees);
         sinTheta = Math.Sin(pitchAngleDegrees);
-        term1 = direction.Scale(cosTheta);
+        term1 = direction * cosTheta;
         crossProduct = Vector3.Cross(right, direction);
-        term2 = crossProduct.Scale(sinTheta);
+        term2 = crossProduct * sinTheta;
 
         rotatedDirection = Vector3(
             term1.X + term2.X,
@@ -2846,6 +2948,51 @@ extension FragGrenadeThrowable
 #######################
 # WEAPONS
 #######################
+
+extension LineRendererPool
+{
+    # @type List<LineRenderer>
+    _pool = List();
+    _initialPoolSize = 10;
+
+    function Initialize(initialPoolSize)
+    {
+        if (initialPoolSize > 0)
+        {
+            self._initialPoolSize = initialPoolSize;
+        }
+        self._pool = List();
+
+        for (i in Range(0, self._initialPoolSize - 1))
+        {
+            renderer = LineRenderer();
+            renderer.Enabled = false;
+            self._pool.Add(renderer);
+        }
+    }
+
+    # @return LineRenderer
+    function Get()
+    {
+        if (self._pool.Count > 0)
+        {
+            renderer = self._pool.Get(self._pool.Count - 1);
+            self._pool.RemoveAt(self._pool.Count - 1);
+            return renderer;
+        }
+        else
+        {
+            return LineRenderer();
+        }
+    }
+
+    # @param renderer LineRenderer
+    function Return(renderer)
+    {
+        renderer.Enabled = false;
+        self._pool.Add(renderer);
+    }
+}
 
 class Weapon
 {
@@ -2863,9 +3010,27 @@ class Weapon
     _shotDelayTimer = Timer(0.1);
     _killReward = 0;
     _slot = 0;
+    # @type ISpecial
     _special = null;
+    # @type List<IAddon>
     _addons = List();
 
+    _CAMERA_OFFSET_DISTANCE = 3.0;
+    _SHOT_DELAY_RESET_TIME = 0.3;
+
+    # @param id string
+    # @param name string
+    # @param baseWeapon string
+    # @param damage int
+    # @param hsMultiplier float
+    # @param maxRounds int
+    # @param maxAmmo int
+    # @param distance int
+    # @param radius int
+    # @param isAutomatic bool
+    # @param killReward int
+    # @param slot int
+    # @param special ISpecial
     function Init(
         id, 
         name, 
@@ -2890,11 +3055,6 @@ class Weapon
         self._maxRounds = maxRounds;
         self._maxAmmo = maxAmmo;
         self._distance = distance;
-        if (distance > 0 && baseWeapon != WeaponEnum.BLADES && !isAutomatic)
-        {
-            self._maxRounds *= 2;
-            self._maxAmmo *= 2;
-        }
         self._radius = radius;
         self._isAutomatic = isAutomatic;
         self._shotDelayTimer = Timer(self._shotDelay);
@@ -2918,6 +3078,8 @@ class Weapon
 
     function OnTickHandler()
     {
+        disableAttack = (self._distance > 0 || self._isAutomatic) && self._baseWeapon != WeaponEnum.Blade && PlayerProxy.GetHuman().CurrentAmmoRound > 0;
+        Input.SetKeyDefaultEnabled(KeyBindsEnum.HUMAN_ATTACKDEFAULT, !disableAttack);
         for (addon in self._addons)
         {
             addon.OnTickHandler();
@@ -2951,235 +3113,548 @@ class Weapon
         }
 
         human = PlayerProxy.GetHuman();
-        if (human == null)
+        if (human == null || human.State == PlayerStateEnum.RELOAD)
+        {
+            return;
+        }
+        if (self._distance <= 0)
         {
             return;
         }
 
-        if (human.State == PlayerStateEnum.RELOAD)
+        if (Input.GetKeyDown(KeyBindsEnum.HUMAN_ATTACKDEFAULT))
         {
-            return;
-        }
-
-        if (self._distance > 0 && Input.GetKeyDown(KeyBindsEnum.HUMAN_ATTACKDEFAULT))
-        {
-            if (human.CurrentAmmoRound < 1)
+            if (human.CurrentAmmoRound >= 1)
             {
-                return;
-            }
+                self._PlayWeaponSound();
+                human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
+                self._ProcessShot();
 
-            if (self._id == CustomWeaponEnum.AWP)
-            {
-                SoundManager.Play(PlayerSoundEnum.TSLAUNCH1);
-                SoundManager.Play(PlayerSoundEnum.SLIDE);
-                SoundManager.Play(PlayerSoundEnum.HOOKIMPACTLOUD);
-            }
-            elif (self._id == CustomWeaponEnum.MAG_7)
-            {
-                SoundManager.Play(PlayerSoundEnum.AHSSGUNSHOTDOUBLE1);
-            }
-            elif (self._id == CustomWeaponEnum.MAGNUM)
-            {
-                SoundManager.Play(PlayerSoundEnum.NOGAS);
-                SoundManager.Play(PlayerSoundEnum.GUNEXPLODE);
-            }
-
-            human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
-
-            position = Camera.Position;
-
-            normalizedDirection = Camera.Forward.Normalized;
-
-            offset = normalizedDirection * 3;
-            startPosition = position + offset;
-
-            targetPosition = position + normalizedDirection * self._distance;
-
-            headShotRes = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.MAP_OBJECTS);
-            if (headShotRes != null)
-            {
-                obj = headShotRes.Collider;
-                if (obj.Name == "Hitbox_HEAD")
+                # human.PlayAnimation(HumanAnimationEnum.AHSSSHOOTR, 0.45);
+                if (self._isAutomatic)
                 {
-                    targetHuman = Main._hitboxHumans.Get(obj.ID, null);
-                    if (
-                        targetHuman != null 
-                        && (
-                            targetHuman.Team != human.Team
-                            || human.Team == TeamEnum.NONE 
-                            || targetHuman.Team == TeamEnum.NONE
-                        )
-                    )
-                    {
-                        Main.SendGetDamageMessage(targetHuman.Player, self._damage * self._hsMultiplier);
-                        Game.ShowKillScore(self._damage * self._hsMultiplier);
-                        return;
-                    }
-                }
-            }
-            res = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.HUMANS);
-            if (res != null)
-            {
-                obj = res.Collider;
-                if (
-                    obj.Type == "Human" 
-                    && (
-                            obj.Team != human.Team
-                            || human.Team == TeamEnum.NONE 
-                            || obj.Team == TeamEnum.NONE
-                    )
-                )
-                {
-                    Main.SendGetDamageMessage(obj.Player, self._damage);
-                    Game.ShowKillScore(self._damage);
-                    return;
+                    self._shotDelayTimer.Reset(self._shotDelay);
                 }
             }
         }
-        elif(Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKDEFAULT) && self._distance > 0 && self._isAutomatic)
+        elif (Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKDEFAULT) && self._isAutomatic)
         {
             self._shotDelayTimer.UpdateOnFrame();
-            if (!self._shotDelayTimer.IsDone())
+            if (self._shotDelayTimer.IsDone() && human.CurrentAmmoRound > 0)
             {
-                return;
-            }
-
-            self._shotDelayTimer.Reset(self._shotDelay);
-            human = PlayerProxy.GetHuman();
-            if (human.CurrentAmmoRound <= 0)
-            {
-                return;
-            }
-
-            SoundManager.Play(APGSoundSequence.GetSound());
-            human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
-
-            position = Camera.Position;
-
-            normalizedDirection = Camera.Forward.Normalized;
-
-            offset = normalizedDirection * 3;
-            startPosition = position + offset;
-
-            targetPosition = position + normalizedDirection * self._distance;
-
-            headShotRes = Physics.LineCast(startPosition, targetPosition, CollideWithEnum.MAP_OBJECTS);
-            if (headShotRes != null)
-            {
-                obj = headShotRes.Collider;
-                if (obj.Name == "Hitbox_HEAD")
-                {
-                    targetHuman = Main._hitboxHumans.Get(obj.ID, null);
-                    if (
-                        targetHuman != null 
-                        && (
-                            targetHuman.Team != human.Team
-                            || human.Team == TeamEnum.NONE 
-                            || targetHuman.Team == TeamEnum.NONE
-                        )
-                    )
-                    {
-                        Main.SendGetDamageMessage(targetHuman.Player, self._damage * 2);
-                        Game.ShowKillScore(self._damage * 2);
-                        return;
-                    }
-                }
-            }
-
-            res = Physics.LineCast(startPosition, targetPosition, "Characters");
-            if (res != null)
-            {
-                obj = res.Collider;
-                if (
-                    obj.Type == "Human" 
-                    && (
-                        obj.Team != human.Team
-                        || human.Team == TeamEnum.NONE 
-                        || obj.Team == TeamEnum.NONE
-                    )
-                )
-                {
-                    Main.SendGetDamageMessage(obj.Player, self._damage);
-                    Game.ShowKillScore(self._damage);
-                    return;
-                }
+                self._PlayWeaponSound();
+                self._shotDelayTimer.Reset(self._shotDelay);
+                human.CurrentAmmoRound = human.CurrentAmmoRound - 1;
+                self._ProcessShot();
+                # human.PlayAnimation(HumanAnimationEnum.AHSSSHOOTRAIR, 0.1);
             }
         }
         else
         {
-            self._shotDelayTimer.Reset(0.3);
+            self._shotDelayTimer.Reset(self._SHOT_DELAY_RESET_TIME);
         }
     }
 
+    # @return string
     function GetID()
     {
         return self._id;
     }
 
+    # @return string
     function GetName()
     {
         return self._name;
     }
 
+    # @return string
     function GetBaseWeapon()
     {
         return self._baseWeapon;
     }
 
+    # @return int
     function GetCustomDamage()
     {
         return self._damage;
     }
 
+    # @return int
     function GetMaxRounds()
     {
         return self._maxRounds;
     }
 
+    # @return int
     function GetMaxAmmo()
     {
         return self._maxAmmo;
     }
 
+    # @return int
     function GetDistance()
     {
         return self._distance;
     }
 
+    # @return int
     function GetRadius()
     {
         return self._radius;
     }
 
+    # @return int
     function GetKillReward()
     {
         return self._killReward;
     }
 
+    # @return int
     function GetSlot()
     {
         return self._slot;
     }
 
+    # @return ISpecial
     function GetSpecial()
     {
         return self._special;
     }
 
+    # @return List<IAddon>
     function GetAddons()
     {
         return self._addons;
     }
 
+    # @param addon IAddon
     function AddAddon(addon)
     {
         self._addons.Add(addon);
+    }
+
+    function _ProcessShot()
+    {
+        attacker = PlayerProxy.GetHuman();
+        transformCache = PlayerProxy.Transform();
+
+        position = Camera.Position;
+        normalizedDirection = Camera.Forward.Normalized;
+        offset = normalizedDirection * self._CAMERA_OFFSET_DISTANCE;
+        startPosition = position + offset;
+        targetPosition = position + normalizedDirection * self._distance;
+
+        hitResult = self._ProcessHitDetection(attacker, startPosition, targetPosition);
+        endPos = hitResult.Get("endPos");
+        # @type Human
+        hitTarget = hitResult.Get("hitTarget");
+        damage = hitResult.Get("damage");
+        
+        if (Camera.IsManual) # This means we are in scope
+        {
+            tracerStartPos = startPosition + Camera.Up * -0.3;
+        }
+        else
+        {
+            tracerStartPos = transformCache.HandR.Position;
+        }
+        self._CreateBulletTracer(tracerStartPos, endPos);
+        
+        if (hitTarget != null)
+        {
+            Main.SendGetDamageMessage(hitTarget.Player, damage);
+            Game.ShowKillScore(damage);
+        }
+    }
+
+    # @param attacker Human
+    # @param startPos Vector3
+    # @param endPos Vector3
+    # @return Dict with keys: "hitTarget" (Human or null), "endPos" (Vector3), "damage" (int)
+    function _ProcessHitDetection(attacker, startPos, endPos)
+    {
+        result = Dict();
+        
+        # Get all hits from MapObjects and Humans
+        mapObjectsHits = Physics.LineCastAll(startPos, endPos, CollideWithEnum.MapObjects);
+        humansHits = Physics.LineCastAll(startPos, endPos, CollideWithEnum.Humans);
+        
+        # Combine both lists
+        allHits = List();
+        if (mapObjectsHits != null)
+        {
+            for (hit in mapObjectsHits)
+            {
+                allHits.Add(hit);
+            }
+        }
+        if (humansHits != null)
+        {
+            for (hit in humansHits)
+            {
+                allHits.Add(hit);
+            }
+        }
+        
+        if (allHits.Count == 0)
+        {
+            result.Set("hitTarget", null);
+            result.Set("endPos", endPos);
+            result.Set("damage", self._damage);
+            return result;
+        }
+        
+        allHits.SortCustom(self._CompareHitResultsByDistance);
+        
+        # Find first suitable hit: Human or Hitbox_HEAD
+        for (hitResult in allHits)
+        {
+            # @type LineCastHitResult
+            hit = hitResult;
+            
+            # Check for headshot
+            if (hit.IsMapObject)
+            {
+                # @type MapObject
+                obj = hit.Collider;
+                if (obj.Name == "Hitbox_HEAD")
+                {
+                    targetHuman = Main._hitboxManager.GetHumanByHitboxID(obj.ID);
+                    if (self._IsValidTarget(attacker, targetHuman))
+                    {
+                        result.Set("hitTarget", targetHuman);
+                        result.Set("endPos", hit.Point);
+                        result.Set("damage", self._damage * self._hsMultiplier);
+                        return result;
+                    }
+                }
+            }
+            # Check for body hit
+            # TODO: To hit.IsCharacter when fixed
+            elif (hit.Collider.Type == ObjectTypeEnum.HUMAN)
+            {
+                # @type Human
+                targetHuman = hit.Collider;
+                if (self._IsValidTarget(attacker, targetHuman))
+                {
+                    result.Set("hitTarget", targetHuman);
+                    result.Set("endPos", hit.Point);
+                    result.Set("damage", self._damage);
+                    return result;
+                }
+            }
+        }
+        
+        # No Human or Hitbox found, use the last (farthest) object for tracer without damage
+        if (allHits.Count > 0)
+        {
+            # @type LineCastHitResult
+            lastHit = allHits.Get(allHits.Count - 1);
+            result.Set("hitTarget", null);
+            result.Set("endPos", lastHit.Point);
+            result.Set("damage", self._damage);
+        }
+        else
+        {
+            result.Set("hitTarget", null);
+            result.Set("endPos", endPos);
+            result.Set("damage", self._damage);
+        }
+        
+        return result;
+    }
+
+    # @param a LineCastHitResult
+    # @param b LineCastHitResult
+    # @return int (-1 if a < b, 0 if a == b, 1 if a > b)
+    function _CompareHitResultsByDistance(a, b)
+    {
+        # @type LineCastHitResult
+        hitA = a;
+        # @type LineCastHitResult
+        hitB = b;
+        if (hitA.Distance < hitB.Distance)
+        {
+            return -1;
+        }
+        elif (hitA.Distance > hitB.Distance)
+        {
+            return 1;
+        }
+        return 0;
+    }
+
+    # @param attacker Human
+    # @param target Human
+    # @return bool
+    function _IsValidTarget(attacker, target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+        return target.Team != attacker.Team 
+            || attacker.Team == TeamEnum.None 
+            || target.Team == TeamEnum.None;
+    }
+
+    function _PlayWeaponSound()
+    {
+        if (self._id == CustomWeaponEnum.AWP)
+        {
+            SoundManager.Play(PlayerSoundEnum.TSLAUNCH1);
+            SoundManager.Play(PlayerSoundEnum.SLIDE);
+            SoundManager.Play(PlayerSoundEnum.HOOKIMPACTLOUD);
+        }
+        elif (self._id == CustomWeaponEnum.MAG_7)
+        {
+            SoundManager.Play(PlayerSoundEnum.AHSSGUNSHOTDOUBLE1);
+        }
+        elif (self._id == CustomWeaponEnum.MAGNUM)
+        {
+            SoundManager.Play(PlayerSoundEnum.NOGAS);
+            SoundManager.Play(PlayerSoundEnum.GUNEXPLODE);
+        }
+        elif (self._id == CustomWeaponEnum.SMG)
+        {
+            SoundManager.Play(APGSoundSequence.Next());
+        }
+        else
+        {
+            SoundManager.Play(APGSoundSequence.Next());
+        }
+    }
+
+    function _CreateBulletTracer(startPos, endPos)
+    {
+        WeaponTracerManager.AddTracer(startPos, endPos);
+        
+        msg = WeaponTracerMessage.New(startPos, endPos);
+        Dispatcher.SendOthers(msg);
+    }
+}
+
+extension WeaponTracerManager
+{
+    # @type List<LineRenderer>
+    _tracers = List();
+    # @type List<Timer>
+    _tracerTimers = List();
+    # @type List<float>
+    _tracerInitialTimes = List();
+    _tracerLifetime = 0.2;
+    _startWidth = 0.08;
+    _endWidth = 0.03;
+
+    function Initialize()
+    {
+        self._tracers = List();
+        self._tracerTimers = List();
+        self._tracerInitialTimes = List();
+    }
+
+    # @param startPos Vector3
+    # @param endPos Vector3
+    function AddTracer(startPos, endPos)
+    {
+        tracer = LineRendererPool.Get();
+        
+        tracer.LineColor = Color(255, 220, 80, 255);
+        tracer.StartWidth = self._startWidth;
+        tracer.EndWidth = self._endWidth;
+        tracer.UseWorldSpace = true;
+        tracer.PositionCount = 2;
+        tracer.SetPosition(0, startPos);
+        tracer.SetPosition(1, endPos);
+        tracer.Enabled = true;
+
+        self._tracers.Add(tracer);
+        tracerTimer = Timer(self._tracerLifetime);
+        self._tracerTimers.Add(tracerTimer);
+        self._tracerInitialTimes.Add(self._tracerLifetime);
+    }
+
+    function OnTick()
+    {
+        i = 0;
+        while (i < self._tracers.Count)
+        {
+            timer = self._tracerTimers.Get(i);
+            initialTime = self._tracerInitialTimes.Get(i);
+            timer.UpdateOnTick();
+
+            if (timer.IsDone())
+            {
+                tracer = self._tracers.Get(i);
+                LineRendererPool.Return(tracer);
+                self._tracers.RemoveAt(i);
+                self._tracerTimers.RemoveAt(i);
+                self._tracerInitialTimes.RemoveAt(i);
+            }
+            else
+            {
+                progress = timer.GetTime() / initialTime;
+                
+                alpha = Math.Clamp(progress * 255, 0, 255);
+                
+                red = 255;
+                green = 220 - (1.0 - progress) * 50;
+                blue = 80 - (1.0 - progress) * 40;
+                
+                tracer = self._tracers.Get(i);
+                tracer.LineColor = Color(red, green, blue, alpha);
+                
+                widthMultiplier = 0.5 + progress * 0.5;
+                tracer.StartWidth = self._startWidth * widthMultiplier;
+                tracer.EndWidth = self._endWidth * widthMultiplier;
+                
+                i = i + 1;
+            }
+        }
+    }
+}
+
+class HitboxManager
+{
+    # @type MapObject
+    _hitboxHeadRef = null;
+    # @type Dict<int,MapObject>
+    _hitboxes = Dict();
+    # @type Dict<int,MapObject>
+    _hitboxPositioners = Dict();
+    # @type Dict<int,Human>
+    _hitboxHumans = Dict();
+    _offsetDistance = 0.3;
+
+    # @param hitboxHeadRef MapObject
+    function Init(hitboxHeadRef)
+    {
+        self._hitboxHeadRef = hitboxHeadRef;
+        self._hitboxes = Dict();
+        self._hitboxPositioners = Dict();
+        self._hitboxHumans = Dict();
+    }
+
+    # @param human Human
+    # @param transformCache HumanTransformCache
+    function OnCharacterSpawn(human, transformCache)
+    {
+        head = transformCache.Head;
+        
+        # Create positioner object with Parent for accurate positioning
+        hitboxPositioner = Map.CopyMapObject(self._hitboxHeadRef, false);
+        hitboxPositioner.Scale = Vector3(0.1);
+
+        headWorldPos = head.Position;
+        headWorldUp = head.Up;
+        desiredWorldPos = headWorldPos + headWorldUp * self._offsetDistance;
+        localOffset = head.InverseTransformPoint(desiredWorldPos);
+        
+        hitboxPositioner.Transform.Parent = head;
+        hitboxPositioner.Transform.LocalPosition = localOffset;
+        hitboxPositioner.Transform.LocalRotation = Quaternion.Identity.Euler;
+        
+        self._hitboxPositioners.Set(human.Player.ID, hitboxPositioner);
+        
+        # Create hitbox object without Parent for RayCast (won't be detected as Human)
+        hitboxHead = Map.CopyMapObject(self._hitboxHeadRef, false);
+        self._hitboxes.Set(human.Player.ID, hitboxHead);
+        self._hitboxHumans.Set(hitboxHead.ID, human);
+    }
+
+    # @param victim Human
+    function OnCharacterDie(victim)
+    {
+        if (victim.Type != ObjectTypeEnum.HUMAN)
+        {
+            return;
+        }
+
+        hitboxHead = self._hitboxes.Get(victim.Player.ID, null);
+        if (hitboxHead != null)
+        {
+            self._hitboxHumans.Remove(hitboxHead.ID);
+            Map.DestroyMapObject(hitboxHead, false);
+            self._hitboxes.Remove(victim.Player.ID);
+        }
+        
+        hitboxPositioner = self._hitboxPositioners.Get(victim.Player.ID, null);
+        if (hitboxPositioner != null)
+        {
+            Map.DestroyMapObject(hitboxPositioner, false);
+            self._hitboxPositioners.Remove(victim.Player.ID);
+        }
+    }
+
+    # @param player Player
+    function OnPlayerLeave(player)
+    {
+        hitboxHead = self._hitboxes.Get(player.ID, null);
+        if (hitboxHead != null)
+        {
+            self._hitboxHumans.Remove(hitboxHead.ID);
+            Map.DestroyMapObject(hitboxHead, false);
+            self._hitboxes.Remove(player.ID);
+        }
+        
+        hitboxPositioner = self._hitboxPositioners.Get(player.ID, null);
+        if (hitboxPositioner != null)
+        {
+            Map.DestroyMapObject(hitboxPositioner, false);
+            self._hitboxPositioners.Remove(player.ID);
+        }
+    }
+
+    function OnFrame()
+    {
+        for (human in Game.PlayerHumans)
+        {
+            if (human.IsMainCharacter)
+            {
+                continue;
+            }
+            
+            hitboxHead = self._hitboxes.Get(human.Player.ID, null);
+            if (hitboxHead == null)
+            {
+                continue;
+            }
+            
+            hitboxPositioner = self._hitboxPositioners.Get(human.Player.ID, null);
+            if (hitboxPositioner == null)
+            {
+                continue;
+            }
+            
+            hitboxHead.Position = hitboxPositioner.Position;
+            hitboxHead.Rotation = hitboxPositioner.Rotation;
+        }
+    }
+
+    # @param hitboxID int
+    # @return Human
+    function GetHumanByHitboxID(hitboxID)
+    {
+        return self._hitboxHumans.Get(hitboxID, null);
     }
 }
 
 #######################
 # SPECIALS
 #######################
+
+class ISpecial
+{
+    function Reset(){}
+    # @return string
+    function GetName(){}
+    # @return string
+    function GetInfoString(){}
+    # @return string
+    function GetBaseID(){}
+    function OnFrameBGHandler(){}
+    function OnFrameHandler(){}
+}
 
 class StockSpecial
 {
@@ -3191,6 +3666,8 @@ class StockSpecial
         self._name = specialID;
         self._baseID = specialID;
     }
+
+    function Reset(){}
 
     function GetName()
     {
@@ -3223,10 +3700,31 @@ class ZoomSpecial
     _name = "Zoom";
     _baseID = null;
     _fov = 30.0;
+    # @type MapObject
+    _scope = null;
 
     function Init()
     {
         self._baseID = SpecialEnum.NONE;
+
+        self._scope = Map.CreateMapObjectRaw("Scene,Geometry/Disk2b,0,0,1,0,1,0,Disk2b,0,0,0,0,0,0,1,1,1,None,Humans,Default,Transparent|0/0/0/231|Misc/None|1/1|0/0,");
+        line1 = Map.CreateMapObjectRaw("Scene,Geometry/Plane1,0,0,1,0,1,0,Plane1,0,0,0,0,0,0,0.3,1,0.001,None,Titans,Default,Transparent|0/0/0/255|Misc/None|1/1|0/0,");
+        line2 = Map.CreateMapObjectRaw("Scene,Geometry/Plane1,0,0,1,0,1,0,Plane1,0,0,0,0,0,0,0.001,1,0.3,None,Titans,Default,Transparent|0/0/0/255|Misc/None|1/1|0/0,");
+        line1.Parent = self._scope;
+        line2.Parent = self._scope;
+        line1.LocalPosition = Vector3();
+        line2.LocalPosition = Vector3();
+
+        self._scope.Scale = Vector3(0.25);
+        self._scope.Active = false;
+    }
+
+    function Reset()
+    {
+        self._scope.Active = false;
+        Camera.SetManual(false);
+        Camera.SetFOV(0);
+        Camera.ResetDistance();
     }
 
     function GetName()
@@ -3253,12 +3751,59 @@ class ZoomSpecial
     {
         if (Input.GetKeyHold(InputManager.Zoom))
         {
-            Camera.SetFOV(self._fov);
+            # Camera.SetFOV(self._fov);
+            Camera.SetManual(true);
+            Camera.SetFOV(9);
+            Camera.FollowDistance = 0;
+
+            self._AimCamera();
+            
+            self._scope.Active = true;
+            self._scope.QuaternionRotation = Quaternion.FromEuler(Camera.Rotation) * Quaternion.FromEuler(Vector3(0 - 90,0,0));
+            self._scope.Position = Camera.Position + Camera.Forward * 0.6;      
         }
         if (Input.GetKeyUp(InputManager.Zoom))
         {
-            Camera.SetFOV(Main._savedFOV);
+            # Camera.SetFOV(Main._savedFOV);
+            Camera.SetManual(false);
+            Camera.SetFOV(0);
+            Camera.ResetDistance();
+            self._scope.Active = false;
         }
+    }
+
+    function _AimCamera()
+    {
+        input = Input.GetMouseSpeed();
+
+        sensitivity = 0.7;
+        inputX = input.X * sensitivity;
+        inputY = (0-input.Y) * sensitivity;
+
+        forward = Camera.Forward;
+        forward = self._RotatePointAroundAxis(forward, Camera.Right * inputY);
+        forward = self._RotatePointAroundAxis(forward, Vector3.Up * inputX);
+
+        Camera.Forward = forward;
+        Camera.SetPosition(PlayerProxy.GetHuman().Position + Vector3.Up * 1.1);
+
+        # limit the max rotation
+        max = 12.0;
+        rotation = Camera.Rotation;
+        if (rotation.X < 180) 
+        { 
+            rotation.X = Math.Min(rotation.X, 90 - max);
+        } 
+        else 
+        {
+            rotation.X = Math.Max(rotation.X, 270 + max);
+        }
+        Camera.SetRotation(rotation);
+    }
+
+    function _RotatePointAroundAxis(axis, angles)
+    {
+        return Quaternion.FromEuler(angles) * axis;
     }
 }
 
@@ -3380,6 +3925,16 @@ class SmokeSpecial
 # WEAPON ADDONS
 #######################
 
+class IAddon
+{
+    function Reset(){}
+    function GetName(){}
+    function GetInfoString(){}
+    function OnFrameHandler(){}
+    function OnTickHandler(){}
+    function OnFrameBGHandler(){}
+}
+
 class GravitySlashWeaponAddon
 {
     _name = "Gravity Slash";
@@ -3453,11 +4008,11 @@ class GravitySlashWeaponAddon
                 for (h in Game.PlayerHumans)
                 {
                     if (
-                        !h.IsMine 
+                        !h.IsMainCharacter 
                         && (
                             h.Team != myHuman.Team
-                            || myHuman.Team == TeamEnum.NONE 
-                            || h.Team == TeamEnum.NONE
+                            || myHuman.Team == TeamEnum.None 
+                            || h.Team == TeamEnum.None
                         )
                     )
                     {
@@ -3529,7 +4084,7 @@ class GravitySlashWeaponAddon
                 directionToNearest = self._nearestHPos - myPosition;
                 directionToNearest = directionToNearest.Normalized;
                 dashForce = directionToNearest * self._force;
-                myHuman.AddForce(dashForce, ForceModeEnum.FORCE);
+                myHuman.AddForce(dashForce, ForceModeEnum.Force);
             }
         }
     }
@@ -3601,6 +4156,8 @@ class ThermalVisionWeaponAddon
         return str;
     }
 
+    function OnTickHandler(){}
+
     function OnFrameBGHandler()
     {
         self._durationTimer.UpdateOnFrame();
@@ -3613,8 +4170,8 @@ class ThermalVisionWeaponAddon
             {
                 if (
                     h.Team != myHuman.Team
-                    || myHuman.Team == TeamEnum.NONE 
-                    || h.Team == TeamEnum.NONE
+                    || myHuman.Team == TeamEnum.None 
+                    || h.Team == TeamEnum.None
                 )
                 {
                     if (self._durationTimer.IsDone())
@@ -3625,7 +4182,7 @@ class ThermalVisionWeaponAddon
                     {
                         if (Vector3.Distance(myHuman.Position, h.Position) < self._radius)
                         {
-                            h.AddOutline(Color("#" + ColorEnum.PastelCream), OutlineModeEnum.OUTLINEALL);
+                            h.AddOutline(Color("#" + ColorEnum.PastelCream), OutlineModeEnum.OutlineAll);
                         }
                         else
                         {
@@ -3660,6 +4217,7 @@ component FragGrenadeZone
     _activated = false;
     _exploded = false;
     _timer = Timer(0.0);
+    # @type Dict<int,Human>
     _humans = Dict();
 
     function OnCollisionStay(other)
@@ -3674,7 +4232,10 @@ component FragGrenadeZone
             return;
         }
 
-        self._humans.Set(other.Player.ID, other);
+        # @type Human
+        human = other;
+
+        self._humans.Set(human.Player.ID, human);
     }
 
     function OnCollisionExit(other)
@@ -3689,7 +4250,10 @@ component FragGrenadeZone
             return;
         }
 
-        self._humans.Remove(other.Player.ID);
+        # @type Human
+        human = other;
+
+        self._humans.Remove(human.Player.ID);
     }
 
     function Activate(damage, delay)
@@ -3720,7 +4284,7 @@ component FragGrenadeZone
                 for (h in self._humans.Values)
                 {
                     player = h.Player;
-                    if (player != null && player.Status == PlayerStatusEnum.ALIVE)
+                    if (player != null && player.Status == PlayerStatusEnum.Alive)
                     {
                         Main.SendGetDamageMessage(player, self._damage);
                     }
@@ -3735,7 +4299,9 @@ component FragGrenadeZone
 
 component TeamTP
 {
+    # @type List<MapObject>
     _spawnPointsRed = List();
+    # @type List<MapObject>
     _spawnPointsBlue = List();
     _firstTeam = null;
 
@@ -3755,32 +4321,35 @@ component TeamTP
                 return;
             }
 
-            if (!obj.IsMine)
+            # @type Human
+            human = obj;
+
+            if (!human.IsMainCharacter)
             {
                 return;
             }
 
             if (self._firstTeam == null)
             {
-                self._firstTeam = obj.Team;
-                PlayerProxy.OnSpawn(obj);
+                self._firstTeam = human.Team;
+                PlayerProxy.OnSpawn(human);
             }
 
             PositionLocker.SetPosition(null);
             rnd = Random(Convert.ToInt(t*100));
-            if (obj.Team == TeamEnum.RED && self._spawnPointsRed.Count > 1)
+            if (human.Team == TeamEnum.Red && self._spawnPointsRed.Count > 1)
             {
                 i = rnd.RandomInt(0, self._spawnPointsRed.Count - 1);
                 sp = self._spawnPointsRed.Get(i);
-                obj.Position = sp.Position;
+                human.Position = sp.Position;
             }
-            elif (obj.Team == TeamEnum.BLUE && self._spawnPointsBlue.Count > 1)
+            elif (human.Team == TeamEnum.Blue && self._spawnPointsBlue.Count > 1)
             {
                 i = rnd.RandomInt(0, self._spawnPointsBlue.Count - 1);
                 sp = self._spawnPointsBlue.Get(i);
-                obj.Position = sp.Position;
+                human.Position = sp.Position;
             }
-            PositionLocker.SetPosition(obj.Position);
+            PositionLocker.SetPosition(human.Position);
         }
     }
 }
@@ -3805,12 +4374,16 @@ component BombPlant
 
     _bombState = 0;
     
+    # @type Human
     _myHuman = null;
     _myState = 0;
+    # @type Vector3
     _lastActionPosition = null;
 
+    # @type KillZone
     _explosionKillZone = null;
 
+    # @type MapObject
     _bombAshArea = null;
     
     _plantingTimer = Timer(self.PLANTING_DELAY);
@@ -3841,6 +4414,7 @@ component BombPlant
     {
         for (obj in Map.FindMapObjectsByName("ExplosionKillRegion"))
         {
+            # @type KillZone
             killZone = obj.GetComponent("KillZone");
             if (killZone != null && killZone.Name == self.Name)
             {
@@ -3858,6 +4432,7 @@ component BombPlant
     function OnNetworkMessage(sender, message)
     {
         self._logger.Trace(message);
+        # @type Dict<string,string>
         msg = Json.LoadFromString(message);
         topic = msg.Get(BaseMessage.KEY_TOPIC);
         if (topic == BombPlantMessage.TOPIC)
@@ -3873,13 +4448,15 @@ component BombPlant
         {
             return;
         }
+        # @type Human
+        human = obj;
 
-        if (!obj.IsMine)
+        if (!human.IsMainCharacter)
         {
             return;
         }
 
-        self._myHuman = obj;
+        self._myHuman = human;
 
         if (!Game.IsEnding)
 		{
@@ -3894,7 +4471,10 @@ component BombPlant
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
@@ -4060,7 +4640,7 @@ component BombPlant
         {
             return false;
         }
-        return self._myHuman.Team == TeamEnum.RED && self._bombState == BombStateEnum.NONE;
+        return self._myHuman.Team == TeamEnum.Red && self._bombState == BombStateEnum.NONE;
     }
 
     function canDefuseBomb()
@@ -4069,12 +4649,12 @@ component BombPlant
         {
             return false;
         }
-        return self._myHuman.Team == TeamEnum.BLUE && self._bombState == BombStateEnum.PLANTED;
+        return self._myHuman.Team == TeamEnum.Blue && self._bombState == BombStateEnum.PLANTED;
     }
 
     function handleInput()
     {
-        if (Network.MyPlayer.Status != PlayerStatusEnum.ALIVE)
+        if (Network.MyPlayer.Status != PlayerStatusEnum.Alive)
         {
             return;
         }
@@ -4135,11 +4715,11 @@ component BombPlant
 
     function handleInteractionEnd()
     {
-        if (self._myHuman.Team == TeamEnum.RED && self._bombState == BombStateEnum.NONE)
+        if (self._myHuman.Team == TeamEnum.Red && self._bombState == BombStateEnum.NONE)
         {
             self.handlePlantingCancel();   
         }
-        elif (self._myHuman.Team == TeamEnum.BLUE && self._bombState == BombStateEnum.PLANTED)
+        elif (self._myHuman.Team == TeamEnum.Blue && self._bombState == BombStateEnum.PLANTED)
         {
             self.handleDefusingCancel();
         }
@@ -4384,12 +4964,15 @@ component KillZone
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
 
-        self._myHuman = obj;
+        self._myHuman = human;
     }
 
     function OnCollisionExit(obj)
@@ -4399,7 +4982,10 @@ component KillZone
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
@@ -4427,7 +5013,10 @@ component HostageEscortZone
 
         if (obj.Type == ObjectTypeEnum.Titan)
         {
-            t = Main._hostages.Get(obj.ViewID, null);
+            # @type Titan
+            titan = obj;
+    
+            t = Main._hostages.Get(titan.ViewID, null);
             if (t != null)
             {
                 t.SetEscorted(true);
@@ -4444,7 +5033,9 @@ component HostageEscortZone
 
         if (obj.Type == ObjectTypeEnum.Titan)
         {
-            t = Main._hostages.Get(obj.ViewID, null);
+            # @type Titan
+            titan = obj;
+            t = Main._hostages.Get(titan.ViewID, null);
             if (t != null)
             {
                 t.SetEscorted(false);
@@ -4458,7 +5049,7 @@ class Shop
     Name = "";
     Width = 300;
     Height = 600;
-    _itemsList = List();
+    # @type Dict<string,IShoppingItem>
     _itemsDict = Dict();
     _inited = false;
     _logger = Logger(1, "Shop");
@@ -4551,7 +5142,7 @@ class Shop
     {
         maxLabelLength = 0;
 
-        for (item in self._itemsList)
+        for (item in self._itemsDict.Values)
         {
             name = item.GetName();
             price = Convert.ToString(item.GetPrice());
@@ -4565,10 +5156,10 @@ class Shop
             "Shop", 
             "Shop", 
             self.Width, 
-            Math.Clamp(self.Height + self._itemsList.Count * 55, self.Height, 700)
+            Math.Clamp(self.Height + self._itemsDict.Count * 55, self.Height, 700)
         );
 
-        for (item in self._itemsList)
+        for (item in self._itemsDict.Values)
         {
             name = item.GetName();
             buttonLabel = name;
@@ -4597,19 +5188,17 @@ class Shop
 
     function AddItem(item)
     {
-        self._itemsList.Add(item);
         self._itemsDict.Set(item.GetName(), item);
     }
 
     function RemoveItem(item)
     {
-        self._itemsList.Remove(item);
         self._itemsDict.Remove(item.GetName());
     }
 
     function ClearItems()
     {
-        self._itemsList.Clear();
+        self._itemsDict.Clear();
     }
 
     function ShowInteractionTooltip()
@@ -4648,12 +5237,15 @@ component ShoppingZone
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
 
-        self._myHuman = obj;
+        self._myHuman = human;
 
         if (!Game.IsEnding)
 		{
@@ -4668,7 +5260,10 @@ component ShoppingZone
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
@@ -4702,7 +5297,7 @@ component ShoppingZone
             return;
         }
 
-        if (Network.MyPlayer.Status != PlayerStatusEnum.ALIVE)
+        if (Network.MyPlayer.Status != PlayerStatusEnum.Alive)
         {
             return;
         }
@@ -4715,6 +5310,11 @@ component ShoppingZone
 
     function OnButtonClick(btn)
     {
+        if (self._myHuman == null)
+        {
+            return;
+        }
+
         self._shop.OnButtonClick(btn);
     }
 
@@ -4747,6 +5347,7 @@ component Ladder
     LockY = false;
     LockZ = false;
 
+    # @type Human
     _myHuman = null;
 
     function OnCollisionStay(obj)
@@ -4756,7 +5357,10 @@ component Ladder
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
@@ -4771,7 +5375,10 @@ component Ladder
             return;
         }
 
-        if (!obj.IsMine)
+        # @type Human
+        human = obj;
+
+        if (!human.IsMainCharacter)
         {
             return;
         }
@@ -4902,7 +5509,7 @@ cutscene BombPlantedCutscene
                 + String.Newline
                 + "Is it defuse time or 'Door Stuck' moment?";
 
-        if (PlayerProxy.GetTeam() == TeamEnum.BLUE)
+        if (PlayerProxy.GetTeam() == TeamEnum.Blue)
         {
             icon = "Ymir1";
             name = "Blue Commander";
@@ -4910,7 +5517,7 @@ cutscene BombPlantedCutscene
                     + String.Newline
                     + "Push the site and cover each other. Defuse as soon as it's safe!";
         }
-        elif (PlayerProxy.GetTeam() == TeamEnum.RED)
+        elif (PlayerProxy.GetTeam() == TeamEnum.Red)
         {
             icon = "Titan14";
             name = "Red Commander";
@@ -4985,6 +5592,8 @@ class GetDamageMessageHandler
 
 class ThrowGrenadeMessageHandler
 {
+    # @param sender Player
+    # @param msg Dict<string,string>
     function Handle(sender, msg)
     {
         position = msg.Get(ThrowGrenadeMessage.KEY_POSITION);
@@ -4995,12 +5604,13 @@ class ThrowGrenadeMessageHandler
         fgCopy = Map.CopyMapObject(Main._fragGrenadeRef, true);
         fgCopy.Position = position;
         
-        
+        # @type IRigidbody
         rb = fgCopy.GetComponent("Rigidbody");
         rb.SetVelocity(velocity);
         rb.AddForceWithMode(direction * force, Main.FragGrenadeForceMode);
 
         fgEr = fgCopy.GetChild("FragGrenade_ExplosionRegion");
+        # @type FragGrenadeZone
         fgZone = fgEr.GetComponent("FragGrenadeZone");
         fgZone.Owner = sender;
         fgZone.Activate(Main.FragGrenadeDamage, Main.FragGrenadeDelay / 100.0);
@@ -5057,7 +5667,7 @@ class RoundEndMessageHandler
             }
         }
 
-        if (PlayerProxy.GetStatus() != PlayerStatusEnum.SPECTATING)
+        if (PlayerProxy.GetStatus() != PlayerStatusEnum.Spectating)
         {
             if (reason == RoundEndMessage.REASON_DRAW)
             {
@@ -5236,19 +5846,43 @@ class RoundEndMessageHandler
     }
 }
 
+class WeaponTracerMessageHandler
+{
+    function Handle(sender, msg)
+    {
+        startPos = msg.Get(WeaponTracerMessage.KEY_STARTPOS);
+        endPos = msg.Get(WeaponTracerMessage.KEY_ENDPOS);
+        
+        WeaponTracerManager.AddTracer(startPos, endPos);
+    }
+}
+
+class IHandler
+{
+    # @param sender Player
+    # @param msg Dict<string,string>
+    function Handle(sender, msg){}
+}
+
 extension Router
 {
+    # @type Dict<string,IHandler>
     _handlers = Dict();
 
+    # @param topic string
+    # @param handler IHandler
     function RegisterHandler(topic, handler)
     {
         self._handlers.Set(topic, handler);
     }
 
+    # @param sender Player
+    # @param msg string
     function Route(sender, msg)
     {
-        msg = Json.LoadFromString(msg);
-        topic = msg.Get("topic");
+        # @type Dict<string,string>
+        msgDict = Json.LoadFromString(msg);
+        topic = msgDict.Get("topic");
 
         h = self._handlers.Get(topic, null);
         if (h == null)
@@ -5256,7 +5890,7 @@ extension Router
             return;
         }
 
-        h.Handle(sender, msg);
+        h.Handle(sender, msgDict);
     }
 }
 
@@ -5304,9 +5938,9 @@ extension RoomDataSyncer
     function GetRoomData()
     {
         data = Dict();
-        roundsRedKey = "rounds:" + TeamEnum.RED;
+        roundsRedKey = "rounds:" + TeamEnum.Red;
         data.Set(roundsRedKey, RoomStorage.Get(roundsRedKey, 0));
-        roundsBlueKey = "rounds:" + TeamEnum.BLUE;
+        roundsBlueKey = "rounds:" + TeamEnum.Blue;
         data.Set(roundsBlueKey, RoomStorage.Get(roundsBlueKey, 0));
         return data;
     }
@@ -5338,7 +5972,7 @@ extension RoundManager
 
     function GetRoundsCount()
     {
-        return self.GetRoundsWon(TeamEnum.RED) + self.GetRoundsWon(TeamEnum.BLUE);
+        return self.GetRoundsWon(TeamEnum.Red) + self.GetRoundsWon(TeamEnum.Blue);
     }
 
     function IncreaseRoundsWon(team)
@@ -5428,7 +6062,7 @@ extension PositionLocker
     {
         if (
             self._lockPos != null
-            && Network.MyPlayer.Status == PlayerStatusEnum.ALIVE 
+            && Network.MyPlayer.Status == PlayerStatusEnum.Alive 
             && Network.MyPlayer.Character != null
         )
         {
@@ -5445,7 +6079,7 @@ extension APGSoundSequence
 {
     _index = 0;
 
-    function GetSound()
+    function Next()
     {
         sound = PlayerSoundEnum.APGSHOT4;
         if (self._index == 0)
@@ -5545,34 +6179,15 @@ class Logger
     _errorPrefix = "[ERR]";
     _infoPrefix = "[INF]";
 
-    /*
-        @Arguments(
-            @Argument(
-                Name("logLevel"),
-                Type("integer"),
-                Description("-1 - trace; 0 - debug; 1 - error; 2 - info")
-            ),
-            @Argument(
-                Name("prefix"),
-                Type("string"),
-                Description("Leave empty to not use")
-            )
-        )
-    */
+    # @param logLevel int
+    # @param prefix string
     function Init(logLevel, prefix)
     {
         self.LogLevel = logLevel;
         self.Prefix = prefix;
     }
     
-    /* 
-        @Arguments(
-            @Argument(
-                Name("msg"),
-                Type("string")
-            )
-        )
-    */
+    # @param msg string
     function Trace(msg)
     {
         if (self.LogLevel > -1)
@@ -5590,14 +6205,7 @@ class Logger
         Game.Print(msg);
     }
 
-    /* 
-        @Arguments(
-            @Argument(
-                Name("msg"),
-                Type("string")
-            )
-        )
-    */
+    # @param msg string
     function Debug(msg)
     {
         if (self.LogLevel > 0)
@@ -5616,14 +6224,7 @@ class Logger
     }
 
 
-    /* 
-        @Arguments(
-            @Argument(
-                Name("msg"),
-                Type("string")
-            )
-        )
-    */
+    # @param msg string
     function Error(msg)
     {
         if (self.LogLevel > 1)
@@ -5641,14 +6242,7 @@ class Logger
         Game.Print(msg);
     }
 
-    /* 
-        @Arguments(
-            @Argument(
-                Name("msg"),
-                Type("string")
-            )
-        )
-    */
+    # @param msg string
     function Info(msg)
     {
         if (self.LogLevel > 2)
@@ -5769,43 +6363,6 @@ extension TipsProvider
 # INGAME
 #######################
 
-extension TeamEnum
-{
-    RED = "Red";
-    BLUE = "Blue";
-    NONE = "None";
-    TITAN = "Titan";
-    HUMAN = "Human";
-}
-
-extension WeaponEnum
-{
-    BLADES = "Blades";
-    APG = "APG";
-    AHSS = "AHSS";
-    TS = "Thunderspears";
-}
-
-extension TitanTypeEnum
-{
-    DEFAULT = "Default";
-    DUMMY = "Dummy";
-    NORMAL = "Normal";
-    ABNORMAL = "Abnormal";
-    PUNK = "Punk";
-    CRAWLER = "Crawler";
-}
-
-extension CollideWithEnum {
-    ENTITIES = "Entities";
-    CHARACTERS = "Characters";
-    TITANS = "Titans";
-    HUMANS = "Humans";
-    PROJECTILES = "Projectiles";
-    HITBOXES = "Hitboxes";
-    MAP_OBJECTS = "MapObjects";
-    ALL = "All";
-}
 
 extension SpecialEnum
 {
@@ -6024,13 +6581,6 @@ extension PlayerSoundEnum
     TSLAUNCH2 = "TSLaunch2";
 }
 
-extension PlayerStatusEnum
-{
-    ALIVE = "Alive";
-    DEAD = "Dead";
-    SPECTATING = "Spectating";
-}
-
 extension KeyBindsEnum
 {
     GENERAL_FORWARD = "General/Forward";
@@ -6115,14 +6665,6 @@ extension ObjectTypeEnum
 {
     HUMAN = "Human";
     Titan = "Titan";
-}
-
-extension ForceModeEnum
-{
-    FORCE = "Force";
-    ACCELERATION = "Acceleration";
-    IMPULSE = "Impulse";
-    VELOCITYCHANGE = "VelocityChange";
 }
 
 extension PlayerStateEnum
@@ -6235,15 +6777,6 @@ extension UILabelTypeEnum
     BOTTOMRIGHT = "BottomRight";
 }
 
-extension OutlineModeEnum
-{
-    OUTLINEALL = "OutlineAll";
-    OUTLINEVISIBLE = "OutlineVisible";
-    OUTLINEHIDDEN = "OutlineHidden";
-    OUTLINEANDSILHOUETTE = "OutlineAndSilhouette";
-    SILHOUETTEONLY = "SilhouetteOnly";
-    OUTLINEANDLIGHTENCOLOR = "OutlineAndLightenColor";
-}
 
 #######################
 # CUSTOM
@@ -6392,8 +6925,8 @@ extension RoundEndMessage
     REASON_TIME_LEFT = "time_left";
     REASON_HOSTAGES_ESCORTED = "hostages_escorted";
 
-    WINNER_RED = TeamEnum.RED;
-    WINNER_BLUE = TeamEnum.BLUE;
+    WINNER_RED = TeamEnum.Red;
+    WINNER_BLUE = TeamEnum.Blue;
     WINNER_NOBODY = "none";
 
     function New(reason, winner)
@@ -6402,6 +6935,26 @@ extension RoundEndMessage
         msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
         msg.Set(self.KEY_REASON, reason);
         msg.Set(self.KEY_WINNER, winner);
+        return msg;
+    }
+}
+
+extension WeaponTracerMessage
+{
+    TOPIC = "weapon_tracer";
+    
+    KEY_STARTPOS = "startpos";
+    KEY_ENDPOS = "endpos";
+
+    # @param startPos Vector3
+    # @param endPos Vector3
+    # @return Dict<string,string>
+    function New(startPos, endPos)
+    {
+        msg = Dict();
+        msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
+        msg.Set(self.KEY_STARTPOS, startPos);
+        msg.Set(self.KEY_ENDPOS, endPos);
         return msg;
     }
 }
@@ -6415,6 +6968,7 @@ extension ThrowGrenadeMessage
     KEY_VELOCITY = "velocity";
     KEY_FORCE = "force";
 
+    # @return Dict<string,string>
     function New(pos, dir, vel, force)
     {
         msg = Dict();
@@ -6433,6 +6987,7 @@ extension HostageEscortRequestMessage
     
     KEY_HOSTAGE_ID = "hostage_id";
 
+    # @return Dict<string,string>
     function New(id)
     {
         msg = Dict();
@@ -6449,6 +7004,7 @@ extension SyncRoomDataMessage
     KEY_KEY = "key";
     KEY_VALUE = "value";
 
+    # @return Dict<string,string>
     function New(k, v)
     {
         msg = Dict();
@@ -6465,11 +7021,217 @@ extension SyncAllRoomDataMessage
 
     KEY_DATA = "data";
 
+    # @return Dict<string,string>
     function New(data)
     {
         msg = Dict();
         msg.Set(BaseMessage.KEY_TOPIC, self.TOPIC);
         msg.Set(self.KEY_DATA, data);
         return msg;
+    }
+}
+
+component IRigidbody
+{
+    Mass = 1.0;
+    Gravity = Vector3(0.0, -20.0, 0.0);
+    FreezeRotation = false;
+    Interpolate = false;
+
+    function Init(){}
+
+    # @param velocity Vector3
+    function SetVelocity(velocity){}
+
+    # @param force Vector3
+    function AddForce(force){}
+
+    # @param force Vector3
+    # @param mode string
+    function AddForceWithMode(force, mode){}
+
+    # @param force Vector3
+    # @param point Vector3
+    # @param mode string
+    function AddForceWithModeAtPoint(force, point, mode){}
+
+    # @param force Vector3
+    # @param mode string
+    function AddTorque(force, mode){}
+
+    # @return Vector3
+    function GetVelocity(){}
+
+    # @return Vector3
+    function GetAngularVelocity(){}
+}
+
+class HumanTransformCache
+{
+    Human = null;
+    Hip = null;
+    # @type Transform
+    Spine = null;
+    # @type Transform
+    Chest = null;
+    # @type Transform
+    GroundLeft = null;
+    # @type Transform
+    GroundRight = null;
+    # @type Transform
+    HandL = null;
+    # @type Transform
+    HandR = null;
+    # @type Transform
+    Head = null;
+    # @type Transform
+    CharHead = null;
+    # @type Transform
+    Neck = null;
+    # @type Transform
+    ForearmL = null;
+    # @type Transform
+    ForearmR = null;
+    # @type Transform
+    UpperarmL = null;
+    # @type Transform
+    UpperarmR = null;
+    # @type Transform
+    HookLeftAnchorDefault = null;
+    # @type Transform
+    HookRightAnchorDefault = null;
+    # @type Transform
+    HookLeftAnchorGun = null;
+    # @type Transform
+    HookRightAnchorGun = null;
+    ControllerBody = null;
+
+    # @param human Human
+    function Init(human)
+    {
+        self.Human = human.Transform;
+        self.ControllerBody = human.Transform.GetTransform("Armature/Core/Controller_Body");
+        self.Hip = human.Transform.GetTransform("Armature/Core/Controller_Body/hip");
+        self.Spine = self.Hip.GetTransform("spine");
+        self.Chest = self.Spine.GetTransform("chest");
+        self.GroundLeft = human.Transform.GetTransform("GroundLeft");
+        self.GroundRight = human.Transform.GetTransform("GroundRight");
+        self.Neck = self.Chest.GetTransform("neck");
+        self.Head = self.Neck.GetTransform("head");
+        self.CharHead = self.Head.GetTransform("char_head");
+        self.UpperarmL = self.Chest.GetTransform("shoulder_L/upper_arm_L");
+        self.UpperarmR = self.Chest.GetTransform("shoulder_R/upper_arm_R");
+        self.ForearmL = self.UpperarmL.GetTransform("forearm_L");
+        self.ForearmR = self.UpperarmR.GetTransform("forearm_R");
+        self.HandL = self.ForearmL.GetTransform("hand_L");
+        self.HandR = self.ForearmR.GetTransform("hand_R");
+        self.HookLeftAnchorDefault = self.Chest.GetTransform("hookRefL1");
+        self.HookRightAnchorDefault = self.Chest.GetTransform("hookRefR1");
+        self.HookLeftAnchorGun = self.HandL.GetTransform("hookRef");
+        self.HookRightAnchorGun = self.HandR.GetTransform("hookRef");
+    }
+}
+
+class TransformDirectionVisualizer
+{
+    # @type Transform
+    _transform = null;
+    _lineLength = 0.5;
+    # @type List<LineRenderer>
+    _lines = List();
+    _lineWidth = 0.02;
+
+    # @param transform Transform
+    # @param lineLength float
+    function Init(transform, lineLength)
+    {
+        self._transform = transform;
+        if (lineLength > 0)
+        {
+            self._lineLength = lineLength;
+        }
+        self._lines = List();
+
+        # Create 4 debug lines: Up (Red), Forward (Green), Right (Blue), Up+Forward (Yellow)
+        # Red line - Up direction
+        lineUp = LineRendererPool.Get();
+        lineUp.LineColor = Color(255, 0, 0, 255);  # Red
+        lineUp.StartWidth = self._lineWidth;
+        lineUp.EndWidth = self._lineWidth;
+        lineUp.UseWorldSpace = true;
+        lineUp.PositionCount = 2;
+        self._lines.Add(lineUp);
+
+        # Green line - Forward direction
+        lineForward = LineRendererPool.Get();
+        lineForward.LineColor = Color(0, 255, 0, 255);  # Green
+        lineForward.StartWidth = self._lineWidth;
+        lineForward.EndWidth = self._lineWidth;
+        lineForward.UseWorldSpace = true;
+        lineForward.PositionCount = 2;
+        self._lines.Add(lineForward);
+
+        # Blue line - Right direction
+        lineRight = LineRendererPool.Get();
+        lineRight.LineColor = Color(0, 0, 255, 255);  # Blue
+        lineRight.StartWidth = self._lineWidth;
+        lineRight.EndWidth = self._lineWidth;
+        lineRight.UseWorldSpace = true;
+        lineRight.PositionCount = 2;
+        self._lines.Add(lineRight);
+
+        # Yellow line - Up + Forward combination
+        lineUpForward = LineRendererPool.Get();
+        lineUpForward.LineColor = Color(255, 255, 0, 255);  # Yellow
+        lineUpForward.StartWidth = self._lineWidth;
+        lineUpForward.EndWidth = self._lineWidth;
+        lineUpForward.UseWorldSpace = true;
+        lineUpForward.PositionCount = 2;
+        self._lines.Add(lineUpForward);
+    }
+
+    function Update()
+    {
+        if (self._transform == null)
+        {
+            return;
+        }
+
+        pos = self._transform.Position;
+        up = self._transform.Up;
+        forward = self._transform.Forward;
+        right = self._transform.Right;
+
+        # Red - Up
+        self._lines.Get(0).SetPosition(0, pos);
+        self._lines.Get(0).SetPosition(1, pos + up * self._lineLength);
+        self._lines.Get(0).Enabled = true;
+
+        # Green - Forward
+        self._lines.Get(1).SetPosition(0, pos);
+        self._lines.Get(1).SetPosition(1, pos + forward * self._lineLength);
+        self._lines.Get(1).Enabled = true;
+
+        # Blue - Right
+        self._lines.Get(2).SetPosition(0, pos);
+        self._lines.Get(2).SetPosition(1, pos + right * self._lineLength);
+        self._lines.Get(2).Enabled = true;
+
+        # Yellow - Up + Forward
+        dir = up + forward;
+        upForwardDir = dir.Normalized;
+        self._lines.Get(3).SetPosition(0, pos);
+        self._lines.Get(3).SetPosition(1, pos + upForwardDir * self._lineLength);
+        self._lines.Get(3).Enabled = true;
+    }
+
+    function Destroy()
+    {
+        for (line in self._lines)
+        {
+            LineRendererPool.Return(line);
+        }
+        self._lines.Clear();
+        self._transform = null;
     }
 }

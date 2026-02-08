@@ -2,7 +2,7 @@
 
 | Author    | Version |
 |-----------|---------|
-| Jagerente | v1.0.1  |
+| Jagerente | v1.1.0  |
 
 ## Features
 
@@ -120,12 +120,6 @@ To adapt your map for this logic, it must include specific objects:
 1. Attach Custom Logic to your map for adding components. Remove it before use. 
 2. Add reference objects outside the map using following code (add it to the `Objects` section).
 ```
-Scene,General/EditorPointLight,83000,0,1,1,0,0,BlueHighlightReference,0,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:0/0/255/255|Intensity:6|Range:1.5;
-Scene,General/EditorPointLight,83001,0,1,1,0,0,RedHighlightReference,20,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:255/0/0/255|Intensity:6|Range:1.5;
-Scene,General/HumanReference,83002,0,1,1,1,0,Human Reference,40,-201.4004,0,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,;
-Scene,Geometry/Cube1,83003,0,1,1,0,0,Hitbox_HEAD,40,-200,0,0,0,0,0.7,0.7,0.7,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,;
-Scene,Geometry/Hedron1,83004,0,1,1,1,0,FragGrenade,60,-200,0,0,0,0,0.5,0.5,0.5,Physical,MapObjects,Default,Transparent|0/67/0/255|Misc/None|1/1|0/0,Rigidbody|Mass:1|Gravity:0/-20/0|FreezeRotation:false|Interpolate:false,PointLight|Color:139/0/0/255|Intensity:15|Range:3;
-Scene,Geometry/Sphere1,83005,83004,1,1,1,0,FragGrenade_ExplosionRegion,60,-200,0,0,0,0,25,25,25,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,FragGrenadeZone|;
 Scene,Geometry/Cube1,83006,0,1,1,1,0,ShoppingRegionDM,40,-200.5,0,0,0,0,5,5,5,Region,Characters,Default,Transparent|0/255/0/56|Misc/None|1/1|0/0,ShoppingZone|Name:Weapons_T|Width:300|Height:230,
 ```
 3. Add necessary regions and spawn points:

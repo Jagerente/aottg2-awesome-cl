@@ -2156,12 +2156,7 @@ Scene,General/MinTitanReference,2356,0,1,1,0,0,HostageReference,100.0727,31.1617
 Scene,Geometry/Cube1,2357,0,1,0,1,1,HostageEscortRegion,-95.71189,2.688164,-85.58855,0,0,0,35,5,35,Region,Titans,Default,Transparent|0/0/255/5|Misc/None|1/1|0/0,HostageEscortZone|;
 Scene,Geometry/Cube1,2358,0,1,1,0,0,CameraRef_Hostages_Assault,78.48976,33.16588,40.29841,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,;
 Scene,Geometry/Cube1,2359,0,1,1,0,0,HostagesRef_Assault,101.9993,33.16588,40.29841,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,;
-Scene,General/EditorPointLight,83000,0,1,1,0,0,BlueHighlightReference,0,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:0/0/255/255|Intensity:6|Range:1.5;
-Scene,General/EditorPointLight,83001,0,1,1,0,0,RedHighlightReference,20,-200,0,0,0,0,1,1,1,None,Entities,Default,DefaultNoTint|255/255/255/255,PointLight|Color:255/0/0/255|Intensity:6|Range:1.5;
 Scene,General/HumanReference,83002,0,1,1,1,0,Human Reference,40,-201.4004,0,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,;
-Scene,Geometry/Cube1,83003,0,1,1,0,0,Hitbox_HEAD,40,-200,0,0,0,0,0.7,0.7,0.7,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,;
-Scene,Geometry/Hedron1,83004,0,1,1,1,0,FragGrenade,60,-200,0,0,0,0,0.5,0.5,0.5,Physical,MapObjects,Default,Transparent|0/67/0/255|Misc/None|1/1|0/0,Rigidbody|Mass:1|Gravity:0/-20/0|FreezeRotation:false|Interpolate:false,PointLight|Color:139/0/0/255|Intensity:15|Range:3;
-Scene,Geometry/Sphere1,83005,83004,1,1,1,0,FragGrenade_ExplosionRegion,60,-200,0,0,0,0,25,25,25,Region,Humans,Default,Transparent|255/0/0/15|Misc/None|1/1|0/0,FragGrenadeZone|;
 Scene,General/EditorHumanSpawnPoint,83006,0,1,1,0,0,Human SpawnPoint,-89.85111,3.599998,-85.54714,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,Tag|Name:HumanSpawnPoint;
 Scene,General/EditorHumanSpawnPoint,83007,0,1,1,0,0,Human SpawnPoint,-44.15728,0.4404602,-101.3603,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,Tag|Name:HumanSpawnPoint;
 Scene,General/EditorHumanSpawnPoint,83008,0,1,1,0,0,Human SpawnPoint,-62.12331,48.14457,-90.59209,0,0,0,1,1,1,None,Entities,Default,Default|255/255/255/255,Tag|Name:HumanSpawnPoint;
