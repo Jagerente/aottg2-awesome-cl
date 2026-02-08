@@ -245,7 +245,7 @@ class Main
 		Dispatcher.Send(
 			player,
 			SetLocalizedLabelMessage.New(
-			UILabelTypeEnum.TOPCENTER,
+			UILabelEnum.TopCenter,
 			EventManager._currentNode._event.GoalKey(),
 			EventManager._currentNode._event.GoalParams(),
 			null
@@ -359,7 +359,7 @@ class Main
 	function _InitUIManager()
 	{
 		UIManager.RegisterProvider(
-			UILabelTypeEnum.TOPLEFT,
+			UILabelEnum.TopLeft,
 			InfoTextProvider(),
 			UpdateRateEnum.Second
 		);
@@ -556,24 +556,24 @@ extension PlayerProxy
 	{
 		if(self.Human.Weapon == WeaponEnum.AHSS)
 		{
-			self.Human.SetWeapon(WeaponEnum.BLADES);
-			self.Human.SetSpecial(SpecialEnum.SPIN1);
+			self.Human.SetWeapon(WeaponEnum.Blade);
+			self.Human.SetSpecial(SpecialEnum.Spin1);
 		}
 		elif (self.Human.Weapon == WeaponEnum.APG)
 		{
-			self.Human.SetWeapon(WeaponEnum.TS);
-			self.Human.SetSpecial(SpecialEnum.SWITCHBACK);
+			self.Human.SetWeapon(WeaponEnum.Thunderspear);
+			self.Human.SetSpecial(SpecialEnum.Switchback);
 		}
 
 		if(
-			(Main.NoThrowBlade && self.Human.CurrentSpecial == SpecialEnum.BLADETHROW && self.Human.Weapon == WeaponEnum.BLADES)
-			|| (self.Human.Weapon == WeaponEnum.BLADES && Main.JustSpin1)
-			|| self.Human.CurrentSpecial == SpecialEnum.DANCE
-			|| self.Human.CurrentSpecial == SpecialEnum.ANNIE
-			|| self.Human.CurrentSpecial == SpecialEnum.EREN
+			(Main.NoThrowBlade && self.Human.CurrentSpecial == SpecialEnum.BladeThrow && self.Human.Weapon == WeaponEnum.Blade)
+			|| (self.Human.Weapon == WeaponEnum.Blade && Main.JustSpin1)
+			|| self.Human.CurrentSpecial == SpecialEnum.Dance
+			|| self.Human.CurrentSpecial == SpecialEnum.Annie
+			|| self.Human.CurrentSpecial == SpecialEnum.Eren
 		)
 		{
-			self.Human.SetSpecial(SpecialEnum.SPIN1);
+			self.Human.SetSpecial(SpecialEnum.Spin1);
 		}
 	}
 
@@ -621,16 +621,16 @@ extension PlayerProxy
 		}
 
 		self._bladesSpecial = self.Human.CurrentSpecial;
-		self._tsSpecial = SpecialEnum.SWITCHBACK;
+		self._tsSpecial = SpecialEnum.Switchback;
 		if (Main.Spin123NoCD && String.StartsWith(self._bladesSpecial, "Spin"))
 		{
 			self._bladesSpecialCD = 0.0;
 		}
 		else
 		{
-			self._bladesSpecialCD = SpecialEnum.GetCooldown(self._bladesSpecial);
+			self._bladesSpecialCD = SpecialEnumCD.GetCooldown(self._bladesSpecial);
 		}
-		self._tsSpecialCD = SpecialEnum.GetCooldown(self._tsSpecial);
+		self._tsSpecialCD = SpecialEnumCD.GetCooldown(self._tsSpecial);
 	}
 
 	function _HandleInputOnTick()
@@ -642,19 +642,19 @@ extension PlayerProxy
 
 		if (
 			self.Human.Weapon == "Blade"
-			&& Input.GetKeyHold(KeyBindsEnum.HUMAN_ATTACKSPECIAL)
+			&& Input.GetKeyHold(InputHumanEnum.AttackSpecial)
 			&& String.StartsWith(PlayerProxy.Human.CurrentSpecial, "Spin")
 		)
 		{
 			if (
-				PlayerProxy.Human.State != PlayerStateEnum.SPECIALATTACK
+				PlayerProxy.Human.State != HumanStateEnum.SpecialAttack
 				&& (Main.Spin123NoCD || Main.TrueLevi)
 			)
 			{
 				self.Human.SpecialCooldown = 0.0;
 				PlayerProxy.Human.ActivateSpecial();
 			}
-			elif (PlayerProxy.Human.State == PlayerStateEnum.SPECIALATTACK && Main.Spin123Plus || Main.TrueLevi)
+			elif (PlayerProxy.Human.State == HumanStateEnum.SpecialAttack && Main.Spin123Plus || Main.TrueLevi)
 			{
 				PlayerProxy.Human.Rotation+=Vector3(0,250,0);
 			}
@@ -662,7 +662,7 @@ extension PlayerProxy
 			if (Main.TrueLevi)
 			{
 				if (
-					self.Human.State == PlayerStateEnum.SPECIALATTACK
+					self.Human.State == HumanStateEnum.SpecialAttack
 				)
 				{
 					targetTitan = self.FindNearestTitan(self.Human.Position);
@@ -761,14 +761,14 @@ extension PlayerProxy
 
 	function _SwitchWeapon()
 	{
-		if (self.Human == null || PlayerProxy.Human.State == PlayerStateEnum.SPECIALATTACK)
+		if (self.Human == null || PlayerProxy.Human.State == HumanStateEnum.SpecialAttack)
 		{
 			return;
 		}
 
-		if (self.Human.Weapon == WeaponEnum.BLADES)
+		if (self.Human.Weapon == WeaponEnum.Blade)
 		{
-			self.Human.SetWeapon(WeaponEnum.TS);
+			self.Human.SetWeapon(WeaponEnum.Thunderspear);
 			self.Human.MaxAmmoTotal = Main.ThunderSpearsCount;
 			self.Human.CurrentAmmoLeft = self._lastTSAmmoLeft;
 			self.Human.MaxAmmoRound = 2;
@@ -782,7 +782,7 @@ extension PlayerProxy
 		}
 		else
 		{
-			self.Human.SetWeapon(WeaponEnum.BLADES);
+			self.Human.SetWeapon(WeaponEnum.Blade);
 			self.Human.MaxBlade = Main.BladesCount;
 			self.Human.CurrentBlade = self._lastBladesCount;
 			self.Human.MaxBladeDurability = Main.BladesDurability;
@@ -805,13 +805,13 @@ extension PlayerProxy
 
 		self._lastGas = self.Human.CurrentGas;
 
-		if (self.Human.Weapon == WeaponEnum.BLADES)
+		if (self.Human.Weapon == WeaponEnum.Blade)
 		{
 			self._lastBladesDurability = self.Human.CurrentBladeDurability;
 			self._lastBladesCount = self.Human.CurrentBlade;
 			self._bladesSpecialCD = self.Human.SpecialCooldown;
 		}
-		elif (self.Human.Weapon == WeaponEnum.TS)
+		elif (self.Human.Weapon == WeaponEnum.Thunderspear)
 		{
 			self._lastTSAmmoRound = self.Human.CurrentAmmoRound;
 			self._lastTSAmmoLeft = self.Human.CurrentAmmoLeft;
@@ -1049,7 +1049,7 @@ cutscene Cutscene_3
 
 			for(t in Game.AITitans)
 			{
-				t.Emote("Roar");
+				t.Emote(TitanSoundEnum.Roar1);
 			}
 		}
 

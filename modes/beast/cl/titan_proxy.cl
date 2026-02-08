@@ -1,4 +1,5 @@
 # @import timer
+# @import enums
 
 class TitanProxy
 {
@@ -16,7 +17,7 @@ class TitanProxy
 
 	function IdleRoar()
 	{
-		self.Titan.Emote("Roar");
+		self.Titan.Emote(TitanSoundEnum.Roar1);
 		self.Titan.Idle(5.0);
 	}
 
@@ -25,7 +26,7 @@ class TitanProxy
 	function Target(c, t)
 	{
 		self.Titan.Target(c, t);
-		self.Titan.Emote("Roar");
+		self.Titan.Emote(TitanSoundEnum.Roar1);
 	}
 
 	# @param pos Vector3

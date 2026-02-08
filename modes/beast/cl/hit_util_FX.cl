@@ -3,10 +3,10 @@ extension HitUtilsFX
 {
     function DamageVisualFX(napePosition, damage, armor)
     {
-        Game.SpawnEffect(EffectEnum.CRITICALHIT, napePosition, Vector3.Zero, 6.0);
+        Game.SpawnEffect(EffectNameEnum.CriticalHit, napePosition, Vector3.Zero, 6.0);
 		if (damage > armor)
 		{
-			Game.SpawnEffect(EffectEnum.BLOOD1, napePosition, Vector3.Zero, 4.0);
+			Game.SpawnEffect(EffectNameEnum.Blood1, napePosition, Vector3.Zero, 4.0);
 		}
     }
 
@@ -16,7 +16,7 @@ extension HitUtilsFX
     # @param armor int
     function DamageHitSoundFX(human, damage, type, armor)
     {
-        if (type == WeaponEnum.BLADES)
+        if (type == WeaponEnum.Blade)
         {
             self._HandleBladesSound(human, damage, armor);
             return;
@@ -37,31 +37,31 @@ extension HitUtilsFX
 	{
         if (damage <= armor)
         {
-            human.StopSound(PlayerSoundEnum.BLADEBREAK);
-            human.PlaySound(PlayerSoundEnum.BLADEBREAK);
+            human.StopSound(HumanSoundEnum.BladeBreak);
+            human.PlaySound(HumanSoundEnum.BladeBreak);
             
             return;
         }
 
         if (damage < 500)
         {
-            sound = PlayerSoundEnum.NAPEHIT;
+            sound = HumanSoundEnum.NapeHit;
         }
         elif (damage < 1000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 1);
+            sound = self.GetRandom(WeaponEnum.Blade, 1);
         }
         elif (damage < 2000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 2);
+            sound = self.GetRandom(WeaponEnum.Blade, 2);
         }
         elif (damage < 3000)
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 3);
+            sound = self.GetRandom(WeaponEnum.Blade, 3);
         }       
         else
         {
-            sound = self.GetRandom(WeaponEnum.BLADES, 4);
+            sound = self.GetRandom(WeaponEnum.Blade, 4);
         }
 
         human.StopSound(sound);
@@ -72,7 +72,7 @@ extension HitUtilsFX
 	{
         if (damage < 1000 || damage < armor)
         {
-            sound = PlayerSoundEnum.NAPEHIT;
+            sound = HumanSoundEnum.NapeHit;
         }
         elif (damage < 2000)
         {
@@ -89,8 +89,8 @@ extension HitUtilsFX
 
     function _HandleAPGSound(human, damage, armor)
 	{
-        human.StopSound(PlayerSoundEnum.NAPEHIT);   
-        human.PlaySound(PlayerSoundEnum.NAPEHIT);  
+        human.StopSound(HumanSoundEnum.NapeHit);   
+        human.PlaySound(HumanSoundEnum.NapeHit);  
     }
 
     # @param weapon string
@@ -101,7 +101,7 @@ extension HitUtilsFX
         {
             numVar = 2;
         }
-        elif (weapon == WeaponEnum.BLADES)
+        elif (weapon == WeaponEnum.Blade)
         {
             numVar = 3;
         }

@@ -7,7 +7,7 @@ extension TitanTargetSwitcher
 {
 	MinDamage = 1000;
 
-	# @param Human
+	# @type Human
 	_currentTarget = null;
 
 	function OnCharacterDamaged(victim, killer, killerName, damage)

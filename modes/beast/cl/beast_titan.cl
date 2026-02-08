@@ -34,7 +34,7 @@ component ZekeShifter
 	# @type MapObject
 	_rock = null;
 
-	# @type RigidbodyBuiltin
+	# @type IRigidbody
 	_rigidbody = null;
 
 	# @type Transform
@@ -366,12 +366,15 @@ component ZekeShifter
 		eyesPos = self._eyesHurtBox.MapObject.Position;
 		napePos = self._napeHurtBox.MapObject.Position;
 
-		distanceToEyes = (targetPos - eyesPos).Magnitude;
-		distanceToNape = (targetPos - napePos).Magnitude;
+		difference = targetPos - eyesPos;
+		distanceToEyes = difference.Magnitude;
+		difference = targetPos - napePos;
+		distanceToNape = difference.Magnitude;
 
 		if (distanceToEyes < 15)
 		{
-			directionToTarget = (targetPos - self.MapObject.Position).Normalized;
+			difference = targetPos - self.MapObject.Position;
+			directionToTarget = difference.Normalized;
 			angleToTarget = Vector3.Angle(directionToTarget, self.MapObject.Forward);
 
 			if (angleToTarget >= 70 && angleToTarget <= 85)
@@ -383,7 +386,8 @@ component ZekeShifter
 
 		if (distanceToNape < 10)
 		{
-			directionToTarget = (targetPos - self.MapObject.Position).Normalized;
+			difference = targetPos - self.MapObject.Position;
+			directionToTarget = difference.Normalized;
 			angleToTarget = Vector3.Angle(directionToTarget, self.MapObject.Forward * -1);
 
 			if (angleToTarget >= 80 && angleToTarget <= 95)
@@ -448,8 +452,8 @@ component ZekeShifter
 	coroutine WaitAndDie(delay)
 	{
 		t = Game.SpawnTitanAt("normal",self._transform.Position+Vector3(0,-200,0));
-		t.PlaySound("Roar");
-		t.Health=0;
+		t.PlaySound(TitanSoundEnum.Roar1);
+		t.Health = 0;
 
 		Game.SpawnEffect("Blood1", self._transform.Position+Vector3(0,80,0), Vector3.Zero, 10.0);
 		Game.SpawnEffect("Blood2", self._transform.Position+Vector3(0,80,0), Vector3.Zero, 10.0);
@@ -503,7 +507,7 @@ component ZekeShifter
 					if (self._currentAttackState == 0 && self._currentAnimationTime > 1.68)
 					{
 						Game.SpawnEffect(
-							EffectEnum.BOOM3,
+							EffectNameEnum.Boom3,
 							self._eyesHurtBox.MapObject.Position,
 							Vector3(270.0, 0.0, 0.0),
 							8.0
@@ -517,7 +521,7 @@ component ZekeShifter
 					if (self._currentAttackState == 0 && self._currentAnimationTime > 1.68)
 					{
 						Game.SpawnEffect(
-							EffectEnum.BOOM3,
+							EffectNameEnum.Boom3,
 							self._napeHurtBox.MapObject.Position,
 							Vector3(270.0, 0.0, 0.0),
 							6.0
@@ -853,10 +857,10 @@ component ZekeNapeHurtBox
 
 		self._getDamagedCoolDown = 0.02;
 
-		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.BLADES)
+		if (self._shifter._isNapeProtected && character.Weapon == WeaponEnum.Blade)
 		{
 			character.CurrentBladeDurability = 0;
-			character.PlaySound(PlayerSoundEnum.BLADEBREAK);
+			character.PlaySound(HumanSoundEnum.BladeBreak);
 			return;
 		}
 
