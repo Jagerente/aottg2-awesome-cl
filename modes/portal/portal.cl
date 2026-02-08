@@ -5848,8 +5848,12 @@ class PortalGun
 
     function _DisableArms()
     {
-        PlayerProxy._transformCache.UpperarmR.SetRenderersEnabled(false);
         PlayerProxy._transformCache.UpperarmL.SetRenderersEnabled(false);
+        PlayerProxy._transformCache.UpperarmR.SetRenderersEnabled(false);
+        PlayerProxy._transformCache.ForearmR.SetRenderersEnabled(false);
+        PlayerProxy._transformCache.ForearmL.SetRenderersEnabled(false);
+        PlayerProxy._transformCache.HandR.SetRenderersEnabled(false);
+        PlayerProxy._transformCache.HandL.SetRenderersEnabled(false);
         PlayerProxy._transformCache.Neck.SetRenderersEnabled(false);
     }
 
